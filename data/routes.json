@@ -1,0 +1,110 @@
+[
+  {
+    "from": "Lausanne",
+    "to": "Ovronnaz",
+    "image": "images/ovronnaz.jpg",
+    "from_coords": {
+      "lat": 46.5197,
+      "lon": 6.6323
+    },
+    "to_coords": {
+      "lat": 46.2024,
+      "lon": 7.175
+    },
+    "times": {
+      "car": 77,
+      "pt": 150,
+      "shuttle": 85
+    }
+  },
+  {
+    "from": "Genève",
+    "to": "Crans-Montana",
+    "image": "images/crans_montana.jpg",
+    "from_coords": {
+      "lat": 46.2044,
+      "lon": 6.1432
+    },
+    "to_coords": {
+      "lat": 46.311,
+      "lon": 7.48
+    },
+    "times": {
+      "car": 130,
+      "pt": 200,
+      "shuttle": 110
+    }
+  },
+  {
+    "from": "Fribourg",
+    "to": "Anzère",
+    "image": "images/anzere.jpg",
+    "from_coords": {
+      "lat": 46.8065,
+      "lon": 7.1619
+    },
+    "to_coords": {
+      "lat": 46.2969,
+      "lon": 7.3961
+    },
+    "times": {
+      "car": 105,
+      "pt": 185,
+      "shuttle": 95
+    }
+  },
+  {
+    "from": "Sion",
+    "to": "Zinal",
+    "image": "images/zinal.jpg",
+    "from_coords": {
+      "lat": 46.2274,
+      "lon": 7.3599
+    },
+    "to_coords": {
+      "lat": 46.135,
+      "lon": 7.626
+    },
+    "times": {
+      "car": 70,
+      "pt": 140,
+      "shuttle": 55
+    }
+  },
+  {
+    "from": "Neuchâtel",
+    "to": "Nax-Mont-Noble",
+    "image": "images/nax.jpg",
+    "from_coords": {
+      "lat": 46.992,
+      "lon": 6.931
+    },
+    "to_coords": {
+      "lat": 46.232,
+      "lon": 7.417
+    },
+    "times": {
+      "car": 135,
+      "pt": 220,
+      "shuttle": 115
+    }
+  },
+  {
+    "from": "Lausanne",
+    "to": "Leukerbad",
+    "image": "images/leukerbad.jpg",
+    "from_coords": {
+      "lat": 46.5197,
+      "lon": 6.6323
+    },
+    "to_coords": {
+      "lat": 46.379,
+      "lon": 7.627
+    },
+    "times": {
+      "car": 135,
+      "pt": 210,
+      "shuttle": 105
+    }
+  }
+]
