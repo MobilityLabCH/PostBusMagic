@@ -1,87 +1,525 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PostBus Connect — MagicPass Express</title>
-<link rel="icon" type="image/png" href="icons/favicon.png">
-<link rel="icon" type="image/x-icon" href="icons/favicon.ico">
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<link rel="stylesheet" href="assets/brand.css">
-<link rel="stylesheet" href="assets/plan.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PostBus Connect – Navettes ski (BÊTA MobilityLab)</title>
+
+<!-- Police propre et lisible -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+/* ====== Design system (simple & cohérent) ====== */
+:root{
+  --brand:#FFD300;           /* Jaune CarPostal */
+  --brand-dark:#E5BE00;
+  --ink:#0E0E0E;
+  --ink-2:#3A3A3A;
+  --bg:#FFFFFF;
+  --bg-alt:#F6F7F9;
+  --ok:#2E7D32;
+  --danger:#C62828;
+  --blue:#1F7AE0;
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.5}
+.container{width:min(1100px,92%);margin:auto}
+
+/* ====== Top beta ribbon ====== */
+.beta{
+  position:sticky;top:0;z-index:9999;background:var(--ink);color:#fff;
+  padding:8px 0;border-bottom:3px solid var(--brand);
+  font-weight:600;font-size:.9rem;text-align:center
+}
+.beta small{opacity:.8;font-weight:400}
+
+/* ====== Nav ====== */
+nav{position:sticky;top:40px;z-index:999;background:rgba(255,255,255,.85);backdrop-filter:saturate(1.2) blur(6px);
+  border-bottom:1px solid #EAEAEA}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+nav .logo{font-weight:800;letter-spacing:.2px}
+nav ul{display:flex;gap:18px;list-style:none;margin:0;padding:0}
+nav a{color:var(--ink-2);text-decoration:none;font-weight:600}
+nav .cta{background:var(--brand);color:#000;padding:10px 14px;border-radius:8px;font-weight:800}
+@media (max-width:860px){nav ul{display:none}}
+
+/* ====== Hero ====== */
+#hero{
+  position:relative;color:#fff;text-align:center;display:grid;place-items:center;
+  min-height:68vh;background:url('https://images.unsplash.com/photo-1516466723877-e4ec1d736c8a?q=80&w=1400&auto=format&fit=crop') center/cover no-repeat
+}
+#hero::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,.35))}
+#hero .inner{position:relative;padding:90px 0 70px}
+h1{font-size:clamp(28px,4vw,44px);margin:0 0 10px;font-weight:800}
+.tag{font-size:clamp(15px,2.2vw,20px);opacity:.95;max-width:780px;margin:0 auto 24px}
+.ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-block;padding:14px 18px;border-radius:10px;font-weight:800;text-decoration:none}
+.btn-primary{background:var(--brand);color:#000}
+.btn-primary:hover{background:var(--brand-dark)}
+.btn-ghost{border:2px solid #fff;color:#fff}
+
+/* ====== Sections ====== */
+section{padding:56px 0}
+h2{font-size:clamp(22px,3.2vw,30px);margin:0 0 14px;font-weight:800;text-align:center}
+.sub{color:var(--ink-2);text-align:center;margin-bottom:28px}
+
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.step{background:#fff;border:1px solid #EEE;border-radius:12px;padding:18px;text-align:center}
+.step b{display:block;margin:6px 0 4px}
+@media (max-width:860px){.steps{grid-template-columns:1fr}}
+
+/* Avantages */
+.grid-adv{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.adv{background:#fff;border-radius:12px;padding:18px;border:1px solid #EEE;text-align:center}
+.adv .em{font-size:26px}
+@media (max-width:1024px){.grid-adv{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.grid-adv{grid-template-columns:1fr}}
+
+/* Réservation */
+.card{background:#fff;border:1px solid #E9E9E9;border-radius:14px;padding:18px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form label{font-weight:700;font-size:.92rem}
+.form input,.form select{width:100%;padding:12px;border:1px solid #D9D9D9;border-radius:10px}
+.form .full{grid-column:1/-1}
+.form .submit{grid-column:1/-1}
+.note{font-size:.9rem;color:#555}
+.badge{display:inline-block;background:#111;color:#fff;padding:6px 8px;border-radius:999px;font-size:.78rem;font-weight:800}
+.badge.green{background:var(--ok)} .badge.red{background:var(--danger)}
+.badge.blue{background:var(--blue)} .badge.gold{background:var(--brand);color:#000}
+
+/* Résultat réservation */
+.result{margin-top:16px;display:none}
+.result.show{display:block}
+.result .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.price{font-weight:800;font-size:1.6rem}
+
+/* Seat map */
+.seatmap{margin-top:14px;display:grid;grid-template-columns:repeat(5,44px);gap:8px;justify-content:center}
+.seat{width:44px;height:44px;border-radius:8px;border:2px solid #C9C9C9;display:grid;place-items:center;cursor:pointer;background:#F9FAFB;font-weight:700}
+.seat.premium{border-color:#B58900;background:#FFF7D1}
+.seat.busy{opacity:.35;pointer-events:none}
+.seat.sel{outline:3px solid var(--blue);border-color:var(--blue)}
+
+/* Tarifs */
+.prices{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.card.hl{background:#FFF8D6;border-color:#E6C100}
+.prbig{font-size:2rem;font-weight:800}
+@media (max-width:860px){.prices{grid-template-columns:1fr}}
+
+/* Carte + Météo */
+#map{height:380px;background:#EAEAEA;border:1px dashed #CFCFCF;border-radius:12px}
+
+/* Impact */
+.impact{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kpi{background:#fff;border:1px solid #EEE;border-radius:12px;padding:16px;text-align:center}
+.kpi .v{font-size:1.6rem;font-weight:800}
+@media (max-width:860px){.impact{grid-template-columns:1fr}}
+
+footer{padding:32px 0;background:#111;color:#ddd;text-align:center;font-size:.9rem}
+footer a{color:#fff;text-decoration:underline}
+
+/* Helpers */
+.mt8{margin-top:8px} .mt16{margin-top:16px} .mt24{margin-top:24px}
+.center{text-align:center}
+</style>
 </head>
 <body>
-<a class="skip-link" href="#plan">Passer au contenu</a>
-<header>
-  <div class="head">
-    <div class="logo">P</div>
-    <div class="brand">PostBus Connect</div>
-    <div style="margin-left:auto">Powered by <b>MobilityLab</b> — Opéré par <b>CarPostal</b></div>
-  </div>
- </header>
 
-<main id="main-content">
-
-<section class="hero">
-  <div class="hero-in">
-    <h1 class="title">MagicPass Express · Navettes directes vers les pistes</h1>
-    <p class="subtitle">Quand les transports publics sont trop longs, nos navettes directes optimisent le trajet depuis les villes vers les stations. Horaires alignés, confort, porte‑skis, confirmation instantanée.</p>
-    <div class="cta-row">
-      <a href="#plan" class="btn primary">Planifier un trajet</a>
-      <a href="#why" class="btn">Pourquoi c’est mieux ?</a>
-    </div>
-  </div>
-</section>
-
-<div class="wrap" id="why">
-  <div class="grid-3">
-    <div class="panel">
-      <h2>✨ Avantages clés</h2>
-      <ul>
-        <li>⏱ <b>+40–80 min</b> gagnées vs. TP</li>
-        <li>🧩 <b>0 correspondance</b> — monte & détends‑toi</li>
-        <li>🎟 <b>Prix MagicPass</b>, confort, porte‑skis</li>
-        <li>🌱 <b>-75% CO₂</b> vs. voiture (navette remplie)</li>
-      </ul>
-    </div>
-    <div class="panel">
-      <h2>⚙️ Comment ça marche</h2>
-      <ul>
-        <li>1. Choisis <b>départ</b> & <b>destination</b></li>
-        <li>2. Si TP trop lents ➜ <b>navette directe</b></li>
-        <li>3. Réserve (simulation) en 2 clics</li>
-      </ul>
-    </div>
-    <div class="panel">
-      <h2>🚗 Pourquoi pas la voiture / TP ?</h2>
-      <ul>
-        <li>Voiture : bouchons, parkings chers, stress</li>
-        <li>TP : 2–3 correspondances, marche, lenteur</li>
-        <li>Navette : directe, horaire optimisé, confort</li>
-      </ul>
-    </div>
-  </div>
+<!-- OBJECTIF 4 : Transparence prototype -->
+<div class="beta">
+  <span class="badge gold">BÊTA</span> &nbsp;Prototype testé dans le cadre du <b>MobilityLab</b>.
+  <small>Fonctionnalités sujettes à évolution.</small>
 </div>
 
-<section class="wrap" id="plan">
-  <nav class="plan-toc" aria-label="Plan du projet">
+<nav>
+  <div class="container wrap">
+    <div class="logo">PostBus Connect</div>
     <ul>
-      <li><a href="#routes"><span class="step">1</span> Itinéraires</a></li>
-      <li><a href="#map"><span class="step">2</span> Carte</a></li>
+      <li><a href="#fonctionnement">Fonctionnement</a></li>
+      <li><a href="#reservation">Réserver</a></li>
+      <li><a href="#tarifs">Tarifs</a></li>
+      <li><a href="#impact">Impact</a></li>
+      <li><a href="#faq">FAQ</a></li>
     </ul>
-  </nav>
-  <div class="panel" id="routes">
-    <h2>🧭 Itinéraires disponibles (simulation)</h2>
-    <p class="subtitle">Clique sur « Voir sur la carte » pour afficher le tracé.</p>
+    <a class="cta" href="#reservation">Planifier un trajet</a>
   </div>
-  <div id="cards" class="routes"></div>
-  <div id="map" role="img" aria-label="Carte des itinéraires"></div>
-  <footer>© 2025 PostBus Connect — <b>Powered by MobilityLab</b> — Données & exploitation : CarPostal — Démo.</footer>
+</nav>
+
+<header id="hero">
+  <div class="inner container">
+    <h1>Navettes directes vers les pistes, le week-end</h1>
+    <p class="tag">Produit innovant by CarPostal pour <b>aller skier sans voiture</b> : départ à l’ouverture, retour en fin de journée, confort + options premium. Réservation & paiement instantanés.</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="#reservation">Planifier un trajet</a>
+      <a class="btn btn-ghost" href="#avantages">Pourquoi c’est mieux ?</a>
+    </div>
+  </div>
+</header>
+
+<!-- OBJECTIF 2 : Expérience simple et claire -->
+<section id="fonctionnement">
+  <div class="container">
+    <h2>Comment ça marche</h2>
+    <p class="sub">Saison de ski · <b>vendredi, samedi, dimanche</b> · 3 bus × 50 places</p>
+    <div class="steps">
+      <div class="step"><div>1️⃣</div><b>Choisissez</b> ville & station (week-end de la saison).</div>
+      <div class="step"><div>2️⃣</div><b>Navette directe</b> alignée sur l’ouverture des installations.</div>
+      <div class="step"><div>3️⃣</div><b>Réservez & payez</b> en 2-3 étapes. <u>Option siège premium</u>.</div>
+    </div>
+  </div>
 </section>
 
-</main>
+<section id="avantages" style="background:var(--bg-alt)">
+  <div class="container">
+    <h2>Pourquoi c’est mieux ?</h2>
+    <div class="grid-adv">
+      <div class="adv"><div class="em">⏱️</div><b>+40–80 min</b><br>plus rapide que TP, selon l’axe</div>
+      <div class="adv"><div class="em">🧩</div><b>0 correspondance</b><br>monte & détends-toi</div>
+      <div class="adv"><div class="em">🪑</div><b>Siège premium</b><br>réservation d’une place précise</div>
+      <div class="adv"><div class="em">🌱</div><b>-75% CO₂</b><br>vs voiture (navette remplie)</div>
+    </div>
+  </div>
+</section>
 
-<script src="assets/plan.js" defer></script>
+<!-- OBJECTIF 1 : monétisation (pricing dynamique + premium) -->
+<section id="reservation">
+  <div class="container">
+    <h2>Planifier & réserver</h2>
+    <p class="sub">Demi-tarif non valable. Forfait 5 A/R à CHF 100 ci-dessous.</p>
+
+    <div class="card">
+      <form class="form" onsubmit="event.preventDefault(); simulateSearch();">
+        <div>
+          <label>Ville de départ</label>
+          <select id="from" required>
+            <option value="">Sélectionnez…</option>
+            <option>Genève</option><option>Lausanne</option><option>Fribourg</option>
+            <option>Berne</option><option>Neuchâtel</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Station</label>
+          <select id="to" required>
+            <option value="">Sélectionnez…</option>
+            <option data-lat="46.096" data-lon="7.228">Verbier</option>
+            <option data-lat="46.020" data-lon="7.749">Zermatt</option>
+            <option data-lat="46.311" data-lon="7.480">Crans-Montana</option>
+            <option data-lat="46.296" data-lon="7.053">Villars</option>
+          </select>
+        </div>
+
+        <div class="full">
+          <label>Date (vendredi/samedi/dimanche)</label>
+          <input id="date" type="date" required>
+          <div class="note mt8">Saison paramétrable – par défaut 1 déc → 15 avr.</div>
+        </div>
+
+        <div class="full">
+          <label><input type="checkbox" id="usePass"> J’utilise 1 trajet de mon forfait 5 A/R (reste géré côté client)</label>
+        </div>
+
+        <div class="submit">
+          <button class="btn btn-primary" style="width:100%">Voir les navettes</button>
+        </div>
+      </form>
+
+      <!-- Résultat + step sièges -->
+      <div id="result" class="result">
+        <div class="row">
+          <div>
+            <b id="r-route">—</b><br>
+            <span id="r-times">Départ 07:00 — Retour 16:45</span>
+          </div>
+          <div>
+            <span class="badge blue">Tarif dynamique</span>
+            <div class="price"><span id="r-price">CHF —</span></div>
+          </div>
+        </div>
+
+        <div class="mt16 note">Sélectionnez votre siège (rang 1–2 = <b>Premium +CHF <span id="premiumFeeLabel"></span></b>).</div>
+        <div id="seatmap" class="seatmap" aria-label="Plan du bus (10 rangées × 5)"></div>
+
+        <div class="row mt16">
+          <div class="note">Siège choisi : <b id="seatChosen">—</b></div>
+          <div>
+            <a class="btn btn-primary" href="#" onclick="checkout()">Payer maintenant</a>
+          </div>
+        </div>
+        <div class="mt8 note">En validant vous acceptez les CG. Prototype BÊTA – données fictives de paiement.</div>
+      </div>
+    </div>
+
+    <p class="note mt16">⏰ Départs typiques : 06:30–07:30 (ville → station). Retours 16:00–17:30 (station → ville).  
+    🚌 Flotte pilote : 3 bus × 50 places.</p>
+  </div>
+</section>
+
+<section id="tarifs" style="background:var(--bg-alt)">
+  <div class="container">
+    <h2>Tarifs</h2>
+    <div class="prices">
+      <div class="card hl">
+        <div class="badge gold">Best value</div>
+        <h3>Forfait 5 allers-retours</h3>
+        <div class="prbig">CHF 100.–</div>
+        <p>Soit 20.– par A/R. Idéal pour la saison.</p>
+        <p class="note">Non cumulable avec demi-tarif (non valable).</p>
+      </div>
+      <div class="card">
+        <h3>Trajet à l’unité</h3>
+        <div class="prbig">Dès CHF 25.–</div>
+        <p>Prix <b>dynamique</b> selon remplissage (load factor) & anticipation.  
+        + Option siège premium.</p>
+        <p class="note">Réservez tôt pour les meilleurs prix.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="impact">
+  <div class="container">
+    <h2>Impact (objectif 3)</h2>
+    <p class="sub">Réduction de la voiture individuelle grâce aux navettes directes.</p>
+    <div class="impact">
+      <div class="kpi"><div class="v" id="kpiTrips">0</div>trajets réservés aujourd’hui</div>
+      <div class="kpi"><div class="v" id="kpiCars">0</div>voitures évitées (est.)</div>
+      <div class="kpi"><div class="v" id="kpiCO2">0 kg</div>CO₂ évités (est.)</div>
+    </div>
+    <p class="note mt8">Hypothèses configurables : km A/R moyen, facteur CO₂ voiture & bus, taux d’occupation.</p>
+  </div>
+</section>
+
+<section id="carte" style="background:var(--bg-alt)">
+  <div class="container">
+    <h2>Carte des itinéraires (prototype)</h2>
+    <p class="sub">Filtre par station & jour. (Ici une zone d’accueil pour Leaflet/Google Maps.)</p>
+    <div id="map" role="img" aria-label="Carte interactive à intégrer (Leaflet)"></div>
+  </div>
+</section>
+
+<section id="meteo">
+  <div class="container">
+    <h2>Météo & neige</h2>
+    <p class="sub">Aperçu automatisé par station (exemple – Open-Meteo).</p>
+    <div id="weatherRow" class="steps"></div>
+    <p class="note mt8">Sources : API météo publiques. Les stations et coordonnées sont configurables.</p>
+  </div>
+</section>
+
+<section id="faq" style="background:var(--bg-alt)">
+  <div class="container">
+    <h2>FAQ</h2>
+    <details class="card"><summary><b>Quels jours roulent les navettes ?</b></summary>
+      <div class="mt8">Vendredi, samedi, dimanche pendant la saison de ski (configurable).</div></details>
+    <details class="card"><summary><b>Le demi-tarif fonctionne-t-il ?</b></summary>
+      <div class="mt8">Non, le demi-tarif n’est pas valable sur cette offre.</div></details>
+    <details class="card"><summary><b>Puis-je choisir un siège précis ?</b></summary>
+      <div class="mt8">Oui, certains sièges sont premium (+CHF) et réservable au plan.</div></details>
+    <details class="card"><summary><b>Quid si la météo est mauvaise ?</b></summary>
+      <div class="mt8">Si la station ferme, modification ou remboursement sans frais.</div></details>
+    <details class="card"><summary><b>Est-ce un produit officiel CarPostal ?</b></summary>
+      <div class="mt8">C’est un <b>prototype BÊTA MobilityLab</b> pour valider marché & impact.</div></details>
+  </div>
+</section>
+
+<footer>
+  © 2025 MobilityLab & CarPostal — <a href="#">Mentions légales</a> — <a href="#reservation">Réserver</a>
+</footer>
+
+<script>
+/* ================== CONFIG PRODUIT ================== */
+/* Objectifs 1/2/3 implantés via pricing, UX, impact. Objectif 4 via bannière. */
+const CONFIG = {
+  SEASON_START: new Date(new Date().getFullYear(), 11, 1), // 1 déc
+  SEASON_END:   new Date(new Date().getFullYear()+1, 3, 15), // 15 avr (année suivante)
+  WEEKEND_ONLY: true,
+  BUSES: 3,
+  SEATS_PER_BUS: 50,
+  PREMIUM_ROWS: 2,       // rangées 1-2
+  PREMIUM_FEE: 5,        // CHF
+  BASE_MIN: 25,          // CHF (A/R)
+  BASE_MAX: 45,          // CHF
+  MAX_LEAD_DAYS: 35,     // anticipation max prise en compte
+  AVG_ROUNDTRIP_KM: 180, // pour CO2 (personnalisable)
+  CO2_CAR_KG_PER_KM: 0.18,
+  CO2_BUS_KG_PER_KM_PER_PAX: 0.04
+};
+document.getElementById('premiumFeeLabel').textContent = CONFIG.PREMIUM_FEE.toFixed(0);
+
+/* ================== OUTILS ================== */
+function isWeekend(d){
+  const wd = d.getDay(); // 0 dim .. 6 sam
+  return wd===5 || wd===6 || wd===0;
+}
+function inSeason(d){
+  return d>=CONFIG.SEASON_START && d<=CONFIG.SEASON_END;
+}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+
+/* Pricing dynamique façon EasyJet : dépend remplissage attendu + anticipation */
+function dynamicPrice(leadDays, expectedLoad){
+  const leadFactor = 1 - clamp(leadDays / CONFIG.MAX_LEAD_DAYS, 0, 1); // + cher quand proche
+  const loadFactor = clamp(expectedLoad, 0, 1);                         // + cher quand plein
+  const mix = 0.45*leadFactor + 0.55*loadFactor;
+  return Math.round(CONFIG.BASE_MIN + (CONFIG.BASE_MAX - CONFIG.BASE_MIN) * mix);
+}
+
+/* Seat map (10 x 5) + premium premières rangées */
+function buildSeatmap(container){
+  container.innerHTML = "";
+  const rows = 10, cols = 5;
+  for(let r=1;r<=rows;r++){
+    for(let c=1;c<=cols;c++){
+      const id = `${r}${String.fromCharCode(64+c)}`; // ex: 1A
+      const el = document.createElement('button');
+      el.type="button";
+      el.className = 'seat' + (r<=CONFIG.PREMIUM_ROWS ? ' premium' : '');
+      el.textContent = id;
+      el.setAttribute('aria-label', 'Siège '+id + (r<=CONFIG.PREMIUM_ROWS?' (premium)':''));
+      // probabilité de siège occupé pour montrer l'effet
+      if(Math.random()<0.12){ el.classList.add('busy'); el.title="Occupé"; }
+      el.onclick = ()=>{
+        [...container.querySelectorAll('.seat.sel')].forEach(s=>s.classList.remove('sel'));
+        el.classList.add('sel');
+        document.getElementById('seatChosen').textContent = id + (el.classList.contains('premium')?' (premium)':'');
+        updatePricePreview();
+      };
+      container.appendChild(el);
+    }
+  }
+}
+function selectedSeatIsPremium(){
+  const s = document.querySelector('.seat.sel');
+  return s && s.classList.contains('premium');
+}
+
+/* ================== RÉSERVATION ================== */
+const tripsToday = {count:0}; // compteur simple pour KPIs
+
+function simulateSearch(){
+  const from = document.getElementById('from').value;
+  const toSel = document.getElementById('to');
+  const to = toSel.value;
+  const dateStr = document.getElementById('date').value;
+  const usePass = document.getElementById('usePass').checked;
+
+  if(!from || !to || !dateStr){alert('Remplis ville, station et date.');return}
+  const d = new Date(dateStr+"T12:00:00");
+
+  if(!inSeason(d)){
+    alert("Date hors saison (configurable).");
+    return;
+  }
+  if(CONFIG.WEEKEND_ONLY && !isWeekend(d)){
+    alert("Les navettes roulent ven/sam/dim uniquement.");
+    return;
+  }
+
+  // Heures type (ou récupérées d’un backend)
+  const dep = "07:00", ret = "16:45";
+  document.getElementById('r-route').textContent = `${from} ⇄ ${to}`;
+  document.getElementById('r-times').textContent = `Départ ${dep} — Retour ${ret}`;
+
+  // Charge attendue simple (exemple) : plus on se rapproche + plus c’est plein
+  const leadDays = Math.max(0, Math.round((d - new Date())/86400000));
+  const expectedLoad = clamp(0.25 + 0.6*(1 - Math.min(leadDays,30)/30) + (Math.random()*0.1-0.05), 0, 0.98);
+
+  // Prix
+  let price = dynamicPrice(leadDays, expectedLoad);
+  if(usePass) price = 0; // usage d'un crédit de forfait
+
+  // Mémoriser pour recalcul avec siège premium
+  window.__priceBase = price;
+  updatePricePreview();
+
+  // Construire plan de sièges
+  buildSeatmap(document.getElementById('seatmap'));
+
+  // Météo rapide pour la station choisie
+  const lat = toSel.selectedOptions[0].dataset.lat;
+  const lon = toSel.selectedOptions[0].dataset.lon;
+  loadOneWeatherCard(to, lat, lon);
+
+  document.getElementById('result').classList.add('show');
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+}
+
+function updatePricePreview(){
+  const base = window.__priceBase ?? 0;
+  const add = selectedSeatIsPremium() ? CONFIG.PREMIUM_FEE : 0;
+  document.getElementById('r-price').textContent = `CHF ${(base+add).toFixed(0)}.–`;
+}
+
+function checkout(){
+  const seat = document.querySelector('.seat.sel');
+  if(!seat){alert("Choisis un siège.");return}
+  tripsToday.count++;
+  updateKPIs();
+  alert("Flux de paiement (prototype). Sur prod : Stripe/PSP + récapitulatif.");
+}
+
+/* ================== KPI IMPACT (objectif 3) ================== */
+function updateKPIs(){
+  const trips = tripsToday.count;
+  document.getElementById('kpiTrips').textContent = trips;
+
+  // Conversion très simple : 1 trajet = 1 voiture évitée (ajuste si besoin)
+  const cars = trips;
+  document.getElementById('kpiCars').textContent = cars;
+
+  // CO₂ évité ≈ (voiture – bus/pax) × km
+  const co2car = CONFIG.AVG_ROUNDTRIP_KM * CONFIG.CO2_CAR_KG_PER_KM;
+  const co2bus = CONFIG.AVG_ROUNDTRIP_KM * CONFIG.CO2_BUS_KG_PER_KM_PER_PAX;
+  const saved = Math.max(0,(co2car - co2bus)) * trips;
+  document.getElementById('kpiCO2').textContent = Math.round(saved) + " kg";
+}
+
+/* ================== MÉTÉO (exemple Open-Meteo) ================== */
+const STATIONS = [
+  {name:"Verbier", lat:46.096, lon:7.228},
+  {name:"Crans-Montana", lat:46.311, lon:7.480},
+  {name:"Zermatt", lat:46.020, lon:7.749},
+];
+function renderWeatherCard(name, t, snow){ // très compact
+  return `<div class="step"><b>${name}</b><div style="font-size:28px">${t}°C</div><div>${snow} cm neige (24h)</div></div>`;
+}
+async function loadWeather(){
+  const wrap = document.getElementById('weatherRow');
+  wrap.innerHTML = "";
+  for(const s of STATIONS){ await loadOneWeatherCard(s.name, s.lat, s.lon, false); }
+}
+async function loadOneWeatherCard(name, lat, lon, replace=true){
+  try{
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,snowfall&daily=snowfall_sum&forecast_days=1&timezone=auto`;
+    const r = await fetch(url); const j = await r.json();
+    const t = Math.round((j.hourly?.temperature_2m?.[0] ?? 0));
+    const snow = Math.round((j.daily?.snowfall_sum?.[0] ?? 0));
+    const card = renderWeatherCard(name, t, snow);
+    const wrap = document.getElementById('weatherRow');
+    wrap.innerHTML = replace ? card : (wrap.innerHTML + card);
+  }catch(e){
+    // Fallback silencieux
+  }
+}
+
+/* Init */
+loadWeather();
+updateKPIs();
+
+// Pré-remplir date sur prochain week-end de saison
+(function setDefaultDate(){
+  const input = document.getElementById('date');
+  const today = new Date();
+  let d = new Date(today);
+  // avancer jusqu’à ven/sam/dim dans la saison
+  for(let i=0;i<14;i++){
+    d = new Date(d.getTime()+86400000);
+    if(inSeason(d) && isWeekend(d)) break;
+  }
+  input.value = d.toISOString().split('T')[0];
+})();
+</script>
 </body>
 </html>
