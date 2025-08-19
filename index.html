@@ -4,20 +4,27 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>PostBus Connect – Navettes ski (Prototype MobilityLab)</title>
-<meta name="description" content="Navettes directes CarPostal (bus midi Iveco 40 places). Offre complémentaire aux TP pour axes moins bien desservis. Réservation, sièges premium, météo, carte.">
+<meta name="description" content="Navettes directes CarPostal (bus midi Iveco 40 places, 2+2). Offre complémentaire aux TP sur les axes où la voiture est nettement moins contraignante. Réservation, sièges premium, météo, carte.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ====== Reset + tokens ====== */
+/* ===== Reset + tokens ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0e0e0e;background:#fff;line-height:1.6}
 :root{
-  --brand:#FFD300; --ink:#0e0e0e; --muted:#5a5a5a;
-  --bg:#fff; --alt:#f6f7f9; --blue:#1F7AE0;
-  --ok:#0a7b25; --warn:#C15A00; --danger:#C62828;
+  --brand:#FFD300; --ink:#0e0e0e; --muted:#565656;
+  --alt:#f6f7f9; --blue:#1F7AE0; --ok:#0a7b25; --danger:#C62828;
   --shadow:0 8px 24px rgba(0,0,0,.08); --radius:12px; --max:1180px;
 }
+@media (prefers-color-scheme:dark){
+  :root{ --ink:#f4f4f4; --muted:#bdbdbd; --alt:#17181b; }
+  body{ background:#121316; color:var(--ink) }
+  header{ background:rgba(20,21,24,.6); border-bottom:1px solid #2a2c31 }
+  .card,details{ background:#1b1d21; border-color:#2a2c31 }
+}
+
+/* Layout */
 .container{width:min(92vw,var(--max));margin:auto}
 h1{font-size:clamp(28px,3.2vw,44px);line-height:1.15}
 h2{font-size:clamp(22px,2.6vw,32px);margin-bottom:.5rem}
@@ -26,7 +33,7 @@ p{margin:.35rem 0}
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block;border-radius:10px}
 
-/* ====== Header/Nav ====== */
+/* Header/Nav */
 header{position:fixed;inset:0 0 auto 0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid #eee}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
 .logo{display:flex;align-items:center;gap:.6rem;font-weight:800}
@@ -36,7 +43,7 @@ header{position:fixed;inset:0 0 auto 0;z-index:50;background:rgba(255,255,255,.8
 .cta{background:var(--brand);color:#000;padding:10px 14px;border-radius:10px;font-weight:800}
 @media (max-width:860px){.navlinks{display:none}}
 
-/* ====== Hero ====== */
+/* Hero */
 #hero{position:relative;padding:120px 0 80px;background:
   linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.35)),
   url('images/crans_montana.jpg') center/cover no-repeat;color:#fff;text-align:center}
@@ -44,28 +51,28 @@ header{position:fixed;inset:0 0 auto 0;z-index:50;background:rgba(255,255,255,.8
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:10px;border:0;cursor:pointer;font-weight:800}
 .btn.primary{background:var(--brand);color:#000}
 .btn.ghost{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.45)}
+.btn:focus{outline:3px solid #84b6ff; outline-offset:2px}
 .hero-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
 .kpi{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:10px}
 .kpi strong{font-size:18px}
 @media (max-width:780px){.hero-kpis{grid-template-columns:repeat(2,1fr)}}
 
-/* ====== Sections ====== */
+/* Sections */
 section{padding:64px 0}
 .muted{color:var(--muted)}
 .card{background:#fff;border:1px solid #eee;border-radius:var(--radius);box-shadow:var(--shadow)}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 @media (max-width:980px){.grid-3,.grid-2{grid-template-columns:1fr}}
-
-/* ====== Avantages / Steps ====== */
 .adv{padding:14px}
 
-/* ====== Reservation ====== */
+/* Reservation */
 #reservation .card{padding:18px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-grid .full{grid-column:1/-1}
 label{font-weight:700;font-size:.92rem}
 select,input[type="date"]{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:1rem}
+select:focus,input:focus{outline:3px solid #84b6ff; outline-offset:2px}
 .inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;border:1px dashed #bbb;padding:6px 10px;border-radius:999px;font-size:.9rem}
 
@@ -75,17 +82,31 @@ select,input[type="date"]{width:100%;padding:12px;border:1px solid #ddd;border-r
 .price{font-weight:900}
 .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800}
 .badge.tp{background:#e8f5ff;border:1px solid #bcdcff;color:#0d47a1}
-.badge.warn{background:#fff3e0;border:1px solid #ffd7a2;color:#7a4b00}
 .badge.block{background:#ffe3e3;border:1px solid #f2bcbc;color:#8a0000}
 
-/* seat map: 8 x 5 (40 places) */
-.seat-map{margin-top:12px;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;max-width:420px}
-.seat{padding:10px 0;border:1px solid #ddd;border-radius:8px;text-align:center;cursor:pointer;background:#fafafa}
-.seat.premium{border-color:#bfa300;background:#fff8cc}
-.seat.selected{outline:3px solid var(--blue)}
-.legend{display:flex;gap:10px;margin-top:8px;align-items:center}
-.legend .box{width:14px;height:14px;border-radius:3px;border:1px solid #ccc;background:#fafafa}
-.legend .box.prem{background:#fff8cc;border-color:#e6c200}
+/* ===== Seat map Iveco 40p — 2+2 (10 rangées, couloir central) ===== */
+.seat-area h3{margin-top:12px}
+.seat-wrap{display:flex;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.seat-legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seat-legend .box{width:14px;height:14px;border-radius:3px;border:1px solid #ccc;background:#fafafa}
+.seat-legend .box.prem{background:#fff8cc;border-color:#e6c200}
+.seat-legend .pill{margin-left:6px}
+.bus{
+  --seat:48px; --aisle:26px;
+  display:grid;
+  grid-template-columns: repeat(2,var(--seat)) var(--aisle) repeat(2,var(--seat));
+  gap:8px;
+  padding:10px; border:1px dashed #cfcfcf; border-radius:12px; background:#fafafa;
+}
+.seat{
+  width:var(--seat); height:var(--seat);
+  border:1px solid #d7d7d7; border-radius:8px; background:#fff;
+  display:grid; place-items:center; font-weight:700; cursor:pointer;
+}
+.seat.premium{background:#fff8cc;border-color:#e6c200}
+.seat.selected{outline:3px solid var(--blue); border-color:var(--blue)}
+/* dossier conducteur simple */
+.bus-head{grid-column:1 / -1; text-align:center; font-size:.85rem; color:#666; margin-bottom:2px}
 
 /* tarifs */
 #tarifs .card{padding:18px;text-align:center}
@@ -99,11 +120,19 @@ select,input[type="date"]{width:100%;padding:12px;border:1px solid #ddd;border-r
 /* carte */
 #map{width:100%;height:420px;border-radius:12px;border:1px solid #e5e5e5;background:url('images/nax.jpg') center/cover no-repeat}
 
-/* footer */
+/* Footer */
 footer{background:#111;color:#ddd;padding:30px 0;margin-top:40px}
 footer a{color:#eee}
 .footgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px}
 @media (max-width:980px){.footgrid{grid-template-columns:1fr}}
+
+/* Mobile sticky CTA */
+.sticky-cta{
+  position:fixed; inset:auto 0 0 0; z-index:60; background:#111; color:#fff;
+  display:flex; gap:10px; padding:10px; justify-content:center; align-items:center;
+}
+.sticky-cta a{background:var(--brand); color:#000; padding:10px 14px; border-radius:10px; font-weight:800}
+@media (min-width:861px){.sticky-cta{display:none}}
 </style>
 </head>
 <body>
@@ -128,23 +157,22 @@ footer a{color:#eee}
 </header>
 
 <!-- HERO -->
-<section id="hero">
+<section id="hero" aria-label="Haut de page">
   <div class="container">
     <h1>Navettes directes vers les pistes — Offre <u>complémentaire aux TP</u></h1>
     <p class="muted" style="max-width:780px;margin:8px auto 0">
-      Bus CarPostal <b>midi Iveco, 40 places</b>. Nous opérons uniquement là où la
-      <b>voiture est nettement moins contraignante</b> que les TP (durée, correspondances, marche) —
-      pour <b>compléter</b> l’offre publique, pas la concurrencer.
+      Flotte pilote : <b>3 bus CarPostal “midi” Iveco — 40 places (2+2)</b>.  
+      Nous opérons uniquement là où la <b>voiture est nettement moins contraignante</b> que les TP (durée, correspondances, marche).
     </p>
     <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
       <a class="btn primary" href="#reservation">Planifier un trajet</a>
       <a class="btn ghost" href="#avantages">Pourquoi c’est mieux ?</a>
     </div>
     <div class="hero-kpis">
-      <div class="kpi"><strong>Vendredi–Dimanche</strong><br><span class="muted">saison de ski</span></div>
-      <div class="kpi"><strong>3 bus</strong><br><span class="muted">Iveco midi • 40 places</span></div>
+      <div class="kpi"><strong>Vendredi–Dimanche</strong><br><span class="muted">Saison de ski</span></div>
+      <div class="kpi"><strong>2+2 sièges</strong><br><span class="muted">10 rangées – 40 places</span></div>
       <div class="kpi"><strong>Départs matin</strong><br><span class="muted">retours fin de journée</span></div>
-      <div class="kpi"><strong>Sièges premium</strong><br><span class="muted">+ tarification dynamique</span></div>
+      <div class="kpi"><strong>Sièges premium</strong><br><span class="muted">+ tarif dynamique</span></div>
     </div>
     <div class="badge">Prototype MobilityLab 2025 🚀</div>
   </div>
@@ -153,10 +181,10 @@ footer a{color:#eee}
 <!-- OBJECTIFS -->
 <section id="objectifs">
   <div class="container grid-2">
-    <div class="card" style="padding:16px"><h3>💡 Innovation & revenus</h3><p class="muted">Tarifs dynamiques + upsell sièges premium + pack 5 A/R.</p></div>
-    <div class="card" style="padding:16px"><h3>🙌 Répond au marché</h3><p class="muted">UX simple, infos utiles (météo, carte), réservations en 3 étapes.</p></div>
-    <div class="card" style="padding:16px"><h3>🌍 Réduction TIM</h3><p class="muted">Moins de voitures individuelles → moins de CO₂ et de congestion.</p></div>
-    <div class="card" style="padding:16px"><h3>🧪 Prototype bêta</h3><p class="muted">Transparence & itérations rapides avec les retours.</p></div>
+    <div class="card" style="padding:16px"><h3>💡 Innovation & revenus</h3><p class="muted">Tarifs dynamiques + upsell siège premium + pack 5 A/R.</p></div>
+    <div class="card" style="padding:16px"><h3>🙌 Répond au marché</h3><p class="muted">UX simple, infos utiles (météo, carte), réservation en 3 étapes.</p></div>
+    <div class="card" style="padding:16px"><h3>🌍 Réduction TIM</h3><p class="muted">Moins de voitures vers les stations → moins de CO₂ & congestion.</p></div>
+    <div class="card" style="padding:16px"><h3>🧪 Prototype bêta</h3><p class="muted">Transparence & itérations rapides avec vos retours.</p></div>
   </div>
 </section>
 
@@ -166,19 +194,19 @@ footer a{color:#eee}
     <h2>Comment ça marche</h2>
     <div class="grid-3">
       <div class="card adv">
-        <img src="images/anzere.jpg" alt="Choisir votre trajet (ex. Anzère)">
+        <img src="images/anzere.jpg" alt="Choix d'un axe éligible">
         <h3>1) Choisir un axe éligible</h3>
-        <p class="muted">Nous desservons uniquement les axes où la voiture est <b>nettement plus simple</b> que les TP.</p>
+        <p class="muted">Uniquement là où la voiture est <b>nettement plus simple</b> que les TP.</p>
       </div>
       <div class="card adv">
-        <img src="images/ovronnaz.jpg" alt="Navette directe (ex. Ovronnaz)">
+        <img src="images/ovronnaz.jpg" alt="Navette directe">
         <h3>2) Navette directe</h3>
-        <p class="muted">Alignée sur l’ouverture des pistes, retour en fin de journée.</p>
+        <p class="muted">Alignée sur l’ouverture des pistes, retour fin de journée.</p>
       </div>
       <div class="card adv">
-        <img src="images/leukerbad.jpg" alt="Réserver (ex. Leukerbad)">
+        <img src="images/leukerbad.jpg" alt="Réservation & siège">
         <h3>3) Réserver & choisir un siège</h3>
-        <p class="muted">Paiement en ligne, <b>siège premium</b> en option.</p>
+        <p class="muted">Paiement en ligne, rangs <b>1–2 premium</b> en option.</p>
       </div>
     </div>
   </div>
@@ -190,25 +218,25 @@ footer a{color:#eee}
     <h2>Pourquoi c’est mieux&nbsp;?</h2>
     <div class="grid-3">
       <div class="card adv">
-        <img src="images/crans_montana.jpg" alt="Crans-Montana">
-        <h3>⏱ +40–80 min gagnées</h3>
-        <p class="muted">vs trajets TP à multiples correspondances.</p>
+        <img src="images/crans_montana.jpg" alt="Temps gagné">
+        <h3>⏱ +45 à +120 min</h3>
+        <p class="muted">selon l’axe, vs TP multi-correspondances.</p>
       </div>
       <div class="card adv">
-        <img src="images/zinal.jpg" alt="Zinal">
+        <img src="images/zinal.jpg" alt="Zéro correspondance">
         <h3>🧳 Zéro correspondance</h3>
         <p class="muted">Centre-ville → station, porte-skis à bord.</p>
       </div>
       <div class="card adv">
-        <img src="images/nax.jpg" alt="Nax">
+        <img src="images/nax.jpg" alt="Impact">
         <h3>🌱 Impact positif</h3>
-        <p class="muted">Moins de voitures vers les vallées alpines.</p>
+        <p class="muted">Moins de voitures en vallée alpine.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- RESERVATION (avec filtre éligibilité) -->
+<!-- RESERVATION (éligibilité réelle + bus 2+2) -->
 <section id="reservation" aria-label="Réservation">
   <div class="container">
     <h2>Planifier & réserver</h2>
@@ -218,21 +246,18 @@ footer a{color:#eee}
           <label for="from">Ville de départ</label>
           <select id="from">
             <option value="">Sélectionnez…</option>
-            <option>Genève</option><option>Lausanne</option><option>Fribourg</option>
-            <option>Berne</option><option>Sion</option>
+            <option>Genève</option>
+            <option>Lausanne</option>
           </select>
         </div>
         <div>
-          <label for="to">Station (éligible uniquement)</label>
+          <label for="to">Station (éligible)</label>
           <select id="to">
             <option value="">Sélectionnez…</option>
-            <!-- liste restreinte aux destinations où la voiture est nettement moins contraignante -->
-            <option value="Anzère">Anzère</option>
-            <option value="Crans-Montana">Crans-Montana</option>
-            <option value="Leukerbad">Leukerbad</option>
-            <option value="Nax/Mont-Noble">Nax / Mont-Noble</option>
-            <option value="Ovronnaz">Ovronnaz</option>
-            <option value="Zinal">Zinal</option>
+            <option data-city="Genève">Zinal</option>
+            <option data-city="Genève">Ovronnaz</option>
+            <option data-city="Lausanne">Ovronnaz</option>
+            <option data-city="Lausanne">Leukerbad</option>
           </select>
         </div>
         <div>
@@ -248,7 +273,7 @@ footer a{color:#eee}
         </div>
         <div class="full inline">
           <button class="btn primary" id="searchBtn">Voir les navettes</button>
-          <span class="pill">Flotte pilote : 3 bus — Iveco midi 40 places</span>
+          <span class="pill">Flotte : 3 bus Iveco “midi” · 40 places (2+2)</span>
           <span class="pill">Offre <b>complémentaire aux TP</b></span>
         </div>
       </div>
@@ -258,7 +283,7 @@ footer a{color:#eee}
           <div>
             <strong id="summaryRoute">—</strong><br>
             <span class="muted" id="summaryTime">—</span><br>
-            <span id="eligBadge" class="badge tp" title="Complément aux transports publics">Complément aux TP</span>
+            <span id="eligBadge" class="badge tp">Complément aux TP</span>
             <span id="eligWhy" class="muted" style="display:block;margin-top:4px">—</span>
           </div>
           <div>
@@ -271,14 +296,19 @@ footer a{color:#eee}
           </div>
         </div>
 
-        <div id="seatArea" style="display:none">
-          <h3 style="margin-top:12px">Plan du bus (Iveco midi 40 places)</h3>
-          <p class="muted">Rangées 1–2 = <b>premium</b> (+CHF <span id="premiumFee">5</span>).</p>
-          <div class="seat-map" id="seatMap"></div>
-          <div class="legend">
-            <div class="box"></div> <span class="muted">Standard</span>
-            <div class="box prem"></div> <span class="muted">Premium</span>
-            <span class="pill" id="seatChoice">Aucun siège sélectionné</span>
+        <!-- Seat map 2+2 -->
+        <div id="seatArea" class="seat-area" style="display:none">
+          <h3>Plan du bus (Iveco “midi” – 40 places, 2+2)</h3>
+          <div class="seat-wrap">
+            <div>
+              <div class="bus-head">Avant</div>
+              <div id="bus" class="bus" role="grid" aria-label="Plan de sièges 2+2, 10 rangées"></div>
+            </div>
+            <div class="seat-legend">
+              <div class="box"></div> <span class="muted">Standard</span>
+              <div class="box prem"></div> <span class="muted">Premium (rangs 1–2)</span>
+              <span class="pill" id="seatChoice">Aucun siège sélectionné</span>
+            </div>
           </div>
         </div>
       </div>
@@ -305,7 +335,7 @@ footer a{color:#eee}
         <h3>💺 Trajet à l’unité</h3>
         <div class="price-big">dès CHF 25.–</div>
         <p class="muted">Tarification dynamique (type EasyJet) selon demande/date</p>
-        <p class="muted">Option <b>siège premium</b> au choix</p>
+        <p class="muted">Option <b>siège premium</b> (rangs 1–2)</p>
       </div>
     </div>
   </div>
@@ -315,7 +345,7 @@ footer a{color:#eee}
 <section id="carte">
   <div class="container">
     <h2>Carte des itinéraires (axes éligibles)</h2>
-    <p class="muted">Nous opérons uniquement sur les axes où les TP sont moins performants (durée, changements, marche). La carte se limite à ces destinations.</p>
+    <p class="muted">Nous opérons uniquement là où les TP sont moins performants (temps, changements, marche).</p>
     <div id="map" role="img" aria-label="Carte des trajets (placeholder avec Nax)"></div>
   </div>
 </section>
@@ -350,10 +380,10 @@ footer a{color:#eee}
   <div class="container">
     <h2>FAQ</h2>
     <details><summary>Pourquoi certaines stations ne sont pas proposées&nbsp;?</summary>
-      <p>Parce que nous ne voulons pas concurrencer les TP. Nous opérons <b>uniquement</b> là où la voiture est beaucoup moins contraignante que les TP (trajets plus courts, moins de changements, marche réduite).</p>
+      <p>Parce que nous ne voulons pas concurrencer les TP. Nous opérons <b>uniquement</b> là où la voiture est beaucoup moins contraignante que les TP (durée, correspondances, marche).</p>
     </details>
     <details><summary>Quel bus utilisez-vous&nbsp;?</summary>
-      <p>Un <b>CarPostal midi Iveco – 40 places</b>. 3 bus pendant la phase pilote.</p>
+      <p>Un <b>CarPostal “midi” Iveco – 40 places</b>, configuration <b>2+2</b>. 3 bus pendant la phase pilote.</p>
     </details>
     <details><summary>Le demi-tarif est-il valable&nbsp;?</summary>
       <p>Non, il s’agit d’un produit spécifique CarPostal, distinct de l’offre TP.</p>
@@ -383,122 +413,145 @@ footer a{color:#eee}
   </div>
 </footer>
 
+<!-- Mobile sticky CTA -->
+<div class="sticky-cta" aria-hidden="false">
+  <a href="#reservation">Planifier</a>
+  <a href="#payBtn">Payer</a>
+</div>
+
 <script>
-/* ====== Data éligibilité : on ne propose que les axes “complément aux TP” ======
-   Pour chaque station, on indique la raison (TP vs voiture). Ces raisons s’affichent dans l’UI. */
+/* ===== ÉLIGIBILITÉ réelle (axes complémentaires aux TP) ===== */
 const ELIGIBILITY = {
-  "Anzère": {eligible:true, reason:"TP : 2–3 changements • +45–60 min vs voiture"},
-  "Crans-Montana": {eligible:true, reason:"TP : 2–3 changements • +40–55 min vs voiture"},
-  "Leukerbad": {eligible:true, reason:"TP : 3 changements • +60 min vs voiture"},
-  "Nax/Mont-Noble": {eligible:true, reason:"TP : 2–3 changements • +50 min vs voiture"},
-  "Ovronnaz": {eligible:true, reason:"TP : 2–3 changements • +45 min vs voiture"},
-  "Zinal": {eligible:true, reason:"TP : 3 changements • +70 min vs voiture"}
-  // Toute station absente est considérée non éligible → on recommande les TP
+  "Genève ⇄ Zinal": {
+    eligible: true,
+    reason: "TP ~4h24 avec plusieurs changements ; voiture ~2h27 (gain ~2h)."
+  },
+  "Lausanne ⇄ Ovronnaz": {
+    eligible: true,
+    reason: "TP ~2h42 via Riddes/Leytron ; voiture 1h06–1h12 (gain ~1h30)."
+  },
+  "Genève ⇄ Ovronnaz": {
+    eligible: true,
+    reason: "TP ~3h35 ; voiture ~1h59 (gain ~1h35)."
+  },
+  "Lausanne ⇄ Leukerbad": {
+    eligible: true,
+    reason: "TP ~2h17 (train + bus) ; voiture ~1h32 (gain ~45 min)."
+  },
+  // exemples non éligibles (si un jour on les remet dans le sélecteur)
+  "Lausanne ⇄ Crans-Montana": { eligible:false, reason:"Écart faible : TP ~1h40–1h45 vs voiture ~1h27–1h30." },
+  "Sion ⇄ Anzère": { eligible:false, reason:"Bus PostAuto direct ~30–40 min, comparable à la voiture." },
+  "Sion ⇄ Nax": { eligible:false, reason:"Bus fréquent 12–39 min, avantage voiture minime." }
 };
 
-/* ====== Réservation & logique “complément aux TP” ====== */
-const premiumFeeBase = 5;               // CHF
-const seatRows = 8, seatCols = 5;       // 40 places (Iveco midi)
-const premiumRows = 2;                  // rang 1-2 = premium
-let selectedSeat = null;
-let currentPrice = 0;
-
-const $ = s=>document.querySelector(s);
-const $$ = s=>document.querySelectorAll(s);
-
-function isWeekend(dateStr){
-  const d = new Date(dateStr+"T12:00:00"); if(isNaN(d)) return false;
-  const wd = d.getDay(); return wd===5 || wd===6 || wd===0; // ven/sam/dim
-}
+/* Helpers */
+const $ = s=>document.querySelector(s); const $$ = s=>document.querySelectorAll(s);
+function isWeekend(dateStr){ const d=new Date(dateStr+"T12:00:00"); if(isNaN(d))return false; const g=d.getDay(); return [5,6,0].includes(g) }
 function dynamicBasePrice(dateStr){
-  const d = new Date(dateStr+"T12:00:00"); const now = new Date();
-  const dd = Math.ceil((d-now)/86400000);
-  let base = 25; if(dd<=3) base=38; else if(dd<=10) base=32; else base=27;
-  const demand = 0.85 + Math.random()*0.6; // 0.85..1.45
-  return Math.round(base*demand);
+  const d=new Date(dateStr+"T12:00:00"), now=new Date(); const dd=Math.ceil((d-now)/86400000);
+  let base=25; if(dd<=3) base=38; else if(dd<=10) base=32; else base=27;
+  const demand=0.85+Math.random()*0.6; return Math.round(base*demand);
 }
-function randomSchedule(){
-  const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
-  const dep=`${String(r(6,7)).padStart(2,'0')}:${r(0,1)?'30':'00'}`;
-  const ret=`${String(r(16,17)).padStart(2,'0')}:${r(0,1)?'15':'45'}`;
-  return {dep,ret};
-}
+function randomSchedule(){ const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+  const dep=`${String(r(6,7)).padStart(2,'0')}:${r(0,1)?'30':'00'}`, ret=`${String(r(16,17)).padStart(2,'0')}:${r(0,1)?'15':'45'}`; return {dep,ret}; }
 function CHF(n){ return "CHF "+n.toFixed(0)+".-"; }
 
-function buildSeatMap(){
-  const map = $("#seatMap"); map.innerHTML="";
-  for(let r=1;r<=seatRows;r++){
-    for(let c=1;c<=seatCols;c++){
-      const idx=(r-1)*seatCols+c;
-      const b=document.createElement("button");
-      b.type="button"; b.className="seat"+(r<=premiumRows?" premium":"");
-      b.textContent=idx; b.setAttribute("aria-label","Siège "+idx+(r<=premiumRows?" premium":""));
-      b.onclick=()=>{ $$(".seat").forEach(s=>s.classList.remove("selected")); b.classList.add("selected");
-        selectedSeat={index:idx,premium:r<=premiumRows}; $("#seatChoice").textContent=`Siège ${idx}`+(selectedSeat.premium?" (premium)":""); updatePrice(); };
-      map.appendChild(b);
+/* Filtre la station selon la ville */
+const toSel = $("#to");
+$("#from").addEventListener("change", e=>{
+  const city=e.target.value;
+  [...toSel.options].forEach(o=>{ if(!o.value) return; o.hidden = (o.dataset.city !== city); });
+  toSel.value="";
+});
+function getKey(from,to){ return `${from} ⇄ ${to}`; }
+
+/* === Seat map 2+2 : 10 rangées, premium rangs 1–2 === */
+const ROWS=10, PREMIUM_ROWS=2; let selectedSeat=null, currentPrice=0;
+function buildBus(){
+  const bus=$("#bus"); bus.innerHTML="";
+  // ligne de tête
+  const head=document.createElement('div'); head.textContent="Conducteur"; head.className="bus-head"; bus.parentElement.prepend(head);
+  for(let r=1;r<=ROWS;r++){
+    // 2 sièges gauche
+    for(let c=1;c<=2;c++){
+      const idx=`${r}${String.fromCharCode(64+c)}`; // 1A,1B
+      const b=document.createElement('button'); b.type="button"; b.className="seat"+(r<=PREMIUM_ROWS?" premium":""); b.textContent=idx;
+      b.setAttribute("aria-label","Siège "+idx+(r<=PREMIUM_ROWS?" premium":""));
+      b.onclick=()=>selectSeat(b,idx,(r<=PREMIUM_ROWS));
+      bus.appendChild(b);
+    }
+    // couloir (case vide dans la grille)
+    const spacer=document.createElement('div'); spacer.style.width="26px"; spacer.style.height="1px"; bus.appendChild(spacer);
+    // 2 sièges droite
+    for(let c=3;c<=4;c++){
+      const idx=`${r}${String.fromCharCode(64+c)}`; // 1C,1D
+      const b=document.createElement('button'); b.type="button"; b.className="seat"+(r<=PREMIUM_ROWS?" premium":""); b.textContent=idx;
+      b.setAttribute("aria-label","Siège "+idx+(r<=PREMIUM_ROWS?" premium":""));
+      b.onclick=()=>selectSeat(b,idx,(r<=PREMIUM_ROWS));
+      bus.appendChild(b);
     }
   }
 }
+function selectSeat(btn, id, isPrem){
+  $$(".seat").forEach(s=>s.classList.remove("selected"));
+  btn.classList.add("selected"); selectedSeat={id,premium:isPrem};
+  $("#seatChoice").textContent=`Siège ${id}`+(isPrem?" (premium)":"");
+  updatePrice();
+}
 function updatePrice(){
-  let p=currentPrice; if(selectedSeat?.premium) p+=premiumFeeBase; $("#price").textContent = CHF(p);
+  let p=currentPrice;
+  if(selectedSeat?.premium) p += 5; // surcharge premium
+  $("#price").textContent = CHF(p);
 }
 
+/* Recherche */
 $("#searchBtn").addEventListener("click", ()=>{
   const from=$("#from").value.trim(), to=$("#to").value.trim(), date=$("#date").value, pack=$("#pack").value;
   if(!from||!to||!date){ alert("Merci de compléter ville, station et date."); return; }
   if(!isWeekend(date)){ alert("Les navettes roulent ven/sam/dim pendant la saison de ski."); return; }
 
-  // Vérification d'éligibilité (complément aux TP)
-  const meta = ELIGIBILITY[to] || {eligible:false, reason:"Axe bien desservi par les TP — privilégiez les transports publics."};
+  const key=getKey(from,to);
+  const meta=ELIGIBILITY[key] || {eligible:false,reason:"Axe bien desservi par les TP — privilégiez les transports publics."};
   $("#summaryRoute").textContent=`${from} → ${to}`;
   const sc=randomSchedule(); $("#summaryTime").textContent=`Départ ${sc.dep} — Retour ${sc.ret}`;
   $("#eligWhy").textContent = meta.reason;
 
   if(!meta.eligible){
-    $("#eligBadge").className="badge block";
-    $("#eligBadge").textContent="Non éligible (privilégier les TP)";
-    $("#price").textContent="—";
-    $("#seatArea").style.display="none";
-    $("#results").style.display="block";
-    return; // on n'ouvre pas la vente
+    $("#eligBadge").className="badge block"; $("#eligBadge").textContent="Non éligible (privilégier les TP)";
+    $("#price").textContent="—"; $("#seatArea").style.display="none"; $("#results").style.display="block"; return;
   } else {
-    $("#eligBadge").className="badge tp";
-    $("#eligBadge").textContent="Complément aux TP";
+    $("#eligBadge").className="badge tp"; $("#eligBadge").textContent="Complément aux TP";
   }
 
-  // Prix
+  // prix
   if(pack==="yes"){ currentPrice=20; $("#price").textContent="Inclus pack (CHF 20.- / A-R)"; }
   else { currentPrice=dynamicBasePrice(date); updatePrice(); }
 
-  // Sièges
+  // sièges
   selectedSeat=null; $("#seatChoice").textContent="Aucun siège sélectionné";
-  $("#seatArea").style.display="none";
-  if($("#seatMap").children.length===0) buildSeatMap();
-
+  if(!$("#bus").children.length) buildBus();
+  $("#seatArea").style.display="block";
   $("#results").style.display="block";
 });
 
-$("#seatBtn").addEventListener("click", ()=>{
-  if($("#eligBadge").classList.contains("block")){ alert("Cet axe n'est pas éligible : privilégiez les TP."); return; }
-  $("#seatArea").style.display = $("#seatArea").style.display==="none" ? "block" : "none";
-});
-
+/* Paiement (mock) */
 $("#payBtn").addEventListener("click", ()=>{
   if($("#eligBadge").classList.contains("block")){ alert("Nous ne vendons pas cet axe (bien desservi par les TP)."); return; }
-  const msg = selectedSeat ?
-    `Réservation : ${$("#summaryRoute").textContent}\n${$("#summaryTime").textContent}\n`+
-    `Tarif : ${$("#price").textContent}\nSiège : ${selectedSeat.index}${selectedSeat.premium?" (premium)":""}\n\n`+
-    `Étape paiement (prototype).` :
-    `Astuce : choisissez un siège (optionnel) puis payez.`;
-  alert(msg);
+  const seatTxt = selectedSeat ? `Siège ${selectedSeat.id}${selectedSeat.premium?" (premium)":""}` : "Siège non sélectionné";
+  alert(`Étape paiement (prototype)\n${$("#summaryRoute").textContent}\n${$("#summaryTime").textContent}\n${$("#price").textContent}\n${seatTxt}`);
 });
 
-/* Préremplir une date de week-end proche */
+/* Préremplir un week-end proche */
 (function(){
   const input=$("#date"); const t=new Date(); let d=new Date(t);
   for(let i=0;i<14;i++){ d=new Date(d.getTime()+86400000); if([5,6,0].includes(d.getDay())) break; }
   input.value=d.toISOString().split('T')[0];
 })();
+
+/* Accessibilité : activer focus visible au clavier sur sièges */
+document.addEventListener('keydown', e=>{
+  if(e.key==="Tab"){ document.body.classList.add('kbd'); }
+});
 </script>
 </body>
 </html>
