@@ -1,0 +1,19 @@
+{
+  "name": "postbusmagic",
+  "version": "1.0.0",
+  "description": "Bundle statique **prêt à déployer** (GitHub Pages / Netlify / Vercel static).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "esbuild assets/plan.js --bundle --minify --outfile=assets/plan.min.js",
+    "test": "node scripts/check-anchors.js",
+    "audit": "lighthouse http://localhost:4173 --output=json --output-path=lighthouse.json || true",
+    "check:accessibility": "axe http://localhost:4173 || true"
+  },
+  "devDependencies": {
+    "@axe-core/cli": "^4.6.2",
+    "esbuild": "^0.20.1",
+    "lighthouse": "^11.7.2",
+    "vite": "^5.0.0"
+  }
+}

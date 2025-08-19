@@ -9,15 +9,19 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <link rel="stylesheet" href="assets/brand.css">
+<link rel="stylesheet" href="assets/plan.css">
 </head>
 <body>
+<a class="skip-link" href="#plan">Passer au contenu</a>
 <header>
   <div class="head">
     <div class="logo">P</div>
     <div class="brand">PostBus Connect</div>
     <div style="margin-left:auto">Powered by <b>MobilityLab</b> — Opéré par <b>CarPostal</b></div>
   </div>
-</header>
+ </header>
+
+<main id="main-content">
 
 <section class="hero">
   <div class="hero-in">
@@ -33,7 +37,7 @@
 <div class="wrap" id="why">
   <div class="grid-3">
     <div class="panel">
-      <h3>✨ Avantages clés</h3>
+      <h2>✨ Avantages clés</h2>
       <ul>
         <li>⏱ <b>+40–80 min</b> gagnées vs. TP</li>
         <li>🧩 <b>0 correspondance</b> — monte & détends‑toi</li>
@@ -42,7 +46,7 @@
       </ul>
     </div>
     <div class="panel">
-      <h3>⚙️ Comment ça marche</h3>
+      <h2>⚙️ Comment ça marche</h2>
       <ul>
         <li>1. Choisis <b>départ</b> & <b>destination</b></li>
         <li>2. Si TP trop lents ➜ <b>navette directe</b></li>
@@ -50,7 +54,7 @@
       </ul>
     </div>
     <div class="panel">
-      <h3>🚗 Pourquoi pas la voiture / TP ?</h3>
+      <h2>🚗 Pourquoi pas la voiture / TP ?</h2>
       <ul>
         <li>Voiture : bouchons, parkings chers, stress</li>
         <li>TP : 2–3 correspondances, marche, lenteur</li>
@@ -60,57 +64,24 @@
   </div>
 </div>
 
-<div class="wrap" id="plan">
-  <div class="panel">
-    <h3>🧭 Itinéraires disponibles (simulation)</h3>
+<section class="wrap" id="plan">
+  <nav class="plan-toc" aria-label="Plan du projet">
+    <ul>
+      <li><a href="#routes"><span class="step">1</span> Itinéraires</a></li>
+      <li><a href="#map"><span class="step">2</span> Carte</a></li>
+    </ul>
+  </nav>
+  <div class="panel" id="routes">
+    <h2>🧭 Itinéraires disponibles (simulation)</h2>
     <p class="subtitle">Clique sur « Voir sur la carte » pour afficher le tracé.</p>
   </div>
-  <main id="cards"></main>
+  <div id="cards" class="routes"></div>
   <div id="map" role="img" aria-label="Carte des itinéraires"></div>
   <footer>© 2025 PostBus Connect — <b>Powered by MobilityLab</b> — Données & exploitation : CarPostal — Démo.</footer>
-</div>
+</section>
 
-<script>
-const grid = document.getElementById('cards');
-const map = L.map('map').setView([46.8182, 8.2275], 8);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
-let layers=[]; function clearMap(){ layers.forEach(l=>map.removeLayer(l)); layers=[]; }
+</main>
 
-function bars(times){ const max=Math.max(times.car,times.pt,times.shuttle)||1,H=64,s=v=>Math.max(8,Math.round(v/max*H)); return {car:s(times.car),tp:s(times.pt),sh:s(times.shuttle)}; }
-
-function card(r){
-  const h=bars(r.times), gain=r.times.pt-r.times.shuttle, rec=gain>=30;
-  const el=document.createElement('article'); el.className='card';
-  el.innerHTML=`
-    <div class="image"><img src="${r.image}" alt="${r.to}"></div>
-    <div class="badge ${rec?'':'warn'}">${rec?('+'+gain+' min gagnées'):'Gain limité'}</div>
-    <div class="content">
-      <h3 class="route">${r.from} → ${r.to}</h3>
-      <div class="details">🚗 ${r.times.car} min · 🚌 TP ${r.times.pt} min · 🟢 Navette ${r.times.shuttle} min</div>
-      <div class="mini">
-        <div class="bar car" style="height:${h.car}px">V</div>
-        <div class="bar tp"  style="height:${h.tp}px">TP</div>
-        <div class="bar sh"  style="height:${h.sh}px">Nav</div>
-      </div>
-      <div class="cta">
-        <a class="btn primary" href="#map" data-map>Voir sur la carte</a>
-      </div>
-    </div>`;
-  el.querySelector('[data-map]').addEventListener('click',()=>{
-    clearMap();
-    const a=[r.from_coords.lat,r.from_coords.lon], b=[r.to_coords.lat,r.to_coords.lon];
-    const m1=L.marker(a).addTo(map).bindPopup(r.from);
-    const m2=L.marker(b).addTo(map).bindPopup(r.to);
-    const line=L.polyline([a,b],{color:'#1DB954'}).addTo(map);
-    layers.push(m1,m2,line);
-    map.fitBounds(L.latLngBounds([a,b]).pad(0.2));
-  });
-  return el;
-}
-
-fetch('data/routes.json').then(r=>r.json()).then(list=>{
-  list.forEach(r=> grid.appendChild(card(r)));
-}).catch(e=>{ grid.innerHTML='<div class="panel">Erreur de chargement des données : '+e+'</div>'; });
-</script>
+<script src="assets/plan.js" defer></script>
 </body>
 </html>

@@ -4,7 +4,9 @@ Bundle statique **prêt à déployer** (GitHub Pages / Netlify / Vercel static).
 
 ## Contenu
 - `index.html` — page unique (Leaflet + cartes d’itinéraires + mini-graphiques + CTA)
-- `assets/brand.css` — styles (branding CarPostal moderne)
+- `assets/brand.css` — styles globaux
+- `assets/plan.css` — styles spécifiques à la section plan
+- `assets/plan.js` — script de la section plan (chargé en différé)
 - `data/routes.json` — données simulées (6 liaisons, temps voiture/TP/navette, coordonnées)
 - `images/` — photos locales optimisées
 - `icons/` — favicon (PNG + ICO)
@@ -20,6 +22,17 @@ Bundle statique **prêt à déployer** (GitHub Pages / Netlify / Vercel static).
 ```bash
 python3 -m http.server 4000
 # http://localhost:4000
+```
+
+## Développement
+
+```bash
+npm install
+npm run dev    # lance Vite
+npm test       # vérifie les ancres internes
+npm run build  # minifie le script plan
+npm run audit  # audit Lighthouse (nécessite Chrome)
+npm run check:accessibility # audit axe-core
 ```
 
 — Powered by MobilityLab · Opéré par CarPostal (démo)
