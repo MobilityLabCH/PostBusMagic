@@ -1,4 +1,4 @@
-# PostBus Connect — MagicPass Express (static)
+# PostBus Connect — test MagicPass Express (static)
 
 Bundle statique **prêt à déployer** (GitHub Pages / Netlify / Vercel static).
 
