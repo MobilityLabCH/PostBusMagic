@@ -5,40 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>PostBus Connect — Navettes ski (Prototype MobilityLab)</title>
 <meta name="description" content="Navettes directes CarPostal (autocar confort 40 places, 2+2). Offre complémentaire aux transports publics, uniquement là où la voiture est nettement moins contraignante. Réservation simple, siège premium, météo.">
-
-<!-- Open Graph / Twitter -->
 <meta property="og:title" content="PostBus Connect — Navettes ski complémentaires aux TP">
 <meta property="og:description" content="3 bus/jour (ven–dim), sièges premium, corridors où vous gagnez ≥45 min vs TP.">
 <meta property="og:image" content="images/social-cover.jpg">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-
-<!-- Basic CSP (relaxée pour proto; passer en fichiers externes ensuite) -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://raw.githubusercontent.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';">
-
-<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;600;800&display=swap" as="style">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
-<!-- JSON-LD -->
-<script type="application/ld+json">
-{
- "@context":"https://schema.org",
- "@type":"Service",
- "name":"PostBus Connect",
- "provider":{"@type":"Organization","name":"CarPostal / MobilityLab"},
- "areaServed":"CH",
- "serviceType":"Ski shuttle",
- "offers":[
-   {"@type":"Offer","name":"Trajet A/R", "price":25, "priceCurrency":"CHF"},
-   {"@type":"Offer","name":"Pack 5 A/R", "price":100, "priceCurrency":"CHF"}
- ]
-}
-</script>
-
 <style>
-/* ============ TOKENS ============ */
 :root{
   --bg:#0A0B10; --bg-2:#0F1118; --ink:#EDEEF2; --muted:#A7ADBD;
   --brand:#FFD300; --brand-ink:#0B0B0B; --line:#1C2030;
@@ -47,23 +24,18 @@
   --radius:16px; --radius-lg:22px; --shadow:0 20px 60px rgba(0,0,0,.35);
   --max:1180px;
 }
-*,*::before,*::after{box-sizing:border-box}
-html,body{margin:0}
+*,*::before,*::after{box-sizing:border-box} html,body{margin:0}
 body{
   background:radial-gradient(1000px 700px at 85% -10%,#1B2040 0%,#0B0D14 40%,#07080D 100%) fixed;
-  color:var(--ink);
-  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--ink); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 a{color:inherit;text-decoration:none}
 img{max-width:100%;display:block;border-radius:12px}
 .container{width:min(92vw,var(--max));margin:auto}
-h1{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;font-weight:700;line-height:1.05;
-   font-size:clamp(34px,6vw,72px);margin:0 0 6px}
-h2{font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;letter-spacing:-.01em;
-   font-size:clamp(24px,3vw,36px);margin:0 0 10px}
+h1{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;font-weight:700;line-height:1.05;font-size:clamp(34px,6vw,72px);margin:0 0 6px}
+h2{font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;letter-spacing:-.01em;font-size:clamp(24px,3vw,36px);margin:0 0 10px}
 h3{font-weight:700;margin:6px 0 4px}
-p{margin:.3rem 0;color:var(--muted)}
-small{color:var(--muted)}
+p{margin:.3rem 0;color:var(--muted)} small{color:var(--muted)}
 .badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:#11131B;border:1px solid var(--line);font-weight:800}
 .btn{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:14px 18px;border-radius:14px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;transition:transform .12s ease, box-shadow .12s ease}
 .btn:hover{transform:translateY(-1px);box-shadow:0 10px 40px rgba(122,178,255,.18)}
@@ -75,123 +47,51 @@ small{color:var(--muted)}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 @media (max-width:980px){.grid-3,.grid-2{grid-template-columns:1fr}}
-
-/* ============ NAV ============ */
 header{position:fixed;inset:0 0 auto 0;z-index:40;background:linear-gradient(180deg,rgba(8,9,15,.85),rgba(8,9,15,.35) 70%,transparent);backdrop-filter:var(--glass);border-bottom:1px solid #141829}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
 .logo{display:flex;gap:10px;align-items:center;font-weight:800}
 .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(255,211,0,.15)}
-nav a{color:#D4DAEA;font-weight:700;margin-left:16px}
-nav .cta{margin-left:12px}
-
-/* ============ HERO ============ */
+nav a{color:#D4DAEA;font-weight:700;margin-left:16px} nav .cta{margin-left:12px}
 #hero{padding:120px 0 76px;position:relative;overflow:hidden}
-#hero .bg{
-  position:absolute;inset:-10% -20% auto -20%;height:120vh;
-  background:url('images/crans_montana.jpg') center/cover no-repeat;
-  filter:contrast(1.05) brightness(.6) saturate(1.1) blur(2px); opacity:.35; z-index:-2;
-}
+#hero .bg{position:absolute;inset:-10% -20% auto -20%;height:120vh;background:url('images/crans_montana.jpg') center/cover no-repeat;filter:contrast(1.05) brightness(.6) saturate(1.1) blur(2px); opacity:.35; z-index:-2;}
 .hero-wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:center}
 .hero-visual{border-radius:18px;overflow:hidden;border:1px solid #20263B}
 .hero-visual img{aspect-ratio:4/3;object-fit:cover}
 .hero-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
 .kpi{background:#101320;border:1px solid #252B42;border-radius:12px;padding:10px;text-align:center}
 .kpi b{font-size:18px}
-@media (max-width:980px){
-  .hero-wrap{grid-template-columns:1fr}
-  .hero-visual{order:-1}
-  .hero-kpis{grid-template-columns:repeat(2,1fr)}
-}
-
-/* ============ CONTENT ============ */
-section{padding:70px 0}
-.sub{color:var(--muted);margin-bottom:16px}
-
-/* Steps */
-.step{padding:14px}
-.step img{height:160px;object-fit:cover}
-.step .num{font-family:"Space Grotesk";font-size:32px;color:#9EB8FF}
-
-/* Elegibility chips */
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{border:1px dashed #2A2F45;border-radius:999px;padding:6px 10px}
-
-/* FORM */
-.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form .full{grid-column:1/-1}
+@media (max-width:980px){.hero-wrap{grid-template-columns:1fr}.hero-visual{order:-1}.hero-kpis{grid-template-columns:repeat(2,1fr)}}
+section{padding:70px 0}.sub{color:var(--muted);margin-bottom:16px}
+.step{padding:14px}.step img{height:160px;object-fit:cover}.step .num{font-family:"Space Grotesk";font-size:32px;color:#9EB8FF}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px dashed #2A2F45;border-radius:999px;padding:8px 12px;background:#0E1220;color:#E8EBF7}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form .full{grid-column:1/-1}
 label{font-weight:800;font-size:.92rem}
 select,input[type="date"]{width:100%;padding:12px;border:1px solid #2A2F45;border-radius:12px;background:#0E1220;color:#E8EBF7}
 select:focus,input:focus{outline:3px solid rgba(122,178,255,.45);outline-offset:2px}
 .note{color:var(--muted);font-size:.92rem}
-
-/* Result */
 .result{margin-top:14px;display:none}
 .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
 .pr{font-family:"Space Grotesk";font-size:28px;font-weight:800}
 .badge.ok{background:#10231C;border:1px solid #29503F;color:#9EF3C9}
 .badge.block{background:#2A1010;border:1px solid #5A2A2A;color:#FFB3B3}
-
-/* Seat map 2+2 — 40 places (10 rangées) */
-.bus{
-  --seat:46px; --aisle:28px;
-  display:grid;
-  grid-template-columns:repeat(2,var(--seat)) var(--aisle) repeat(2,var(--seat));
-  gap:8px; padding:12px; border:1px dashed #2A2F45; border-radius:14px; background:#0F1323;
-}
+.bus{--seat:46px; --aisle:28px; display:grid; grid-template-columns:repeat(2,var(--seat)) var(--aisle) repeat(2,var(--seat)); gap:8px; padding:12px; border:1px dashed #2A2F45; border-radius:14px; background:#0F1323;}
 .bus-head{grid-column:1/-1;color:#A7ADBD;text-align:center}
-.seat{
-  width:var(--seat); height:var(--seat); display:grid; place-items:center;
-  border-radius:10px; border:1px solid #2A2F45; background:#0B0E1A; color:#D8DEF1; font-weight:800; cursor:pointer;
-  transition:transform .08s ease, border-color .08s ease;
-}
+.seat{width:var(--seat); height:var(--seat); display:grid; place-items:center; border-radius:10px; border:1px solid #2A2F45; background:#0B0E1A; color:#D8DEF1; font-weight:800; cursor:pointer; transition:transform .08s ease, border-color .08s ease;}
 .seat:hover{transform:translateY(-1px); border-color:#6EA8FF}
 .seat.premium{background:linear-gradient(180deg,#2B1F00,#1A1400); color:#FFE89A; border-color:#A08319}
-.seat.selected{outline:3px solid #7AB2FF}
-.seat[role="gridcell"]{outline-offset:2px}
+.seat.selected{outline:3px solid #7AB2FF}.seat[role="gridcell"]{outline-offset:2px}
 .legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-
-/* Pricing section — simplified */
-.price-card{padding:22px;text-align:center}
-.price-xl{font-family:"Space Grotesk";font-size:42px;font-weight:800}
-.tagline{font-size:14px;color:var(--muted)}
-
-/* Map placeholder */
+.price-card{padding:22px;text-align:center}.price-xl{font-family:"Space Grotesk";font-size:42px;font-weight:800}.tagline{font-size:14px;color:var(--muted)}
 #map{height:420px;border-radius:18px;border:1px solid #232940;background:url('images/nax.jpg') center/cover no-repeat}
-
-/* Footer */
 footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(180deg,#0B0D14,#0A0B10)}
-.foot{display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px}
-@media (max-width:980px){.foot{grid-template-columns:1fr}}
-
-/* Micro animations (reveal) */
-.reveal{opacity:0;transform:translateY(14px);transition:.6s ease}
-.reveal.show{opacity:1;transform:none}
-
-/* Sticky mobile CTA */
-.sticky{position:fixed;inset:auto 0 0 0;z-index:50;display:flex;gap:10px;justify-content:center;padding:10px;background:rgba(9,11,18,.8);backdrop-filter:var(--glass);border-top:1px solid #151A2A}
-.sticky .btn{padding:12px 14px;border-radius:12px}
-@media (min-width:861px){.sticky{display:none}}
-
-/* Microbar — avantages vs voiture (discret) */
-.microbar{
-  padding:14px 0;
-  background:linear-gradient(180deg,rgba(16,19,32,.35),rgba(16,19,32,.15));
-  border-top:1px solid #1a2032; border-bottom:1px solid #1a2032;
-}
+.foot{display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px}@media (max-width:980px){.foot{grid-template-columns:1fr}}
+.reveal{opacity:0;transform:translateY(14px);transition:.6s ease}.reveal.show{opacity:1;transform:none}
+.sticky{position:fixed;inset:auto 0 0 0;z-index:50;display:flex;gap:10px;justify-content:center;padding:10px;background:rgba(9,11,18,.8);backdrop-filter:var(--glass);border-top:1px solid #151A2A}.sticky .btn{padding:12px 14px;border-radius:12px}@media (min-width:861px){.sticky{display:none}}
+.microbar{padding:14px 0;background:linear-gradient(180deg,rgba(16,19,32,.35),rgba(16,19,32,.15));border-top:1px solid #1a2032;border-bottom:1px solid #1a2032}
 .benefits{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.benefit{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 10px;border-radius:999px;
-  background:#0f1323;border:1px solid #232a40;color:#cfd5e8;
-  font-size:.92rem; white-space:nowrap
-}
+.benefit{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#0f1323;border:1px solid #232a40;color:#cfd5e8;font-size:.92rem;white-space:nowrap}
 .benefit .ic{font-size:1rem;opacity:.9}
-.benefits-note{color:#8f96ab;font-size:.86rem;margin-top:8px}
-
-/* Accessibilité / motion */
-@media (prefers-reduced-motion:reduce){
-  *{animation:none !important; transition:none !important; scroll-behavior:auto !important}
-}
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important; scroll-behavior:auto !important}}
 </style>
 </head>
 <body>
@@ -231,9 +131,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
       </div>
     </div>
     <div class="hero-visual card card-lg reveal">
-      <img
-        src="https://raw.githubusercontent.com/MobilityLabCH/PostBusMagic/refs/heads/main/images/9EA6CBA5-E7CD-4EFC-B792-5156520F993A.png"
-        alt="Montée vers Ovronnaz" fetchpriority="high" width="1600" height="900" loading="eager" decoding="async">
+      <img src="https://raw.githubusercontent.com/MobilityLabCH/PostBusMagic/refs/heads/main/images/9EA6CBA5-E7CD-4EFC-B792-5156520F993A.png" alt="Montée vers Ovronnaz" fetchpriority="high" width="1600" height="900" loading="eager" decoding="async">
     </div>
   </div>
 </section>
@@ -244,102 +142,48 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
     <h2>Pourquoi c’est mieux qu’un trajet en voiture et en transports publics… là où ça compte</h2>
     <p class="sub">Nous n’ouvrons une ligne que si elle <b>améliore réellement</b> l’expérience (≥45 min de mieux ou ≥2 correspondances évitées).</p>
     <div class="grid-3">
-      <div class="step card">
-        <div class="num">01</div>
-        <h3>Temps gagné</h3>
-        <p>Jusqu’à <b>2 h de moins</b> sur certains axes (Genève ⇄ Zinal).</p>
-      </div>
-      <div class="step card">
-        <div class="num">02</div>
-        <h3>Zéro friction</h3>
-        <p>Sans correspondance, sans marche pénible avec l’équipement.</p>
-      </div>
-      <div class="step card">
-        <div class="num">03</div>
-        <h3>Impact positif</h3>
-        <p>Moins de voitures en vallée, moins de CO₂ et moins de stress.</p>
-      </div>
+      <div class="step card"><div class="num">01</div><h3>Temps gagné</h3><p>Jusqu’à <b>2 h de moins</b> sur certains axes (Genève ⇄ Zinal).</p></div>
+      <div class="step card"><div class="num">02</div><h3>Zéro friction</h3><p>Sans correspondance, sans marche pénible avec l’équipement.</p></div>
+      <div class="step card"><div class="num">03</div><h3>Impact positif</h3><p>Moins de voitures en vallée, moins de CO₂ et moins de stress.</p></div>
     </div>
   </div>
 </section>
 
-<!-- RESERVE -->
+<!-- RESERVE (flow 3 étapes branché planning.json) -->
 <section id="reserve" class="reveal">
   <div class="container">
     <h2>Réserver</h2>
-    <p class="sub">Uniquement sur <b>axes éligibles</b>. Départs le matin, retours en fin de journée.</p>
+    <p class="sub">1) Choisis ton <b>origine</b> → 2) clique une <b>date disponible</b> → 3) choisis ta <b>destination</b>.</p>
 
     <div class="card card-lg" style="padding:18px">
-      <form class="form" onsubmit="event.preventDefault(); showOptions();" novalidate>
-        <div>
-          <label for="from">Ville de départ</label>
-          <select id="from" aria-describedby="fromHint" required>
+      <!-- ÉTAPE 1 : ORIGINE -->
+      <div class="form">
+        <div class="full">
+          <label for="origin">Ville de départ</label>
+          <select id="origin" required>
             <option value="">Sélectionnez…</option>
             <option>Genève</option>
             <option>Lausanne</option>
             <option>Yverdon</option>
             <option>Fribourg</option>
           </select>
-          <small id="fromHint" class="note">Genève, Lausanne, Yverdon ou Fribourg</small>
         </div>
-        <div>
-          <label for="to">Station</label>
-          <select id="to" required>
-            <option value="">Sélectionnez…</option>
-            <!-- Genève -->
-            <option data-city="Genève">Zinal</option>
-            <option data-city="Genève">Ovronnaz</option>
-            <option data-city="Genève">Saas-Fee</option>
-            <option data-city="Genève">Belalp</option>
-            <option data-city="Genève">Grimentz/St-Luc</option>
-            <option data-city="Genève">Evolène/Arolla</option>
-            <option data-city="Genève">Thyon 2000</option>
-            <!-- Lausanne -->
-            <option data-city="Lausanne">Ovronnaz</option>
-            <option data-city="Lausanne">Leukerbad</option>
-            <option data-city="Lausanne">Lötschental</option>
-            <option data-city="Lausanne">Saas-Fee</option>
-            <option data-city="Lausanne">Belalp</option>
-            <option data-city="Lausanne">Grimentz/St-Luc</option>
-            <option data-city="Lausanne">Evolène/Arolla</option>
-            <option data-city="Lausanne">Thyon 2000</option>
-            <option data-city="Lausanne">Gstaad</option> <!-- limite -->
-            <!-- Yverdon -->
-            <option data-city="Yverdon">Ovronnaz</option>
-            <option data-city="Yverdon">Leukerbad</option>
-            <option data-city="Yverdon">Lötschental</option>
-            <option data-city="Yverdon">Belalp</option>
-            <!-- Fribourg -->
-            <option data-city="Fribourg">Zinal</option>
-            <option data-city="Fribourg">Saas-Fee</option>
-            <option data-city="Fribourg">Belalp</option>
-            <option data-city="Fribourg">Adelboden</option>
-            <option data-city="Fribourg">Gstaad</option> <!-- limite -->
-            <!-- Non éligibles (transparence) -->
-            <option data-city="Lausanne" disabled>Les Diablerets — privilégier TP</option>
-            <option data-city="Lausanne" disabled>Leysin — privilégier TP</option>
-            <option data-city="Genève" disabled>Anzère — privilégier TP</option>
-          </select>
-        </div>
-        <div>
-          <label for="date">Date (Ven–Dim)</label>
-          <input id="date" type="date" required aria-describedby="dateHint">
-          <small id="dateHint" class="note">Les navettes opèrent uniquement vendredi, samedi et dimanche</small>
-        </div>
-        <div>
-          <label for="pack">Forfait 5 A/R</label>
-          <select id="pack">
-            <option value="no">Non</option>
-            <option value="yes">Oui (CHF 100)</option>
-          </select>
-        </div>
-        <div class="full" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <button class="btn brand" type="submit">Voir les départs</button>
-          <span class="tag">Uniquement durant la saison de ski</span>
-          <span class="tag">Réservé aux détenteurs d’un Magic Pass</span>
-        </div>
-      </form>
+      </div>
 
+      <!-- ÉTAPE 2 : DATES DISPONIBLES -->
+      <div id="datesBlock" style="display:none; margin-top:14px">
+        <label>Dates disponibles</label>
+        <div id="dateChips" class="chips" role="listbox" aria-label="Dates disponibles"></div>
+        <small class="note">Nous opérons uniquement les vendredis, samedis et dimanches — ici, seules les dates avec départs sont affichées.</small>
+      </div>
+
+      <!-- ÉTAPE 3 : DESTINATIONS PROPOSÉES -->
+      <div id="destBlock" style="display:none; margin-top:18px">
+        <label>Destination(s) ce jour-là</label>
+        <div id="destCards" class="grid-3"></div>
+      </div>
+
+      <!-- RÉSULTAT + sièges/prix -->
       <div class="result" id="result" aria-live="polite">
         <div class="row">
           <div>
@@ -355,7 +199,6 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
           </div>
         </div>
 
-        <!-- Seat map -->
         <div class="card" style="margin-top:14px;padding:14px">
           <h3 style="margin:4px 0 10px">Choisir un siège</h3>
           <div class="legend">
@@ -380,55 +223,30 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
 <section id="avantages-voiture" class="microbar reveal" aria-label="Avantages par rapport à la voiture">
   <div class="container">
     <div class="benefits">
-      <span class="benefit" title="Pas de rondes ni de frais de stationnement">
-        <span class="ic">🅿️🚫</span> Pas de parking à chercher
-      </span>
-      <span class="benefit" title="Dépose au plus près des remontées">
-        <span class="ic">🎿➡️</span> Dépose devant les installations
-      </span>
-      <span class="benefit" title="Vous montez à bord avec votre équipement">
-        <span class="ic">🧳</span> Zéro porte-skis à porter
-      </span>
-      <span class="benefit" title="Pas de péage, pas d’essence, pas de vignette à amortir">
-        <span class="ic">⛽️❌</span> Pas d’essence / autoroute
-      </span>
-      <span class="benefit" title="Confort assis, pas de conduite hiver, pas d’embouteillages à gérer">
-        <span class="ic">😌</span> Moins de stress
-      </span>
-      <span class="benefit" title="Early ≥10 jours: 25.– ; Pack 5 A/R: 20.– l’unité">
-        <span class="ic">💸</span> Prix malins (dès 25.–)
-      </span>
+      <span class="benefit"><span class="ic">🅿️🚫</span> Pas de parking à chercher</span>
+      <span class="benefit"><span class="ic">🎿➡️</span> Dépose devant les installations</span>
+      <span class="benefit"><span class="ic">🧳</span> Zéro porte-skis à porter</span>
+      <span class="benefit"><span class="ic">⛽️❌</span> Pas d’essence / autoroute</span>
+      <span class="benefit"><span class="ic">😌</span> Moins de stress</span>
+      <span class="benefit"><span class="ic">💸</span> Prix malins (dès 25.–)</span>
     </div>
-    <div class="benefits-note">Comparé à un trajet en voiture individuelle (temps, coûts & confort global).</div>
   </div>
 </section>
 
-<!-- PRICING (simplifié) -->
+<!-- PRICING -->
 <section id="pricing" class="reveal">
   <div class="container">
     <h2>Tarifs simples & lisibles</h2>
     <p class="sub">Pas de surprise : un prix clair, une option premium, un pack valable toute la saison.</p>
     <div class="grid-3">
-      <div class="card price-card">
-        <div class="tag">Trajet A/R</div>
-        <div class="price-xl">CHF <span id="priceFrom">25</span>.–</div>
-        <p class="tagline">Early (≥ 10 jours) : 25.– · Standard : 32.– · Last minute : 39.–</p>
-      </div>
-      <div class="card price-card">
-        <div class="tag">Siège Premium</div>
-        <div class="price-xl">+ CHF 5.–</div>
-        <p class="tagline">Rangs 1–2 · plus d’espace · avant du bus</p>
-      </div>
-      <div class="card price-card">
-        <div class="tag">Pack 5 A/R</div>
-        <div class="price-xl">CHF 100.–</div>
-        <p class="tagline">Soit 20.– par A/R · utilisable sur tous les axes éligibles</p>
-      </div>
+      <div class="card price-card"><div class="tag">Trajet A/R</div><div class="price-xl">CHF <span id="priceFrom">25</span>.–</div><p class="tagline">Early (≥ 10 jours) : 25.– · Standard : 32.– · Last : 39.–</p></div>
+      <div class="card price-card"><div class="tag">Siège Premium</div><div class="price-xl">+ CHF 5.–</div><p class="tagline">Rangs 1–2 · plus d’espace · avant du bus</p></div>
+      <div class="card price-card"><div class="tag">Pack 5 A/R</div><div class="price-xl">CHF 100.–</div><p class="tagline">Soit 20.– par A/R · utilisable sur tous les axes éligibles</p></div>
     </div>
   </div>
 </section>
 
-<!-- MAP & METEO -->
+<!-- MAP (chips de rappel) -->
 <section class="reveal">
   <div class="container">
     <h2>Axes éligibles</h2>
@@ -447,39 +265,23 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
   <div class="container foot">
-    <div>
-      <h3>PostBus Connect</h3>
-      <p>© 2025 MobilityLab — Prototype en bêta. Offre <b>complémentaire</b> aux transports publics.</p>
-    </div>
-    <div>
-      <h3>Navigation</h3>
-      <p><a href="#reserve">Réserver</a><br><a href="#pricing">Tarifs</a><br><a href="#why">Pourquoi</a></p>
-    </div>
-    <div>
-      <h3>Contact</h3>
-      <p><a href="#">Mentions</a> · <a href="#">Conditions</a> · <a href="#">Confidentialité</a></p>
-    </div>
+    <div><h3>PostBus Connect</h3><p>© 2025 MobilityLab — Prototype en bêta. Offre <b>complémentaire</b> aux transports publics.</p></div>
+    <div><h3>Navigation</h3><p><a href="#reserve">Réserver</a><br><a href="#pricing">Tarifs</a><br><a href="#why">Pourquoi</a></p></div>
+    <div><h3>Contact</h3><p><a href="#">Mentions</a> · <a href="#">Conditions</a> · <a href="#">Confidentialité</a></p></div>
   </div>
 </footer>
 
-<!-- Sticky mobile CTA -->
-<div class="sticky" aria-hidden="false">
-  <a class="btn brand" href="#reserve">Planifier</a>
-  <a class="btn" href="#pricing">Tarifs</a>
-</div>
+<div class="sticky"><a class="btn brand" href="#reserve">Planifier</a><a class="btn" href="#pricing">Tarifs</a></div>
 
 <script>
-/* ========= UX: reveal on scroll ========= */
-const obs=new IntersectionObserver((entries)=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show')}),{threshold:.08});
+/* reveal */
+const obs=new IntersectionObserver((en)=>en.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show')}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-/* ========= ÉLIGIBILITÉ – chiffres réels (complément TP) =========
-   true = vendable ; false = on bloque et on conseille les TP */
+/* éligibilité (résumé; chiffre clé = gain vs TP) */
 const ELIGIBILITY={
-  /* Genève */
   "Genève ⇄ Zinal": {eligible:true, reason:"TP ~4h24 (plusieurs changements) · véhicule ~2h27 (gain ~2h)."},
   "Genève ⇄ Ovronnaz": {eligible:true, reason:"TP ~3h35 · véhicule ~1h59 (gain ~1h35)."},
   "Genève ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h00–4h15 · véhicule ~2h45 (gain ~1h15–1h30)."},
@@ -488,7 +290,6 @@ const ELIGIBILITY={
   "Genève ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~4h00–4h20 · véhicule ~2h35 (gain ~1h25)."},
   "Genève ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h45 · véhicule ~2h20 (gain ~1h25)."},
 
-  /* Lausanne */
   "Lausanne ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h42 via Riddes/Leytron · véhicule 1h06–1h12 (gain ~1h30)."},
   "Lausanne ⇄ Leukerbad": {eligible:true, reason:"TP ~2h17 (train + bus) · véhicule ~1h32 (gain ~45 min)."},
   "Lausanne ⇄ Lötschental": {eligible:true, reason:"TP ~2h40 (train+bus via Goppenstein) · véhicule ~1h40 (gain ~1h)."},
@@ -497,159 +298,139 @@ const ELIGIBILITY={
   "Lausanne ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h20 · véhicule ~2h05 (gain ~1h15)."},
   "Lausanne ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~3h30 · véhicule ~2h05 (gain ~1h25)."},
   "Lausanne ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h15 · véhicule ~1h50 (gain ~1h25)."},
-  "Lausanne ⇄ Gstaad": {eligible:false, reason:"Écart limite : TP ~2h15 vs véhicule ~1h30 (gain ~45 min, 1–2 correspondances)."},
+  "Lausanne ⇄ Gstaad": {eligible:false, reason:"Écart limite : TP ~2h15 vs véhicule ~1h30."},
 
-  /* Yverdon */
   "Yverdon ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h45 · véhicule ~1h35 (gain ~1h10)."},
   "Yverdon ⇄ Leukerbad": {eligible:true, reason:"TP ~3h05 · véhicule ~1h55 (gain ~1h10)."},
   "Yverdon ⇄ Lötschental": {eligible:true, reason:"TP ~3h00 · véhicule ~1h50 (gain ~1h10)."},
   "Yverdon ⇄ Belalp": {eligible:true, reason:"TP ~3h20 · véhicule ~2h10 (gain ~1h10)."},
 
-  /* Fribourg */
   "Fribourg ⇄ Zinal": {eligible:true, reason:"TP ~3h50 · véhicule ~2h30 (gain ~1h20)."},
   "Fribourg ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h05 · véhicule ~2h40 (gain ~1h25)."},
   "Fribourg ⇄ Belalp": {eligible:true, reason:"TP ~3h40 · véhicule ~2h20 (gain ~1h20)."},
   "Fribourg ⇄ Adelboden": {eligible:true, reason:"TP ~2h35 (train+bus) · véhicule ~1h40 (gain ~55 min)."},
-  "Fribourg ⇄ Gstaad": {eligible:false, reason:"Écart limite : TP ~2h00–2h10 vs véhicule ~1h20–1h30."},
-
-  /* Non éligibles (transparence) */
-  "Lausanne ⇄ Les Diablerets": {eligible:false, reason:"TP efficaces ~1h20–1h30 vs véhicule ~1h15."},
-  "Lausanne ⇄ Leysin": {eligible:false, reason:"TP très performants (~1h20) vs véhicule ~1h."},
-  "Genève ⇄ Anzère": {eligible:false, reason:"Axe bien desservi par TP depuis Sion (bus direct)."}
+  "Fribourg ⇄ Gstaad": {eligible:false, reason:"Écart limite : TP ~2h00–2h10 vs véhicule ~1h20–1h30."}
 };
 
-/* ========= Pricing rules =========
-   Early (>=10 jours) 25.– ; Standard 32.– ; Last minute 39.–
-   Premium +5.– ; Pack 5 A/R = 20.– l’unité */
+/* images cartes */
+const IMG={
+  "Zinal":"images/zinal.jpg","Ovronnaz":"images/ovronnaz.jpg","Leukerbad":"images/leukerbad.jpg",
+  "Lötschental":"images/ovronnaz.jpg","Saas-Fee":"images/zinal.jpg","Belalp":"images/ovronnaz.jpg",
+  "Grimentz/St-Luc":"images/zinal.jpg","Evolène/Arolla":"images/anzere.jpg","Thyon 2000":"images/crans_montana.jpg","Adelboden":"images/nax.jpg","Gstaad":"images/crans_montana.jpg"
+};
+
+/* ---- Pricing ---- */
 function basePrice(dateStr){
   const d=new Date(dateStr+"T12:00:00"), now=new Date();
   const days=Math.ceil((d-now)/86400000);
-  if(days>=10) return 25;
-  if(days>=4) return 32;
-  return 39;
+  if(days>=10) return 25; if(days>=4) return 32; return 39;
 }
 function CHF(n){return "CHF "+n.toFixed(0)+".–";}
 
-/* ========= Form logic ========= */
-const fromSel=document.getElementById('from');
-const toSel=document.getElementById('to');
-fromSel.addEventListener('change',()=>{
-  [...toSel.options].forEach(o=>{if(!o.value)return;o.hidden=(o.dataset.city!==fromSel.value)});
-  toSel.value="";
-});
-// auto-filtrer dès la perte de focus (micro UX)
-document.getElementById('from').addEventListener('blur',()=>fromSel.dispatchEvent(new Event('change')));
+/* ---- Planning: fetch depuis planning.json ---- */
+const PLANNING_URL = "planning.json"; // change en "data/planning.json" si tu le places dans /data
 
-function isWeekend(dateStr){
-  const d=new Date(dateStr+"T12:00:00"); if(isNaN(d)) return false;
-  return [5,6,0].includes(d.getDay());
-}
-function nextWeekend(){
-  const t=new Date(); let d=new Date(t);
-  for(let i=0;i<14;i++){ d=new Date(d.getTime()+86400000); if([5,6,0].includes(d.getDay())) break;}
-  return d.toISOString().split('T')[0];
-}
-const dateInput=document.getElementById('date');
-dateInput.value = nextWeekend();
-// validation “ven–sam–dim” stricte
-(function lockWeekend(){
-  dateInput.addEventListener('input',()=>{
-    const d=new Date(dateInput.value+"T12:00:00"); const w=d.getDay();
-    if(![5,6,0].includes(w)){ dateInput.setCustomValidity('Uniquement vendredi, samedi ou dimanche'); }
-    else dateInput.setCustomValidity('');
-  });
-})();
-
-function showOptions(){
-  const from=fromSel.value.trim(), to=toSel.value.trim(), date=dateInput.value, pack=document.getElementById('pack').value;
-  if(!from||!to||!date){alert("Complète tous les champs.");return;}
-  if(!isWeekend(date)){alert("Courses: vendredi, samedi, dimanche uniquement.");return;}
-
-  // éligibilité
-  const key=`${from} ⇄ ${to}`;
-  const meta=ELIGIBILITY[key] || {eligible:false, reason:"Axe bien desservi par les transports publics — on recommande les transports publics."};
-  document.getElementById('r-route').textContent = `${from} → ${to}`;
-  const dep=[ "06:30","07:00","07:30" ][Math.floor(Math.random()*3)];
-  const ret=[ "16:15","16:45","17:15" ][Math.floor(Math.random()*3)];
-  document.getElementById('r-times').textContent = `Départ ${dep} — Retour ${ret}`;
-  document.getElementById('eligWhy').textContent = meta.reason;
-
-  const badge=document.getElementById('eligBadge');
-  if(!meta.eligible){
-    badge.className="badge block"; badge.textContent="Non éligible — privilégier les TP";
-    document.getElementById('result').style.display="block";
-    document.getElementById('r-price').textContent="—";
-    document.getElementById('seatmap').innerHTML="";
-    return;
-  }else{
-    badge.className="badge ok"; badge.textContent="Complément aux TP";
-    if(meta.reason.includes('~45')){ badge.textContent='Éligible (limite)'; } // petit marquage des cas limites
+let PLANNING = [];
+async function loadPlanning(){
+  try{
+    const r = await fetch(PLANNING_URL,{cache:"no-store"});
+    if(!r.ok) throw new Error("planning.json introuvable");
+    PLANNING = await r.json();
+  }catch(err){
+    console.error(err);
+    // petit fallback d'affichage
+    document.getElementById('datesBlock').innerHTML = "<p class='note'>Planning indisponible pour le moment.</p>";
   }
+}
+loadPlanning();
 
-  // pricing
-  let price = (pack==="yes") ? 20 : basePrice(date);
-  window.__basePrice = price;
-  updatePrice();
+/* ---- Flow UI (origine → dates → destinations) ---- */
+const originSel=document.getElementById('origin');
+const datesBlock=document.getElementById('datesBlock');
+const dateChips=document.getElementById('dateChips');
+const destBlock=document.getElementById('destBlock');
+const destCards=document.getElementById('destCards');
+
+originSel.addEventListener('change', ()=>{
+  resetResult(); destBlock.style.display="none";
+  const origin=originSel.value; if(!origin){ datesBlock.style.display="none"; return; }
+  const dates=[...new Set(PLANNING.filter(p=>p.origin===origin).map(p=>p.date))].sort();
+  dateChips.innerHTML="";
+  dates.forEach(dt=>{
+    const chip=document.createElement('button');
+    chip.className="chip"; chip.type="button";
+    chip.textContent=new Date(dt+"T12:00:00").toLocaleDateString('fr-CH',{weekday:"short", day:"2-digit", month:"short"});
+    chip.setAttribute('data-date',dt);
+    chip.onclick=()=>selectDate(dt,origin);
+    dateChips.appendChild(chip);
+  });
+  datesBlock.style.display = dates.length ? "block" : "none";
+});
+
+function selectDate(dt,origin){
+  resetResult(); [...dateChips.children].forEach(c=>c.classList.remove('selected'));
+  const chip=[...dateChips.children].find(c=>c.getAttribute('data-date')===dt); if(chip) chip.classList.add('selected');
+  const trips = PLANNING.filter(p=>p.origin===origin && p.date===dt);
+  destCards.innerHTML="";
+  trips.forEach(t=>{
+    const card=document.createElement('div'); card.className="card";
+    card.innerHTML=`
+      <img loading="lazy" decoding="async" src="${IMG[t.dest]||'images/nax.jpg'}" alt="${t.dest}">
+      <div style="padding:12px">
+        <h3 style="margin:0 0 6px">${origin} → ${t.dest}</h3>
+        <p class="note" style="margin-bottom:10px">${eligibilityReason(origin,t.dest)}</p>
+        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+          <span class="tag">Départ ${t.dep} · Retour ${t.ret}</span>
+          <button class="btn brand" type="button">Choisir</button>
+        </div>
+      </div>`;
+    card.querySelector('button').onclick=()=>chooseTrip(t);
+    destCards.appendChild(card);
+  });
+  destBlock.style.display = trips.length ? "block" : "none";
+}
+
+function chooseTrip(t){
+  document.getElementById('r-route').textContent = `${t.origin} → ${t.dest}`;
+  document.getElementById('r-times').textContent = `Départ ${t.dep} — Retour ${t.ret}`;
+  const key=`${t.origin} ⇄ ${t.dest}`;
+  const meta=ELIGIBILITY[key] || {eligible:false, reason:"Axe bien desservi par les transports publics — privilégier les TP."};
+  document.getElementById('eligWhy').textContent = meta.reason;
+  const badge=document.getElementById('eligBadge');
+  if(!meta.eligible){ badge.className="badge block"; badge.textContent="Non éligible — privilégier les TP"; }
+  else { badge.className="badge ok"; badge.textContent = meta.reason.includes('~45') ? "Éligible (limite)" : "Complément aux TP"; }
+
+  window.__basePrice = basePrice(t.date); updatePrice();
+
+  const seatmap=document.getElementById('seatmap'); seatmap.innerHTML=""; buildSeats();
   document.getElementById('result').style.display="block";
-
-  // seat map build once per search
-  const seatmap=document.getElementById('seatmap');
-  seatmap.innerHTML=""; // rebuild for clarté
-  buildSeats();
 }
 
-function updatePrice(){
-  const premium = document.querySelector('.seat.selected')?.classList.contains('premium') ? 5 : 0;
-  const total = (window.__basePrice||0) + premium;
-  document.getElementById('r-price').textContent = CHF(total);
-  document.getElementById('r-price-note').textContent = (window.__basePrice===20) ? "Forfait: 20.– / A-R" : "Early 25.– · Standard 32.– · Last 39.–";
+/* utils */
+function eligibilityReason(origin,dest){
+  const meta=ELIGIBILITY[`${origin} ⇄ ${dest}`];
+  return meta ? meta.reason : "Complément aux TP si gain ≥45 min ou ≥2 correspondances évitées.";
 }
+function resetResult(){ document.getElementById('result').style.display="none"; document.getElementById('seatmap').innerHTML=""; document.getElementById('seatChosen').textContent="Aucun siège"; }
 
-/* ========= Seat map 2+2 (10 rangées, rangs 1–2 premium) + accessibilité ========= */
+/* price & seatmap */
+function updatePrice(){ const premium=document.querySelector('.seat.selected')?.classList.contains('premium')?5:0; const total=(window.__basePrice||0)+premium; document.getElementById('r-price').textContent=CHF(total); document.getElementById('r-price-note').textContent=(window.__basePrice===20)?"Forfait: 20.– / A-R":"Early 25.– · Standard 32.– · Last 39.–";}
 function buildSeats(){
   const wrap=document.getElementById('seatmap');
   const head=document.createElement('div'); head.textContent="Avant • Autocar 40p (2+2)"; head.className="bus-head"; wrap.appendChild(head);
-
-  const grid=document.createElement('div'); grid.className="bus";
-  const rows=10;
+  const grid=document.createElement('div'); grid.className="bus"; const rows=10;
   for(let r=1;r<=rows;r++){
-    for(let c=1;c<=2;c++){
-      const id=`${r}${String.fromCharCode(64+c)}`;
-      const b=document.createElement('button'); b.type="button";
-      b.className="seat"+(r<=2?" premium":""); b.textContent=id;
-      b.setAttribute('role','gridcell'); b.setAttribute('tabindex','0'); b.setAttribute('aria-pressed','false');
-      b.onclick=()=>selectSeat(b,id); grid.appendChild(b);
-    }
+    for(let c=1;c<=2;c++){ const id=`${r}${String.fromCharCode(64+c)}`; const b=document.createElement('button'); b.type="button"; b.className="seat"+(r<=2?" premium":""); b.textContent=id; b.setAttribute('role','gridcell'); b.setAttribute('tabindex','0'); b.setAttribute('aria-pressed','false'); b.onclick=()=>selectSeat(b,id); grid.appendChild(b);}
     const spacer=document.createElement('div'); spacer.style.width="28px"; spacer.style.height="1px"; grid.appendChild(spacer);
-    for(let c=3;c<=4;c++){
-      const id=`${r}${String.fromCharCode(64+c)}`;
-      const b=document.createElement('button'); b.type="button";
-      b.className="seat"+(r<=2?" premium":""); b.textContent=id;
-      b.setAttribute('role','gridcell'); b.setAttribute('tabindex','0'); b.setAttribute('aria-pressed','false');
-      b.onclick=()=>selectSeat(b,id); grid.appendChild(b);
-    }
+    for(let c=3;c<=4;c++){ const id=`${r}${String.fromCharCode(64+c)}`; const b=document.createElement('button'); b.type="button"; b.className="seat"+(r<=2?" premium":""); b.textContent=id; b.setAttribute('role','gridcell'); b.setAttribute('tabindex','0'); b.setAttribute('aria-pressed','false'); b.onclick=()=>selectSeat(b,id); grid.appendChild(b);}
   }
   wrap.appendChild(grid);
-
-  // clavier: Enter/Espace sélectionnent le siège
-  wrap.addEventListener('keydown',e=>{
-    if(e.key==='Enter' || e.key===' '){ if(e.target.classList.contains('seat')){ e.target.click(); e.preventDefault(); } }
-  }, {passive:false});
+  wrap.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ') && e.target.classList.contains('seat')){ e.target.click(); e.preventDefault(); } },{passive:false});
 }
+function selectSeat(btn,id){ document.querySelectorAll('.seat').forEach(s=>{s.classList.remove('selected'); s.setAttribute('aria-pressed','false');}); btn.classList.add('selected'); btn.setAttribute('aria-pressed','true'); document.getElementById('seatChosen').textContent=`Siège ${id}`+(btn.classList.contains('premium')?" · premium":""); updatePrice(); }
 
-function selectSeat(btn,id){
-  document.querySelectorAll('.seat').forEach(s=>{ s.classList.remove('selected'); s.setAttribute('aria-pressed','false'); });
-  btn.classList.add('selected'); btn.setAttribute('aria-pressed','true');
-  document.getElementById('seatChosen').textContent = `Siège ${id}` + (btn.classList.contains('premium') ? " · premium" : "");
-  updatePrice();
-}
-
-/* ========= Pay mock ========= */
-function pay(){
-  const route=document.getElementById('r-route').textContent;
-  const price=document.getElementById('r-price').textContent || "—";
-  alert(`Paiement (prototype)\n${route}\n${price}`);
-}
+/* pay mock */
+function pay(){ const route=document.getElementById('r-route').textContent; const price=document.getElementById('r-price').textContent||"—"; alert(`Paiement (prototype)\n${route}\n${price}`); }
 </script>
 </body>
 </html>
