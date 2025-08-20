@@ -2,193 +2,180 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>PostBus Connect · Prototype MobilityLab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PostBus Connect – MobilityLab</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    :root{
-      --brand:#FFD500; --bg:#0a0d16; --fg:#eaeef9; --muted:#9ca3b9;
-      --card:#151926; --cardBorder:#232a40;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:"Inter",Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.5;-webkit-font-smoothing:antialiased}
-    a{text-decoration:none;color:inherit}
+    /* RESET */
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {font-family: 'Inter', sans-serif; background:#0a0d16; color:#fff; line-height:1.6;}
+    a {text-decoration:none; color:inherit;}
 
-    header{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;background:#0d111c;position:sticky;top:0;z-index:20}
-    header .logo{font-weight:600;font-size:1.1rem}
-    header nav{display:flex;gap:20px}
-    header nav a{opacity:.85;font-weight:500}
-    header nav a:hover{opacity:1}
-    header .btn{background:var(--brand);padding:8px 18px;border-radius:8px;font-weight:600;color:#000}
+    /* NAVBAR */
+    nav {position:fixed; top:0; left:0; width:100%; background:rgba(10,13,22,0.85);
+      display:flex; justify-content:space-between; align-items:center;
+      padding:15px 40px; backdrop-filter:blur(12px); z-index:1000;}
+    nav .logo {font-weight:700; font-size:1.1rem; color:#FFD500;}
+    nav ul {list-style:none; display:flex; gap:25px;}
+    nav ul li a {color:#fff; font-weight:500; transition:.3s;}
+    nav ul li a:hover {color:#FFD500;}
+    nav .cta {background:#FFD500; color:#000; padding:10px 22px; border-radius:10px; font-weight:600; transition:.3s;}
+    nav .cta:hover {background:#ffea55;}
 
-    /* HERO modern */
-    .hero-modern{position:relative; padding:110px 0 72px; overflow:hidden}
-    .hero-modern .hero-media{position:absolute; inset:0; z-index:-2}
-    .hero-modern .hero-media .slide{
-      position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:brightness(.72) contrast(1.05) saturate(1.05);
-      opacity:0; transition:opacity 1.2s ease;
-    }
-    .hero-modern .hero-media .s1{animation:fadeHero 18s infinite}
-    .hero-modern .hero-media .s2{animation:fadeHero 18s infinite 6s}
-    .hero-modern .hero-media .s3{animation:fadeHero 18s infinite 12s}
-    @keyframes fadeHero{
-      0%{opacity:1} 27%{opacity:1} 33%{opacity:0} 94%{opacity:0} 100%{opacity:1}
-    }
-    .hero-modern .overlay{
-      position:absolute; inset:0; pointer-events:none;
-      background:radial-gradient(80% 60% at 15% 20%, rgba(8,10,18,.65) 0%, rgba(8,10,18,.4) 40%, rgba(8,10,18,.2) 70%, transparent 100%);
-    }
-    .hero-inner{display:grid; grid-template-columns:1fr; align-items:center;padding:0 28px}
-    .hero-copy{max-width:760px}
-    .hero-modern h1{font-size:clamp(38px,6.4vw,78px); line-height:1.02; letter-spacing:-.02em; text-wrap:balance}
-    .hero-modern .sub{margin-top:14px;font-size:1.2rem;color:var(--muted)}
-    .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-    .btn{padding:12px 20px;border-radius:10px;font-weight:600}
-    .btn.brand{background:var(--brand);color:#000}
-    .btn.ghost{border:1px solid var(--cardBorder);background:rgba(255,255,255,.04)}
-    .hero-kpis{display:flex;gap:16px;flex-wrap:wrap;margin-top:28px}
-    .kpi{background:var(--card);border:1px solid var(--cardBorder);border-radius:12px;padding:12px 18px;text-align:center;min-width:120px}
-    .kpi b{font-size:1.1rem}
+    /* HERO */
+    .hero {position:relative; height:100vh; display:flex; align-items:center;}
+    .hero img.bg {position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;}
+    .hero .overlay {position:absolute; inset:0; background:rgba(10,13,22,0.65); z-index:1;}
+    .hero .content {position:relative; z-index:2; padding:0 8%; max-width:650px;}
+    .hero h1 {font-size:3.2rem; font-weight:800; margin-bottom:15px;}
+    .hero p {font-size:1.1rem; margin-bottom:25px;}
+    .btn {display:inline-block; padding:12px 26px; border-radius:10px; font-weight:600; transition:.3s;}
+    .btn.brand {background:#FFD500; color:#000;}
+    .btn.brand:hover {background:#ffea55;}
+    .btn.ghost {border:1px solid #fff; color:#fff; margin-left:12px;}
+    .btn.ghost:hover {background:#fff; color:#000;}
+    .bus-sticker {position:absolute; right:5%; bottom:0; width:220px; z-index:3;}
 
-    section{padding:80px 28px}
-    .section-title{font-size:2rem;margin-bottom:24px}
+    /* KPIS */
+    .kpis {display:flex; gap:20px; margin-top:30px; flex-wrap:wrap;}
+    .kpi {background:rgba(255,255,255,0.08); padding:12px 20px; border-radius:12px; font-size:0.9rem;}
 
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{background:var(--card);border:1px solid var(--cardBorder);padding:6px 12px;border-radius:20px;font-size:.9rem}
+    /* RESERVATION */
+    section {padding:90px 8%;}
+    section h2 {font-size:2.2rem; margin-bottom:20px;}
+    .reservation-box {background:rgba(255,255,255,0.05); padding:25px; border-radius:14px;}
+    .form-row {display:flex; gap:20px; margin-bottom:20px; flex-wrap:wrap;}
+    select, input {flex:1; padding:14px; border:none; border-radius:10px; background:#1a1f2e; color:#fff;}
+    select:focus, input:focus {outline:2px solid #FFD500;}
+    .reservation-box button {width:100%; margin-top:10px;}
 
-    /* Microbar avantages voiture */
-    .microbar{padding:14px 0;background:linear-gradient(180deg,rgba(16,19,32,.35),rgba(16,19,32,.15));border-top:1px solid #1a2032;border-bottom:1px solid #1a2032}
-    .benefits{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .benefit{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#0f1323;border:1px solid #232a40;color:#cfd5e8;font-size:.92rem;white-space:nowrap}
-    .benefit .ic{font-size:1rem;opacity:.9}
-    .benefits-note{color:#8f96ab;font-size:.86rem;margin-top:8px}
+    /* AVANTAGES */
+    .chips {display:flex; gap:12px; flex-wrap:wrap; margin-top:20px;}
+    .chip {background:rgba(255,255,255,0.08); padding:10px 16px; border-radius:20px; font-size:0.9rem;}
 
-    /* Form réservation */
-    .form-card{background:var(--card);border:1px solid var(--cardBorder);border-radius:14px;padding:28px;max-width:720px;margin:auto}
-    .form-card label{display:block;font-weight:500;margin-bottom:6px}
-    select{width:100%;padding:10px;border-radius:8px;border:1px solid var(--cardBorder);background:#0f1323;color:var(--fg);margin-bottom:18px}
-    .form-card .btn{width:100%;margin-top:8px}
+    /* TARIFS */
+    .pricing {display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-top:30px;}
+    .price-card {background:rgba(255,255,255,0.05); padding:25px; border-radius:14px; text-align:center;}
+    .price-card h3 {margin-bottom:10px;}
+    .price-card p {margin:10px 0;}
+    .price-card .btn {margin-top:15px;}
+
+    /* FOOTER */
+    footer {background:#000; text-align:center; padding:40px 10px; font-size:0.85rem; color:#aaa;}
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo">● PostBus Connect <span style="opacity:.6">Prototype MobilityLab</span></div>
-    <nav>
-      <a href="#why">Pourquoi</a>
-      <a href="#reserve">Réserver</a>
-      <a href="#pricing">Tarifs</a>
-    </nav>
-    <a class="btn" href="#reserve">Planifier</a>
-  </header>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="logo">PostBus Connect</div>
+    <ul>
+      <li><a href="#pourquoi">Pourquoi</a></li>
+      <li><a href="#reserver">Réserver</a></li>
+      <li><a href="#tarifs">Tarifs</a></li>
+    </ul>
+    <a href="#reserver" class="cta">Planifier</a>
+  </nav>
 
   <!-- HERO -->
-  <section id="hero" class="hero-modern">
-    <div class="hero-media" aria-hidden="true">
-      <img src="images/zinal.jpg" alt="" class="slide s1">
-      <img src="images/ovronnaz.jpg" alt="" class="slide s2">
-      <img src="images/leukerbad.jpg" alt="" class="slide s3">
-      <div class="overlay"></div>
-    </div>
-    <div class="container hero-inner">
-      <div class="hero-copy">
-        <h1>Navettes directes<br>vers les pistes</h1>
-        <p class="sub">
-          Un service <b>complémentaire aux Transports publics</b> — uniquement sur les axes où la
-          <b>voiture est nettement moins contraignante</b> (temps, correspondances, marche).
-          Autocar confort 40 places <b>2+2</b>.
-        </p>
-        <div class="cta-row">
-          <a class="btn brand" href="#reserve">Réserver maintenant</a>
-          <a class="btn ghost" href="#avantages-voiture">Avantages vs voiture</a>
-        </div>
-        <div class="hero-kpis">
-          <div class="kpi"><b>Ven–Dim</b><br><small>Saison de ski</small></div>
-          <div class="kpi"><b>3 bus</b><br><small>Confort 40 places</small></div>
-          <div class="kpi"><b>Départ matin</b><br><small>Retour fin de journée</small></div>
-          <div class="kpi"><b>Siège premium</b><br><small>rangs 1–2</small></div>
-        </div>
+  <section class="hero">
+    <img src="images/anzere.jpg" alt="Montagne enneigée" class="bg">
+    <div class="overlay"></div>
+    <div class="content">
+      <h1>Navettes directes<br>vers les pistes</h1>
+      <p>Un service <b>complémentaire aux Transports publics</b> — uniquement sur les axes où la 
+        <b>voiture est nettement moins contraignante</b> (temps, correspondances, marche). 
+        Autocar confort 40 places <b>2+2</b>.
+      </p>
+      <a href="#reserver" class="btn brand">Réserver maintenant</a>
+      <a href="#avantages" class="btn ghost">Avantages vs voiture</a>
+      <div class="kpis">
+        <div class="kpi">Ven–Dim<br><small>Saison de ski</small></div>
+        <div class="kpi">3 bus<br><small>Confort 40 places</small></div>
+        <div class="kpi">Départ matin<br><small>Retour fin de journée</small></div>
+        <div class="kpi">Siège premium<br><small>rangs 1–2</small></div>
       </div>
+    </div>
+    <img src="images/bus.png" alt="Bus cartoon" class="bus-sticker">
+  </section>
+
+  <!-- POURQUOI -->
+  <section id="pourquoi">
+    <h2>Pourquoi choisir PostBus Connect ?</h2>
+    <p>Réduire le trafic individuel motorisé, améliorer l’expérience skieur et proposer un 
+      service durable en complément des Transports publics.</p>
+    <div class="chips">
+      <div class="chip">❌ Pas de parking cher</div>
+      <div class="chip">😌 Pas de stress</div>
+      <div class="chip">🎿 Porte-skis inclus</div>
+      <div class="chip">⛽ Pas d’essence</div>
+      <div class="chip">📍 Dépose devant les installations</div>
+      <div class="chip">💸 Prix avantageux</div>
     </div>
   </section>
 
-  <!-- Avantages vs voiture -->
-  <section id="avantages-voiture" class="microbar" aria-label="Avantages par rapport à la voiture">
-    <div class="container">
-      <div class="benefits">
-        <span class="benefit"><span class="ic">🅿️🚫</span> Pas de parking</span>
-        <span class="benefit"><span class="ic">🎿➡️</span> Dépose aux installations</span>
-        <span class="benefit"><span class="ic">🧳</span> Pas de porte-skis</span>
-        <span class="benefit"><span class="ic">⛽️❌</span> Pas d’essence / péages</span>
-        <span class="benefit"><span class="ic">😌</span> Zéro stress route</span>
-        <span class="benefit"><span class="ic">💸</span> Prix malins (dès 25.–)</span>
+  <!-- RESERVATION -->
+  <section id="reserver">
+    <h2>Réserver</h2>
+    <p>Sélectionne ta ville de départ, une date disponible et la destination associée.</p>
+    <div class="reservation-box">
+      <div class="form-row">
+        <select>
+          <option>Ville de départ</option>
+          <option>Genève</option>
+          <option>Lausanne</option>
+          <option>Fribourg</option>
+          <option>Yverdon</option>
+        </select>
       </div>
-      <div class="benefits-note">Comparé à un trajet en voiture individuelle (temps, coûts & confort global).</div>
-    </div>
-  </section>
-
-  <!-- Réserver -->
-  <section id="reserve">
-    <h2 class="section-title">Réserver</h2>
-    <p style="margin-bottom:16px">Uniquement sur axes éligibles. Départs le matin, retours fin de journée (Ven–Dim, saison de ski).</p>
-    <div class="form-card">
-      <label for="origin">Ville de départ</label>
-      <select id="origin">
-        <option value="">Sélectionnez…</option>
-        <option>Genève</option>
-        <option>Lausanne</option>
-        <option>Fribourg</option>
-      </select>
-
-      <label for="date">Date disponible</label>
-      <select id="date"><option value="">Sélectionnez une date…</option></select>
-
-      <label for="dest">Station</label>
-      <select id="dest"><option value="">Sélectionnez une station…</option></select>
-
+      <div class="form-row">
+        <input type="date" placeholder="Choisir une date">
+      </div>
+      <div class="form-row">
+        <select>
+          <option>Destination</option>
+          <option>Anzère</option>
+          <option>Zinal</option>
+          <option>Ovronnaz</option>
+          <option>Crans-Montana</option>
+          <option>Lötschental</option>
+          <option>Saas Fee</option>
+          <option>Belalp</option>
+          <option>Leysin</option>
+          <option>Leukerbad</option>
+        </select>
+      </div>
       <button class="btn brand">Voir les départs</button>
     </div>
   </section>
 
-  <!-- Pricing -->
-  <section id="pricing">
-    <h2 class="section-title">Tarifs</h2>
-    <p>
-      • Forfait 5 allers-retours : <b>100.–</b><br>
-      • Achat à l’unité selon modèle <i>EasyJet</i> : dès <b>25.–</b><br>
-      • Option siège premium (rang 1–2) : +<b>10.–</b>
-    </p>
+  <!-- TARIFS -->
+  <section id="tarifs">
+    <h2>Tarifs</h2>
+    <div class="pricing">
+      <div class="price-card">
+        <h3>Trajet simple</h3>
+        <p>Dès CHF 25.–</p>
+        <a href="#reserver" class="btn brand">Réserver</a>
+      </div>
+      <div class="price-card">
+        <h3>Forfait 5 A/R</h3>
+        <p>CHF 100.–</p>
+        <a href="#reserver" class="btn brand">Réserver</a>
+      </div>
+      <div class="price-card">
+        <h3>Siège Premium</h3>
+        <p>+CHF 10.–</p>
+        <a href="#reserver" class="btn brand">Réserver</a>
+      </div>
+    </div>
   </section>
 
-  <script>
-    // Planning simplifié Ven-Dim saison ski
-    const PLANNING={
-      "Genève":["2025-12-05","2025-12-06","2025-12-07"],
-      "Lausanne":["2025-12-05","2025-12-06","2025-12-07"],
-      "Fribourg":["2025-12-06","2025-12-07"]
-    };
-    const DESTINATIONS={
-      "Genève":["Zinal","Ovronnaz","Anzère"],
-      "Lausanne":["Leukerbad","Saas-Fee","Belalp","Lötschental"],
-      "Fribourg":["Adelboden","Leysin"]
-    };
+  <!-- FOOTER -->
+  <footer>
+    Prototype MobilityLab — Ce site est une version bêta testée avec CarPostal.<br>
+    Objectif : innovation, complément aux Transports publics et impact positif sur la mobilité.
+  </footer>
 
-    function fillDates(origin){
-      const dateSel=document.getElementById("date");
-      dateSel.innerHTML='<option value="">Sélectionnez une date…</option>';
-      if(PLANNING[origin]) PLANNING[origin].forEach(d=>{ 
-        const o=document.createElement("option"); o.value=d;o.textContent=d; dateSel.appendChild(o);
-      });
-    }
-    function fillDest(origin){
-      const destSel=document.getElementById("dest");
-      destSel.innerHTML='<option value="">Sélectionnez une station…</option>';
-      if(DESTINATIONS[origin]) DESTINATIONS[origin].forEach(st=>{
-        const o=document.createElement("option"); o.textContent=st;destSel.appendChild(o);
-      });
-    }
-
-    document.getElementById("origin").addEventListener("change",e=>{
-      fillDates(e.target.value); fillDest(e.target.value);
-    });
-  </script>
 </body>
 </html>
