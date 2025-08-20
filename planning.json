@@ -1,25 +1,25 @@
 [
-  { "date": "2026-01-09", "origin": "Genève",   "dest": "Zinal",            "dep": "07:00", "ret": "16:45" },
-  { "date": "2026-01-09", "origin": "Lausanne", "dest": "Ovronnaz",         "dep": "07:15", "ret": "16:30" },
-  { "date": "2026-01-09", "origin": "Fribourg", "dest": "Belalp",           "dep": "06:45", "ret": "17:00" },
+  { "date": "2026-01-09", "origin": "Genève",   "dest": "Zinal",           "dep": "07:00", "ret": "15:45", "arrive": "16:45" },
+  { "date": "2026-01-09", "origin": "Lausanne", "dest": "Ovronnaz",        "dep": "07:15", "ret": "15:30", "arrive": "16:30" },
+  { "date": "2026-01-09", "origin": "Fribourg", "dest": "Belalp",          "dep": "06:45", "ret": "16:00", "arrive": "17:00" },
 
-  { "date": "2026-01-10", "origin": "Genève",   "dest": "Ovronnaz",         "dep": "07:00", "ret": "16:45" },
-  { "date": "2026-01-10", "origin": "Lausanne", "dest": "Leukerbad",        "dep": "07:15", "ret": "16:45" },
-  { "date": "2026-01-10", "origin": "Yverdon",  "dest": "Lötschental",      "dep": "06:50", "ret": "16:55" },
+  { "date": "2026-01-10", "origin": "Genève",   "dest": "Ovronnaz",        "dep": "07:00", "ret": "15:45", "arrive": "16:45" },
+  { "date": "2026-01-10", "origin": "Lausanne", "dest": "Leukerbad",       "dep": "07:15", "ret": "15:45", "arrive": "16:45" },
+  { "date": "2026-01-10", "origin": "Yverdon",  "dest": "Lötschental",     "dep": "06:50", "ret": "15:55", "arrive": "16:55" },
 
-  { "date": "2026-01-11", "origin": "Genève",   "dest": "Saas-Fee",         "dep": "06:50", "ret": "17:10" },
-  { "date": "2026-01-11", "origin": "Lausanne", "dest": "Belalp",           "dep": "07:10", "ret": "16:40" },
-  { "date": "2026-01-11", "origin": "Fribourg", "dest": "Adelboden",        "dep": "07:00", "ret": "16:45" },
+  { "date": "2026-01-11", "origin": "Genève",   "dest": "Saas-Fee",        "dep": "06:50", "ret": "16:10", "arrive": "17:10" },
+  { "date": "2026-01-11", "origin": "Lausanne", "dest": "Belalp",          "dep": "07:10", "ret": "15:40", "arrive": "16:40" },
+  { "date": "2026-01-11", "origin": "Fribourg", "dest": "Adelboden",       "dep": "07:00", "ret": "15:45", "arrive": "16:45" },
 
-  { "date": "2026-01-16", "origin": "Genève",   "dest": "Grimentz/St-Luc",  "dep": "07:00", "ret": "16:45" },
-  { "date": "2026-01-16", "origin": "Lausanne", "dest": "Evolène/Arolla",   "dep": "07:10", "ret": "16:40" },
-  { "date": "2026-01-16", "origin": "Fribourg", "dest": "Zinal",            "dep": "06:45", "ret": "17:05" },
+  { "date": "2026-01-16", "origin": "Genève",   "dest": "Grimentz/St-Luc", "dep": "07:00", "ret": "15:45", "arrive": "16:45" },
+  { "date": "2026-01-16", "origin": "Lausanne", "dest": "Evolène/Arolla",  "dep": "07:10", "ret": "15:40", "arrive": "16:40" },
+  { "date": "2026-01-16", "origin": "Fribourg", "dest": "Zinal",           "dep": "06:45", "ret": "16:05", "arrive": "17:05" },
 
-  { "date": "2026-01-17", "origin": "Genève",   "dest": "Thyon 2000",       "dep": "07:00", "ret": "16:45" },
-  { "date": "2026-01-17", "origin": "Lausanne", "dest": "Ovronnaz",         "dep": "07:20", "ret": "16:35" },
-  { "date": "2026-01-17", "origin": "Yverdon",  "dest": "Belalp",           "dep": "06:50", "ret": "17:00" },
+  { "date": "2026-01-17", "origin": "Genève",   "dest": "Thyon 2000",      "dep": "07:00", "ret": "15:45", "arrive": "16:45" },
+  { "date": "2026-01-17", "origin": "Lausanne", "dest": "Ovronnaz",        "dep": "07:20", "ret": "15:35", "arrive": "16:35" },
+  { "date": "2026-01-17", "origin": "Yverdon",  "dest": "Belalp",          "dep": "06:50", "ret": "16:00", "arrive": "17:00" },
 
-  { "date": "2026-01-18", "origin": "Genève",   "dest": "Zinal",            "dep": "06:55", "ret": "16:55" },
-  { "date": "2026-01-18", "origin": "Lausanne", "dest": "Lötschental",      "dep": "07:15", "ret": "16:45" },
-  { "date": "2026-01-18", "origin": "Fribourg", "dest": "Saas-Fee",         "dep": "06:50", "ret": "17:10" }
+  { "date": "2026-01-18", "origin": "Genève",   "dest": "Zinal",           "dep": "06:55", "ret": "15:55", "arrive": "16:55" },
+  { "date": "2026-01-18", "origin": "Lausanne", "dest": "Lötschental",     "dep": "07:15", "ret": "15:45", "arrive": "16:45" },
+  { "date": "2026-01-18", "origin": "Fribourg", "dest": "Saas-Fee",        "dep": "06:50", "ret": "16:10", "arrive": "17:10" }
 ]
