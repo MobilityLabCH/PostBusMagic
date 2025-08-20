@@ -166,7 +166,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
   <div class="container hero-wrap">
     <div>
       <h1>Navettes directes vers les pistes</h1>
-      <p class="sub">Un service <b>complémentaire aux transports publics</b> — uniquement sur les axes où la <b>voiture est nettement moins contraignante</b> (temps, correspondances, marche). Bus CarPostal <b>Iveco midi</b> 40 places, configuration <b>2+2</b>.</p>
+      <p class="sub">Un service <b>complémentaire aux transports publics</b> — uniquement sur les axes où la <b>voiture est nettement moins contraignante</b> (temps, correspondances, marche). Autocar confort 40 places <b>2+2</b>.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
         <a class="btn brand" href="#reserve">Réserver maintenant</a>
         <a class="btn ghost" href="#why">Voir pourquoi</a>
@@ -324,10 +324,10 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
     <p class="sub">Nous limitons la vente aux corridors où l’expérience est <b>vraiment meilleure</b> que les transports publics</p>
     <div id="map" class="card card-lg" role="img" aria-label="Carte des liaisons"></div>
     <div class="chips" style="margin-top:12px">
-      <span class="chip">Genève ⇄ Zinal · TP ~4h24 · Voiture ~2h27</span>
-      <span class="chip">Genève ⇄ Ovronnaz · TP ~3h35 · Voiture ~1h59</span>
-      <span class="chip">Lausanne ⇄ Ovronnaz · TP ~2h42 · Voiture ~1h06–1h12</span>
-      <span class="chip">Lausanne ⇄ Leukerbad · TP ~2h17 · Voiture ~1h32</span>
+      <span class="chip">Genève ⇄ Zinal · Transports publics ~4h24 · Véhicule ~2h27</span>
+      <span class="chip">Genève ⇄ Ovronnaz · Transports publics  ~3h35 · Véhicule ~1h59</span>
+      <span class="chip">Lausanne ⇄ Ovronnaz · Transports publics  ~2h42 · Véhicule ~1h06–1h12</span>
+      <span class="chip">Lausanne ⇄ Leukerbad · Transports publics  ~2h17 · Véhicule ~1h32</span>
     </div>
   </div>
 </section>
@@ -363,11 +363,11 @@ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
 /* ========= ÉLIGIBILITÉ – chiffres réels (complément TP) ========= */
 const ELIGIBILITY={
-  "Genève ⇄ Zinal": {eligible:true, reason:"TP ~4h24 (plusieurs changements) · voiture ~2h27 (gain ~2h)."},
-  "Genève ⇄ Ovronnaz": {eligible:true, reason:"TP ~3h35 · voiture ~1h59 (gain ~1h35)."},
-  "Lausanne ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h42 via Riddes/Leytron · voiture 1h06–1h12 (gain ~1h30)."},
-  "Lausanne ⇄ Leukerbad": {eligible:true, reason:"TP ~2h17 (train + bus) · voiture ~1h32 (gain ~45 min)."},
-  "Lausanne ⇄ Crans-Montana": {eligible:false, reason:"Écart faible : TP ~1h40–1h45 vs voiture ~1h27–1h30."}
+  "Genève ⇄ Zinal": {eligible:true, reason:"Transports publics ~4h24 (plusieurs changements) · véhicule ~2h27 (gain ~2h)."},
+  "Genève ⇄ Ovronnaz": {eligible:true, reason:"Transports publics ~3h35 · véhicule ~1h59 (gain ~1h35)."},
+  "Lausanne ⇄ Ovronnaz": {eligible:true, reason:"Transports publics ~2h42 via Riddes/Leytron · véhicule 1h06–1h12 (gain ~1h30)."},
+  "Lausanne ⇄ Leukerbad": {eligible:true, reason:"Transports publics ~2h17 (train + bus) · véhicule ~1h32 (gain ~45 min)."},
+  "Lausanne ⇄ Crans-Montana": {eligible:false, reason:"Écart faible : Transports publics ~1h40–1h45 vs véhicule ~1h27–1h30."}
 };
 
 /* ========= Simplified pricing rules =========
@@ -405,7 +405,7 @@ function showOptions(){
 
   // éligibilité
   const key=`${from} ⇄ ${to}`;
-  const meta=ELIGIBILITY[key] || {eligible:false, reason:"Axe bien desservi par les TP — on recommande les transports publics."};
+  const meta=ELIGIBILITY[key] || {eligible:false, reason:"Axe bien desservi par les transports publics — on recommande les transports publics."};
   document.getElementById('r-route').textContent = `${from} → ${to}`;
   const dep=[ "06:30","07:00","07:30" ][Math.floor(Math.random()*3)];
   const ret=[ "16:15","16:45","17:15" ][Math.floor(Math.random()*3)];
