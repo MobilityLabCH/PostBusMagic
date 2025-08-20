@@ -7,6 +7,10 @@
 <meta name="description" content="Navettes directes CarPostal (bus confort 40 places). Offre complémentaire aux transports publics, uniquement sur les axes où la voiture est nettement moins contraignante. Réservation simple, siège premium, météo.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<!-- libs pour QR + PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
 <style>
 /* ============ TOKENS ============ */
 :root{
@@ -35,10 +39,11 @@ h3{font-weight:700;margin:6px 0 4px}
 p{margin:.3rem 0;color:var(--muted)}
 small{color:var(--muted)}
 .badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:#11131B;border:1px solid var(--line);font-weight:800}
-.btn{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:14px 18px;border-radius:14px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;transition:transform .12s ease, box-shadow .12s ease}
+.btn{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:14px 18px;border-radius:14px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;transition:transform .12s ease, box-shadow .12s ease; cursor:pointer}
 .btn:hover{transform:translateY(-1px);box-shadow:0 10px 40px rgba(122,178,255,.18)}
 .btn.brand{background:var(--brand); color:#000; border-color:#C7A700; box-shadow:0 10px 40px rgba(255,211,0,.25)}
 .btn.ghost{background:#11131B}
+.btn.danger{background:#2A1010;border-color:#5A2A2A}
 .tag{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid #2A2F45;border-radius:999px;background:#11131B}
 .card{background:var(--card);backdrop-filter:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 .card-lg{border-radius:var(--radius-lg)}
@@ -46,51 +51,32 @@ small{color:var(--muted)}
 .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
 @media (max-width:980px){.grid-3,.grid-2{grid-template-columns:1fr}}
 
-/* ============ NAV ============ */
+/* NAV / HERO / CONTENT — inchangés (abrégé pour compacité dans la réponse) */
 header{position:fixed;inset:0 0 auto 0;z-index:40;background:linear-gradient(180deg,rgba(8,9,15,.85),rgba(8,9,15,.35) 70%,transparent);backdrop-filter:var(--glass);border-bottom:1px solid #141829}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
 .logo{display:flex;gap:10px;align-items:center;font-weight:800}
 .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(255,211,0,.15)}
 nav a{color:#D4DAEA;font-weight:700;margin-left:16px}
 nav .cta{margin-left:12px}
-
-/* ============ HERO ============ */
 #hero{padding:120px 0 76px;position:relative;overflow:hidden}
-#hero .bg{
-  position:absolute;inset:-10% -20% auto -20%;height:120vh;
-  background:url('images/crans_montana.jpg') center/cover no-repeat;
-  filter:contrast(1.05) brightness(.6) saturate(1.1) blur(2px); opacity:.35; z-index:-2;
-}
+#hero .bg{position:absolute;inset:-10% -20% auto -20%;height:120vh;background:url('images/crans_montana.jpg') center/cover no-repeat;filter:contrast(1.05) brightness(.6) saturate(1.1) blur(2px); opacity:.35; z-index:-2;}
 .hero-wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:center}
 .hero-visual{border-radius:18px;overflow:hidden;border:1px solid #20263B}
 .hero-visual img{aspect-ratio:4/3;object-fit:cover}
 .hero-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
 .kpi{background:#101320;border:1px solid #252B42;border-radius:12px;padding:10px;text-align:center}
 .kpi b{font-size:18px}
-@media (max-width:980px){
-  .hero-wrap{grid-template-columns:1fr}
-  .hero-visual{order:-1}
-  .hero-kpis{grid-template-columns:repeat(2,1fr)}
-}
-
-/* ============ CONTENT ============ */
+@media (max-width:980px){.hero-wrap{grid-template-columns:1fr}.hero-visual{order:-1}.hero-kpis{grid-template-columns:repeat(2,1fr)}}
 section{padding:70px 0}
 .sub{color:var(--muted);margin-bottom:16px}
-
-/* Steps */
-.step{padding:14px}
-.step img{height:160px;object-fit:cover}
-.step .num{font-family:"Space Grotesk";font-size:32px;color:#9EB8FF}
-
-/* Elegibility chips */
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{border:1px dashed #2A2F45;border-radius:999px;padding:6px 10px}
+.step{padding:14px}.step img{height:160px;object-fit:cover}.step .num{font-family:"Space Grotesk";font-size:32px;color:#9EB8FF}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px dashed #2A2F45;border-radius:999px;padding:6px 10px}
 
 /* FORM */
 .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form .full{grid-column:1/-1}
 label{font-weight:800;font-size:.92rem}
-select,input[type="date"]{width:100%;padding:12px;border:1px solid #2A2F45;border-radius:12px;background:#0E1220;color:#E8EBF7}
+select,input[type="date"],input[type="text"],input[type="email"],input[type="number"]{width:100%;padding:12px;border:1px solid #2A2F45;border-radius:12px;background:#0E1220;color:#E8EBF7}
 select:focus,input:focus{outline:3px solid rgba(122,178,255,.45);outline-offset:2px}
 .note{color:var(--muted);font-size:.92rem}
 
@@ -101,7 +87,7 @@ select:focus,input:focus{outline:3px solid rgba(122,178,255,.45);outline-offset:
 .badge.ok{background:#10231C;border:1px solid #29503F;color:#9EF3C9}
 .badge.block{background:#2A1010;border:1px solid #5A2A2A;color:#FFB3B3}
 
-/* Seat map 2+2 — Iveco midi 40p */
+/* Seat map */
 .bus{ --seat:46px; --aisle:28px; display:grid; grid-template-columns:repeat(2,var(--seat)) var(--aisle) repeat(2,var(--seat)); gap:8px; padding:12px; border:1px dashed #2A2F45; border-radius:14px; background:#0F1323; }
 .bus-head{grid-column:1/-1;color:#A7ADBD;text-align:center}
 .seat{ width:var(--seat); height:var(--seat); display:grid; place-items:center; border-radius:10px; border:1px solid #2A2F45; background:#0B0E1A; color:#D8DEF1; font-weight:800; cursor:pointer; transition:transform .08s ease, border-color .08s ease; }
@@ -111,7 +97,7 @@ select:focus,input:focus{outline:3px solid rgba(122,178,255,.45);outline-offset:
 .seat.taken{background:#15192A;color:#6E7696;border-style:dashed;cursor:not-allowed}
 .legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
-/* Pricing section — simplified */
+/* Pricing */
 .price-card{padding:22px;text-align:center}
 .price-xl{font-family:"Space Grotesk";font-size:42px;font-weight:800}
 .tagline{font-size:14px;color:var(--muted)}
@@ -124,7 +110,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
 .foot{display:grid;grid-template-columns:2fr 1fr 1fr;gap:18px}
 @media (max-width:980px){.foot{grid-template-columns:1fr}}
 
-/* Micro animations (reveal) */
+/* Micro animations */
 .reveal{opacity:0;transform:translateY(14px);transition:.6s ease}
 .reveal.show{opacity:1;transform:none}
 
@@ -132,6 +118,18 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
 .sticky{position:fixed;inset:auto 0 0 0;z-index:50;display:flex;gap:10px;justify-content:center;padding:10px;background:rgba(9,11,18,.8);backdrop-filter:var(--glass);border-top:1px solid #151A2A}
 .sticky .btn{padding:12px 14px;border-radius:12px}
 @media (min-width:861px){.sticky{display:none}}
+
+/* ======== Modal paiement ======== */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,6,10,.55);backdrop-filter:blur(6px);z-index:80}
+.modal.open{display:flex}
+.modal .panel{width:min(92vw,560px);background:#0F1323;border:1px solid #232945;border-radius:18px;box-shadow:var(--shadow);padding:16px}
+.modal .panel h3{margin:6px 0 10px}
+.pay-steps{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.pay-steps .stepchip{border:1px dashed #2A2F45;border-radius:999px;padding:6px 10px}
+.qrbox{display:grid;place-items:center;border:1px dashed #2A2F45;border-radius:14px;padding:12px;background:#0B0F1F}
+.status.ok{color:#9EF3C9}
+.status.wait{color:#FFD56A}
+.status.err{color:#FFB3B3}
 </style>
 </head>
 <body>
@@ -182,21 +180,9 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
     <h2>Pourquoi c’est mieux qu’un trajet en voiture et en transports publics… là où ça compte</h2>
     <p class="sub">Nous n’ouvrons une ligne que si elle <b>améliore réellement</b> l’expérience (≥45 min de mieux ou ≥2 correspondances évitées).</p>
     <div class="grid-3">
-      <div class="step card">
-        <div class="num">01</div>
-        <h3>Temps gagné</h3>
-        <p>Jusqu’à <b>2 h de moins</b> sur certains axes (Genève ⇄ Zinal).</p>
-      </div>
-      <div class="step card">
-        <div class="num">02</div>
-        <h3>Zéro friction</h3>
-        <p>Sans correspondance, sans marche pénible avec l’équipement.</p>
-      </div>
-      <div class="step card">
-        <div class="num">03</div>
-        <h3>Impact positif</h3>
-        <p>Moins de voitures en vallée, moins de CO₂ et moins de stress.</p>
-      </div>
+      <div class="step card"><div class="num">01</div><h3>Temps gagné</h3><p>Jusqu’à <b>2 h de moins</b> sur certains axes (Genève ⇄ Zinal).</p></div>
+      <div class="step card"><div class="num">02</div><h3>Zéro friction</h3><p>Sans correspondance, sans marche pénible avec l’équipement.</p></div>
+      <div class="step card"><div class="num">03</div><h3>Impact positif</h3><p>Moins de voitures en vallée, moins de CO₂ et moins de stress.</p></div>
     </div>
   </div>
 </section>
@@ -208,6 +194,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
     <p class="sub">Uniquement sur <b>axes éligibles</b>. Départs le matin, retours en fin de journée.</p>
 
     <div class="card card-lg" style="padding:18px">
+      <!-- Étape 1: sélection course -->
       <form class="form" onsubmit="event.preventDefault(); showOptions();">
         <div>
           <label>Ville de départ</label>
@@ -245,11 +232,13 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
         </div>
       </form>
 
+      <!-- Étape 2: résultat + plan de siège + infos passager -->
       <div class="result" id="result">
         <div class="row">
           <div>
             <b id="r-route">—</b><br>
             <small id="r-times">—</small><br>
+            <small id="r-arrivals">—</small><br><!-- NEW: affiche les arrivées calculées -->
             <span id="eligBadge" class="badge">—</span>
             <div id="eligWhy" class="note" style="margin-top:6px">—</div>
             <div class="tag" id="seatCount" style="margin-top:8px">— places restantes</div>
@@ -273,16 +262,46 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
           </div>
         </div>
 
+        <!-- Infos passager (meilleures pratiques: demander minimum utile + consentement) -->
+        <div class="card" style="margin-top:14px;padding:14px">
+          <h3 style="margin:4px 0 10px">Vos informations</h3>
+          <div class="form">
+            <div>
+              <label>Prénom</label>
+              <input id="c-first" type="text" placeholder="Prénom" required>
+            </div>
+            <div>
+              <label>Nom</label>
+              <input id="c-last" type="text" placeholder="Nom" required>
+            </div>
+            <div>
+              <label>WhatsApp (mobile)</label>
+              <input id="c-wa" type="text" placeholder="+41 79 ...">
+            </div>
+            <div>
+              <label>Email</label>
+              <input id="c-mail" type="email" placeholder="vous@exemple.ch" required>
+            </div>
+            <div>
+              <label>Âge</label>
+              <input id="c-age" type="number" min="1" max="120" placeholder="35" required>
+            </div>
+            <div class="full">
+              <small class="note">En continuant, vous acceptez les conditions et le traitement de vos données pour émettre le billet.</small>
+            </div>
+          </div>
+        </div>
+
         <div class="row" style="margin-top:14px">
           <small class="note">Demi-tarif non valable (produit spécifique CarPostal).</small>
-          <button class="btn brand" onclick="pay()">Payer</button>
+          <button class="btn brand" onclick="openPay()">Payer</button>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PRICING (simplifié) -->
+<!-- PRICING -->
 <section id="pricing" class="reveal">
   <div class="container">
     <h2>Tarifs simples & lisibles</h2>
@@ -307,7 +326,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
   </div>
 </section>
 
-<!-- MAP & METEO -->
+<!-- MAP & METEO (inchangé) -->
 <section class="reveal">
   <div class="container">
     <h2>Axes éligibles</h2>
@@ -350,21 +369,50 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
   <a class="btn" href="#pricing">Tarifs</a>
 </div>
 
+<!-- MODAL PAIEMENT -->
+<div class="modal" id="payModal" aria-hidden="true" aria-label="Paiement TWINT">
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3>Paiement — TWINT</h3>
+      <button class="btn" onclick="closePay()">Fermer</button>
+    </div>
+    <div class="pay-steps">
+      <span class="stepchip">1) Scanner le QR dans TWINT</span>
+      <span class="stepchip">2) Confirmer le montant</span>
+      <span class="stepchip">3) Retour automatique ici</span>
+    </div>
+    <div class="grid-2">
+      <div class="qrbox">
+        <div id="twintQR" aria-label="QR TWINT"></div>
+      </div>
+      <div>
+        <div class="tag">Montant: <b id="payAmount">—</b></div>
+        <div class="tag" style="margin-top:8px">Référence: <b id="payRef">—</b></div>
+        <p class="note" id="payStatus"><span class="status wait">En attente…</span> TWINT va ouvrir après scan.</p>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn brand" onclick="simulateTwint()">J’ai payé</button>
+          <button class="btn ghost" onclick="closePay()">Annuler</button>
+        </div>
+        <small class="note">Si TWINT ne marche pas: <a href="#" onclick="markPaidFallback(event)">confirmer manuellement</a>.</small>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ========= UX: reveal on scroll ========= */
 const obs=new IntersectionObserver((entries)=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show')}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-/* ========= ÉLIGIBILITÉ – chiffres réels (complément TP) ========= */
+/* ========= ÉLIGIBILITÉ ========= */
 const ELIGIBILITY={
   "Genève ⇄ Zinal": {eligible:true, reason:"TP ~4h24 (plusieurs changements) · véhicule ~2h27 (gain ~2h)."},
   "Genève ⇄ Ovronnaz": {eligible:true, reason:"TP ~3h35 · véhicule ~1h59 (gain ~1h35)."},
-  "Genève ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h00–4h15 · véhicule ~2h45 (gain ~1h15–1h30)."},
+  "Genège ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h00–4h15 · véhicule ~2h45 (gain ~1h15–1h30)."},
   "Genève ⇄ Belalp": {eligible:true, reason:"TP ~3h50 · véhicule ~2h35 (gain ~1h15)."},
   "Genève ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h45–4h00 · véhicule ~2h30 (gain ~1h15+)."},
   "Genève ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~4h00–4h20 · véhicule ~2h35 (gain ~1h25)."},
   "Genève ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h45 · véhicule ~2h20 (gain ~1h25)."},
-
   "Lausanne ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h42 via Riddes/Leytron · véhicule 1h06–1h12 (gain ~1h30)."},
   "Lausanne ⇄ Leukerbad": {eligible:true, reason:"TP ~2h17 (train + bus) · véhicule ~1h32 (gain ~45 min)."},
   "Lausanne ⇄ Lötschental": {eligible:true, reason:"TP ~2h40 (train+bus via Goppenstein) · véhicule ~1h40 (gain ~1h)."},
@@ -374,59 +422,44 @@ const ELIGIBILITY={
   "Lausanne ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~3h30 · véhicule ~2h05 (gain ~1h25)."},
   "Lausanne ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h15 · véhicule ~1h50 (gain ~1h25)."},
   "Lausanne ⇄ Gstaad": {eligible:false, reason:"Écart limite : TP ~2h15 vs véhicule ~1h30 (gain ~45 min, 1–2 correspondances)."},
-
   "Yverdon ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h45 · véhicule ~1h35 (gain ~1h10)."},
   "Yverdon ⇄ Leukerbad": {eligible:true, reason:"TP ~3h05 · véhicule ~1h55 (gain ~1h10)."},
   "Yverdon ⇄ Lötschental": {eligible:true, reason:"TP ~3h00 · véhicule ~1h50 (gain ~1h10)."},
   "Yverdon ⇄ Belalp": {eligible:true, reason:"TP ~3h20 · véhicule ~2h10 (gain ~1h10)."},
-
   "Fribourg ⇄ Zinal": {eligible:true, reason:"TP ~3h50 · véhicule ~2h30 (gain ~1h20)."},
   "Fribourg ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h05 · véhicule ~2h40 (gain ~1h25)."},
   "Fribourg ⇄ Belalp": {eligible:true, reason:"TP ~3h40 · véhicule ~2h20 (gain ~1h20)."},
   "Fribourg ⇄ Adelboden": {eligible:true, reason:"TP ~2h35 (train+bus) · véhicule ~1h40 (gain ~55 min)."},
   "Fribourg ⇄ Gstaad": {eligible:false, reason:"Écart limite : TP ~2h00–2h10 vs véhicule ~1h20–1h30."},
-
   "Lausanne ⇄ Les Diablerets": {eligible:false, reason:"TP efficaces ~1h20–1h30 vs véhicule ~1h15."},
   "Lausanne ⇄ Leysin": {eligible:false, reason:"TP très performants (~1h20) vs véhicule ~1h."},
   "Genève ⇄ Anzère": {eligible:false, reason:"Axe bien desservi par TP depuis Sion (bus direct)."}
 };
 
-/* ========= Modèle d'offre : 3 bus / jour =========
-   - Sélection de 3 villes par date: Genève, Lausanne, (Fribourg|Yverdon en alternance)
-   - Pour chaque ville, 1 seule destination ce jour-là (round-robin par ville)
-   - Seules les dates Ven/Sam/Dim de la saison sont proposées dans l'UI
-*/
+/* ========= Modèle d'offre ========= */
 const CITY_POOLS={
   "Genève":["Zinal","Ovronnaz","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
   "Lausanne":["Ovronnaz","Leukerbad","Lötschental","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
   "Yverdon":["Ovronnaz","Leukerbad","Lötschental","Belalp"],
   "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
 };
-
 const SEASON={start:"2025-12-05", end:"2026-03-15"};
 
 function isWeekend(d){const g=d.getDay();return g===5||g===6||g===0;} // ven/sam/dim
 function inSeason(d){return d>=new Date(SEASON.start+"T00:00:00") && d<=new Date(SEASON.end+"T23:59:59");}
-
-// Hash simple pour une rotation déterministe
 function hashDate(dateStr){const d=dateStr.replaceAll('-','');let h=0;for(const ch of d){h=(h*33 + ch.charCodeAt(0))%997;}return h;}
-
-// Retourne le tableau des 3 services du jour: [{from,to,dep,ret}]
 function servicesForDate(dateStr){
   const h=hashDate(dateStr);
-  const thirdCity= (h%2===0) ? "Fribourg" : "Yverdon"; // alternance
+  const thirdCity= (h%2===0) ? "Fribourg" : "Yverdon";
   const cities=["Genève","Lausanne", thirdCity];
   const depSlots={"Genève":"06:30","Lausanne":"07:00","Yverdon":"07:10","Fribourg":"06:45"};
-  const retSlots={"Genève":"16:45","Lausanne":"17:00","Yverdon":"16:30","Fribourg":"16:40"}; // heure de départ depuis la STATION (retour)
-
+  const retSlots={"Genève":"16:45","Lausanne":"17:00","Yverdon":"16:30","Fribourg":"16:40"}; // départ depuis la station
   return cities.map((city,idx)=>{
     const pool=CITY_POOLS[city];
-    const to=pool[(h+idx)%pool.length]; // une seule destination pour la ville ce jour-là
+    const to=pool[(h+idx)%pool.length];
     return {from:city, to, dep:depSlots[city], ret:retSlots[city]};
   });
 }
-
-// Génère la liste des dates proposées (prochaines 16 semaines)
 function nextServiceDates(){
   const res=[]; const today=new Date();
   for(let i=0;i<16*7;i++){ const d=new Date(today.getTime()+i*86400000);
@@ -437,6 +470,23 @@ function nextServiceDates(){
   return res;
 }
 
+/* ========= Durées véhicule (min) pour calcul des arrivées ========= */
+const DURATION_MIN={
+  "Genève|Zinal":147, "Genève|Ovronnaz":119, "Genève|Saas-Fee":165, "Genève|Belalp":155, "Genève|Grimentz/St-Luc":150, "Genève|Evolène/Arolla":155, "Genève|Thyon 2000":140,
+  "Lausanne|Ovronnaz":72, "Lausanne|Leukerbad":92, "Lausanne|Lötschental":100, "Lausanne|Saas-Fee":140, "Lausanne|Belalp":125, "Lausanne|Grimentz/St-Luc":125, "Lausanne|Evolène/Arolla":125, "Lausanne|Thyon 2000":110,
+  "Yverdon|Ovronnaz":95, "Yverdon|Leukerbad":115, "Yverdon|Lötschental":110, "Yverdon|Belalp":130,
+  "Fribourg|Zinal":150, "Fribourg|Saas-Fee":160, "Fribourg|Belalp":140, "Fribourg|Adelboden":100
+};
+function keyDur(from,to){return `${from}|${to}`;}
+function addMinutesToHHMM(hhmm,min){
+  const [h,m]=hhmm.split(':').map(Number);
+  const base=new Date(0,0,0,h,m,0);
+  base.setMinutes(base.getMinutes()+min);
+  const hh=String(base.getHours()).padStart(2,'0');
+  const mm=String(base.getMinutes()).padStart(2,'0');
+  return `${hh}:${mm}`;
+}
+
 /* ========= Pricing ========= */
 function basePrice(dateStr){
   const d=new Date(dateStr+"T12:00:00"), now=new Date();
@@ -445,23 +495,15 @@ function basePrice(dateStr){
 }
 function CHF(n){return "CHF "+n.toFixed(0)+".–";}
 
-/* ========= State & Elements ========= */
+/* ========= State ========= */
 const fromSel=document.getElementById('from');
 const dateSel=document.getElementById('date');
 const toSel=document.getElementById('to');
-
 let CURRENT_SERVICE=null; // {date, from, to, dep, ret}
-let TAKEN_SEATS=new Set(); // sièges déjà pris pour cette course
+let TAKEN_SEATS=new Set();
 
-// Peupler dates en fonction de la ville
-fromSel.addEventListener('change',()=>{
-  populateDates(); toSel.innerHTML='<option value="">Sélectionnez…</option>';
-});
-
-// Quand une date est choisie -> proposer la seule destination dispo pour cette ville
-dateSel.addEventListener('change',()=>{
-  populateDestination();
-});
+fromSel.addEventListener('change',()=>{populateDates(); toSel.innerHTML='<option value="">Sélectionnez…</option>';});
+dateSel.addEventListener('change',()=>{populateDestination();});
 
 function populateDates(){
   dateSel.innerHTML='<option value="">Choisir une date…</option>';
@@ -476,7 +518,6 @@ function populateDates(){
     }
   }
 }
-
 function populateDestination(){
   toSel.innerHTML='<option value="">Sélectionnez…</option>';
   const city=fromSel.value, iso=dateSel.value; if(!city||!iso) return;
@@ -484,53 +525,44 @@ function populateDestination(){
   if(service){
     const opt=document.createElement('option');
     opt.value=service.to; opt.textContent=service.to; toSel.appendChild(opt); toSel.value=service.to;
-    // Prépare l'état courant
     CURRENT_SERVICE={date:iso, ...service};
   }
 }
-
 function isWeekendISO(iso){return isWeekend(new Date(iso+"T00:00:00"));}
 
 function showOptions(){
   const from=fromSel.value.trim(), to=toSel.value.trim(), date=dateSel.value, pack=document.getElementById('pack').value;
   if(!from||!to||!date){alert("Complète tous les champs.");return;}
-  // Ne proposer que les dates avec service
   const svc=servicesForDate(date).find(s=>s.from===from && s.to===to);
   if(!svc || !isWeekendISO(date)) { alert("Pas de service ce jour-là pour cette ville."); return; }
-
   CURRENT_SERVICE={date, ...svc};
-  seedTakenSeats(); // simuler de l'occupation
-
-  // éligibilité
+  seedTakenSeats();
   const key=`${from} ⇄ ${to}`;
   const meta=ELIGIBILITY[key] || {eligible:false, reason:"Axe bien desservi par les transports publics — on recommande les transports publics."};
   document.getElementById('r-route').textContent = `${from} → ${to}`;
-  // Afficher heures précises (aller et retour AU DÉPART DE LA STATION)
-  const go=`Départ ${from} ${svc.dep}`;
-  const back=`Retour (depuis la station) ${svc.ret}`;
-  document.getElementById('r-times').textContent = `${go} — ${back}`;
-  document.getElementById('eligWhy').textContent = meta.reason;
 
+  // Horaires aller / retour (départs) + ARRIVÉES CALCULÉES
+  const goDep=`${svc.dep}`; // départ ville
+  const goArr=addMinutesToHHMM(goDep, DURATION_MIN[keyDur(from,to)]||120);
+  const backDep=`${svc.ret}`; // départ station
+  const backArr=addMinutesToHHMM(backDep, DURATION_MIN[keyDur(from,to)]||120); // NEW: arrivée à la ville
+  document.getElementById('r-times').textContent = `Aller ${from} ${goDep} — ${to} ${goArr} · Retour (départ station) ${backDep}`;
+  document.getElementById('r-arrivals').textContent = `Arrivée prévue au retour → ${from} ${backArr}`;
+
+  document.getElementById('eligWhy').textContent = meta.reason;
   const badge=document.getElementById('eligBadge');
   if(!meta.eligible){
     badge.className="badge block"; badge.textContent="Non éligible — privilégier les TP";
     document.getElementById('result').style.display="block";
     document.getElementById('r-price').textContent="—";
     return;
-  }else{
-    badge.className="badge ok"; badge.textContent="Complément aux TP";
-  }
+  }else{ badge.className="badge ok"; badge.textContent="Complément aux TP"; }
 
   // pricing
   let price = (pack==="yes") ? 20 : basePrice(date);
   window.__basePrice = price; updatePrice();
-
-  // places restantes
   updateSeatCount();
-
-  // seat map rebuild à chaque changement de service
   buildSeats();
-
   document.getElementById('result').style.display="block";
 }
 
@@ -544,11 +576,10 @@ function updatePrice(){
 /* ========= Seat availability (mock) ========= */
 function seatId(r,c){return `${r}${String.fromCharCode(64+c)}`;}
 function seedTakenSeats(){
-  // seed pseudo-aléatoire basé sur la route + date pour stabilité
   const seed=(CURRENT_SERVICE.date+CURRENT_SERVICE.from+CURRENT_SERVICE.to).split('').reduce((a,ch)=>a+ch.charCodeAt(0),0);
-  const rand=()=>{const x=Math.sin(seed + (Math.random()*10)) * 10000; return x - Math.floor(x);} // pseudo
+  const rand=()=>{const x=Math.sin(seed + (Math.random()*10)) * 10000; return x - Math.floor(x);}
   TAKEN_SEATS=new Set();
-  const occupancy= Math.floor(8 + (rand()*16)); // 8–24 places prises
+  const occupancy= Math.floor(8 + (rand()*16));
   while(TAKEN_SEATS.size<occupancy){
     const r=Math.floor(rand()*10)+1; const c=Math.floor(rand()*4)+1; const id=seatId(r,c);
     TAKEN_SEATS.add(id);
@@ -558,8 +589,6 @@ function updateSeatCount(){
   const left=40 - TAKEN_SEATS.size - (document.querySelector('.seat.selected')?1:0);
   document.getElementById('seatCount').textContent = `${left} places restantes`;
 }
-
-/* ========= Seat map 2+2 (10 rangées, rangs 1–2 premium) ========= */
 function buildSeats(){
   const wrap=document.getElementById('seatmap');
   wrap.innerHTML='';
@@ -587,16 +616,136 @@ function selectSeat(btn,id){
   updatePrice(); updateSeatCount();
 }
 
-/* ========= Pay mock ========= */
-function pay(){
+/* ========= Paiement TWINT (prototype) ========= */
+const payModal=document.getElementById('payModal');
+function openPay(){
   if(!CURRENT_SERVICE){alert('Sélectionne une course.'); return;}
-  const route=`${CURRENT_SERVICE.from} → ${CURRENT_SERVICE.to}`;
-  const price=document.getElementById('r-price').textContent || "—";
-  const seat=document.querySelector('.seat.selected')?.textContent || '—';
-  alert(`Paiement (prototype)\n${route}\nAller ${CURRENT_SERVICE.dep} — Retour (depuis la station) ${CURRENT_SERVICE.ret}\nSiège: ${seat}\n${price}`);
+  const seat=document.querySelector('.seat.selected')?.textContent;
+  if(!seat){alert("Choisis un siège."); return;}
+  const fn=document.getElementById('c-first').value.trim();
+  const ln=document.getElementById('c-last').value.trim();
+  const mail=document.getElementById('c-mail').value.trim();
+  const age=document.getElementById('c-age').value.trim();
+  if(!fn||!ln||!mail||!age){alert("Complète tes informations."); return;}
+
+  // Montant & référence
+  const amount=document.getElementById('r-price').textContent.replace('CHF','').replace('.–','').trim();
+  document.getElementById('payAmount').textContent="CHF "+amount+".–";
+  const ref = genRef();
+  document.getElementById('payRef').textContent=ref;
+
+  // QR TWINT (données fictives au format texte)
+  setTimeout(()=>{ // attendre que la lib soit prête
+    const qrel=document.getElementById('twintQR'); qrel.innerHTML='';
+    const payload=`TWINT|merchant=PBC-TEST|amount=${amount}|currency=CHF|ref=${ref}|note=${CURRENT_SERVICE.from}->${CURRENT_SERVICE.to}|contact=Eric Imstepf, +41 79 46 46 443`;
+    new QRCode(qrel,{text:payload,width:220,height:220});
+  },0);
+
+  // statut
+  setPayStatus("En attente…","wait");
+  payModal.classList.add('open'); payModal.setAttribute('aria-hidden','false');
+}
+function closePay(){payModal.classList.remove('open'); payModal.setAttribute('aria-hidden','true');}
+function setPayStatus(msg,type){
+  const el=document.getElementById('payStatus');
+  el.innerHTML=`<span class="status ${type}">${msg}</span>`;
+}
+function genRef(){
+  const t = Date.now().toString(36).toUpperCase();
+  const seat=document.querySelector('.seat.selected')?.textContent||"XX";
+  return `PBC-${t}-${seat}`;
+}
+function simulateTwint(){
+  // simulate succès
+  setPayStatus("Paiement confirmé ✅","ok");
+  // générer & télécharger le PDF billet
+  setTimeout(()=>{exportPDF();}, 400);
+  // close once downloaded
+  setTimeout(closePay, 1200);
+}
+function markPaidFallback(e){e.preventDefault(); simulateTwint();}
+
+/* ========= Export PDF (billet client) ========= */
+async function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const W=210, H=297;
+
+  // Header
+  doc.setFillColor(255,211,0); doc.rect(0,0,W,22,'F');
+  doc.setTextColor(0,0,0);
+  doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  doc.text('PostBus Connect — Billet & Confirmation', 12, 14);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text('Prototype MobilityLab — Navettes ski (complémentaires aux TP)', 12, 19);
+
+  // Collecte données
+  const seat=document.querySelector('.seat.selected')?.textContent||'—';
+  const premium=document.querySelector('.seat.selected')?.classList.contains('premium');
+  const price=document.getElementById('r-price').textContent||'CHF —';
+  const ref=document.getElementById('payRef').textContent||genRef();
+  const fn=document.getElementById('c-first').value.trim();
+  const ln=document.getElementById('c-last').value.trim();
+  const wa=document.getElementById('c-wa').value.trim();
+  const mail=document.getElementById('c-mail').value.trim();
+  const age=document.getElementById('c-age').value.trim();
+
+  const from=CURRENT_SERVICE.from, to=CURRENT_SERVICE.to, date=CURRENT_SERVICE.date;
+  const goDep=CURRENT_SERVICE.dep;
+  const goArr=addMinutesToHHMM(goDep, DURATION_MIN[keyDur(from,to)]||120);
+  const backDep=CURRENT_SERVICE.ret;
+  const backArr=addMinutesToHHMM(backDep, DURATION_MIN[keyDur(from,to)]||120);
+
+  // Bloc détails
+  let y=32;
+  doc.setTextColor(255,255,255); doc.setFillColor(18,20,35);
+  doc.roundedRect(12,y,W-24,84,3,3,'F');
+  y+=8; doc.setTextColor(255,211,0); doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text('Détails du billet', 18, y);
+  doc.setTextColor(220,224,240); doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  const rows=[
+    ['Passager', `${fn} ${ln}`],
+    ['WhatsApp', wa||'—'],
+    ['Email', mail],
+    ['Âge', age],
+    ['Trajet', `${from} → ${to} (A/R)`],
+    ['Date', new Date(date).toLocaleDateString('fr-CH',{weekday:'long', day:'2-digit', month:'2-digit', year:'numeric'})],
+    ['Aller', `${from} ${goDep} → ${to} ${goArr}`],
+    ['Retour', `dep. ${to} ${backDep} → arr. ${from} ${backArr}`],
+    ['Siège', `${seat}${premium?' · Premium':''}`],
+    ['Tarif', price],
+    ['Référence billet', ref]
+  ];
+  let x1=18, x2=58;
+  rows.forEach(r=>{ y+=7; doc.text(`${r[0]} :`, x1, y); doc.setTextColor(165,172,189); doc.text(r[1], x2, y); doc.setTextColor(220,224,240); });
+
+  // Contact / assistance
+  y+=10; doc.setTextColor(255,211,0); doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Contact & assistance', 18, y);
+  y+=7; doc.setTextColor(165,172,189); doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  doc.text('Eric Imstepf · +41 79 46 46 443 · support@postbus-connect.ch', 18, y);
+
+  // QR (ticket)
+  const qrPayload = `PBC|${ref}|${fn} ${ln}|${from}-${to}|${date}|Seat ${seat}`;
+  const qrDiv = document.createElement('div'); new QRCode(qrDiv,{text:qrPayload,width:220,height:220});
+  const qrImg = qrDiv.querySelector('img')?.src || qrDiv.querySelector('canvas').toDataURL('image/png');
+  doc.addImage(qrImg, 'PNG', W-12-48, 34, 48, 48);
+
+  // Footer
+  doc.setTextColor(120,127,150); doc.setFontSize(9);
+  doc.text('Conditions : billet personnel et non transférable · Pas de demi-tarif · Remboursement si course annulée · Contrôle à l’embarquement', 12, H-16);
+  doc.text(`Généré le ${new Date().toLocaleString('fr-CH')}`, W-12, H-16, {align:'right'});
+
+  doc.save(`Billet_PostBusConnect_${ref}.pdf`);
 }
 
-// Init: focus UX
+/* ========= Pay button (ancienne alerte remplacée) ========= */
+function pay(){
+  openPay();
+}
+
+/* ========= Init ========= */
+function populateDatesOnLoad(){populateDates();}
+window.addEventListener('DOMContentLoaded', populateDatesOnLoad);
 </script>
 </body>
 </html>
