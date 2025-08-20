@@ -1,180 +1,109 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>PostBus Connect · Prototype MobilityLab</title>
-  <meta name="description" content="Navettes directes vers les pistes. Départs matin, retours fin de journée, arrivée en ville affichée." />
   <style>
     :root{
       --brand:#FFD500; --bg:#0a0d16; --fg:#eaeef9; --muted:#9ca3b9;
       --card:#151926; --cardBorder:#232a40;
     }
-    /* Reset & base */
-    *,*::before,*::after{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-      background:var(--bg); color:var(--fg); line-height:1.55;
-      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-    }
-    img{display:block;max-width:100%;height:auto}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Inter",Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.5;-webkit-font-smoothing:antialiased}
     a{text-decoration:none;color:inherit}
 
-    /* Layout helpers */
-    .container{max-width:1180px;margin:0 auto;padding-inline:20px}
-    section{padding:64px 0}
-    @media (min-width: 768px){ section{padding:80px 0} }
-    .btn{display:inline-block;padding:12px 20px;border-radius:12px;font-weight:600}
-    .btn.brand{background:var(--brand);color:#000}
-    .btn.ghost{border:1px solid var(--cardBorder);background:rgba(255,255,255,.04);color:var(--fg)}
-    .section-title{font-size:clamp(1.5rem,2.8vw,2rem);margin-bottom:16px}
+    header{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;background:#0d111c;position:sticky;top:0;z-index:20}
+    header .logo{font-weight:600;font-size:1.1rem}
+    header nav{display:flex;gap:20px}
+    header nav a{opacity:.85;font-weight:500}
+    header nav a:hover{opacity:1}
+    header .btn{background:var(--brand);padding:8px 18px;border-radius:8px;font-weight:600;color:#000}
 
-    /* Header */
-    header{
-      position:sticky; top:0; z-index:20;
-      background:linear-gradient(180deg,#0d111c 0%, rgba(13,17,28,.86) 100%);
-      border-bottom:1px solid #151a28;
-      backdrop-filter:saturate(120%) blur(6px);
-    }
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
-    .logo{font-weight:700;font-size:1rem;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
-    .logo .dot{width:10px;height:10px;border-radius:50%;background:#FFD500;display:inline-block}
-    nav{display:none;gap:18px}
-    .top-cta{display:none}
-    @media (min-width: 900px){
-      nav{display:flex}
-      .top-cta{display:inline-block}
-    }
-    nav a{opacity:.85;font-weight:500}
-    nav a:hover{opacity:1}
-    .top-cta .btn{padding:8px 16px;border-radius:10px;background:var(--brand);color:#000}
-
-    /* HERO */
-    .hero-modern{position:relative; overflow:hidden}
-    .hero-media{position:absolute; inset:0; z-index:-2}
-    .hero-media .slide{
-      position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-      filter:brightness(.72) contrast(1.05) saturate(1.05);
+    .hero-modern{position:relative; padding:110px 0 72px; overflow:hidden}
+    .hero-modern .hero-media{position:absolute; inset:0; z-index:-2}
+    .hero-modern .hero-media .slide{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:brightness(.72) contrast(1.05) saturate(1.05);
       opacity:0; transition:opacity 1.2s ease;
     }
-    .hero-media .s1{animation:fadeHero 18s infinite}
-    .hero-media .s2{animation:fadeHero 18s infinite 6s}
-    .hero-media .s3{animation:fadeHero 18s infinite 12s}
+    .hero-modern .hero-media .s1{animation:fadeHero 18s infinite}
+    .hero-modern .hero-media .s2{animation:fadeHero 18s infinite 6s}
+    .hero-modern .hero-media .s3{animation:fadeHero 18s infinite 12s}
     @keyframes fadeHero{0%{opacity:1}27%{opacity:1}33%{opacity:0}94%{opacity:0}100%{opacity:1}}
-    .overlay{
+    .hero-modern .overlay{
       position:absolute; inset:0; pointer-events:none;
       background:radial-gradient(80% 60% at 15% 20%, rgba(8,10,18,.65) 0%, rgba(8,10,18,.4) 40%, rgba(8,10,18,.2) 70%, transparent 100%);
     }
-
-    .hero-inner{padding-top:84px;padding-bottom:64px}
-    .hero-grid{
-      display:grid; gap:22px; align-items:center;
-      grid-template-columns: 1fr;  /* mobile: illustration au-dessus */
-    }
-    @media (min-width: 820px){
-      .hero-grid{grid-template-columns: auto 1fr; gap:36px}
-    }
-    .hero-illustration{
-      justify-self:start;
-      background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
-      border:1px solid var(--cardBorder);
-      border-radius:18px;
-      padding:10px; box-shadow:0 10px 24px rgba(0,0,0,.35);
-      max-width:min(82vw,380px);
-    }
-    .hero-illustration img{border-radius:12px}
-    .hero-copy h1{
-      font-size:clamp(2rem,6vw,4.4rem);
-      line-height:1.02; letter-spacing:-.02em; margin:4px 0 10px;
-    }
-    .sub{margin-top:6px;font-size:clamp(1rem,2.2vw,1.2rem);color:var(--muted);max-width:66ch}
+    .hero-inner{display:grid; grid-template-columns:1fr; align-items:center;padding:0 28px}
+    .hero-copy{max-width:760px}
+    .hero-modern h1{font-size:clamp(38px,6.4vw,78px); line-height:1.02; letter-spacing:-.02em; text-wrap:balance}
+    .hero-modern .sub{margin-top:14px;font-size:1.2rem;color:var(--muted)}
     .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-    .hero-kpis{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
-    .kpi{background:var(--card);border:1px solid var(--cardBorder);border-radius:12px;padding:10px 14px;text-align:center;min-width:120px}
-    .kpi b{font-size:1.05rem}
+    .btn{padding:12px 20px;border-radius:10px;font-weight:600}
+    .btn.brand{background:var(--brand);color:#000}
+    .btn.ghost{border:1px solid var(--cardBorder);background:rgba(255,255,255,.04)}
+    .hero-kpis{display:flex;gap:16px;flex-wrap:wrap;margin-top:28px}
+    .kpi{background:var(--card);border:1px solid var(--cardBorder);border-radius:12px;padding:12px 18px;text-align:center;min-width:120px}
+    .kpi b{font-size:1.1rem}
 
-    /* Microbar avantages */
+    section{padding:80px 28px}
+    .section-title{font-size:2rem;margin-bottom:24px}
+
     .microbar{padding:14px 0;background:linear-gradient(180deg,rgba(16,19,32,.35),rgba(16,19,32,.15));border-top:1px solid #1a2032;border-bottom:1px solid #1a2032}
     .benefits{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .benefit{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#0f1323;border:1px solid #232a40;color:#cfd5e8;font-size:.92rem;white-space:nowrap}
     .benefit .ic{font-size:1rem;opacity:.9}
     .benefits-note{color:#8f96ab;font-size:.86rem;margin-top:8px}
 
-    /* Form réservation + résultats */
-    .form-card{background:var(--card);border:1px solid var(--cardBorder);border-radius:14px;padding:18px;max-width:720px;margin:0 auto}
-    .form-row{display:grid;gap:12px;grid-template-columns:1fr}
-    @media (min-width: 720px){
-      .form-row{grid-template-columns:1fr 1fr}
-    }
-    label{display:block;font-weight:600;margin-bottom:6px}
-    select,button, input{
-      width:100%;padding:12px;border-radius:10px;border:1px solid var(--cardBorder);
-      background:#0f1323;color:var(--fg);font-size:1rem
-    }
-    select{margin-bottom:12px}
-    .form-card .btn{margin-top:4px}
+    .form-card{background:var(--card);border:1px solid var(--cardBorder);border-radius:14px;padding:28px;max-width:720px;margin:auto}
+    .form-card label{display:block;font-weight:500;margin-bottom:6px}
+    select{width:100%;padding:10px;border-radius:8px;border:1px solid var(--cardBorder);background:#0f1323;color:var(--fg);margin-bottom:18px}
+    .form-card .btn{width:100%;margin-top:8px}
+
+    /* Résultats */
     .results{max-width:720px;margin:16px auto 0;display:grid;gap:12px}
     .trip{background:var(--card);border:1px solid var(--cardBorder);border-radius:12px;padding:16px}
     .trip h3{font-size:1.05rem;margin-bottom:6px}
-    .trip .meta{color:var(--muted);font-size:.95rem}
-    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#0f1323;border:1px solid var(--cardBorder);font-size:.88rem;margin:4px 6px 0 0}
-
-    /* Pricing */
-    #pricing p{max-width:720px}
-
-    /* Small helpers */
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .trip .meta{color:var(--muted);font-size:.92rem}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#0f1323;border:1px solid var(--cardBorder);font-size:.84rem;margin-right:6px}
   </style>
 </head>
 <body>
   <header>
-    <div class="topbar container">
-      <div class="logo" aria-label="PostBus Connect, Prototype MobilityLab">
-        <span class="dot" aria-hidden="true"></span> PostBus Connect
-        <span style="opacity:.6;font-weight:600;margin-left:8px">Prototype MobilityLab</span>
-      </div>
-      <nav aria-label="Navigation principale">
-        <a href="#why">Pourquoi</a>
-        <a href="#reserve">Réserver</a>
-        <a href="#pricing">Tarifs</a>
-      </nav>
-      <a class="top-cta btn" href="#reserve">Planifier</a>
-    </div>
+    <div class="logo">● PostBus Connect <span style="opacity:.6">Prototype MobilityLab</span></div>
+    <nav>
+      <a href="#why">Pourquoi</a>
+      <a href="#reserve">Réserver</a>
+      <a href="#pricing">Tarifs</a>
+    </nav>
+    <a class="btn" href="#reserve">Planifier</a>
   </header>
 
   <!-- HERO -->
-  <section id="hero" class="hero-modern" aria-labelledby="heroTitle">
+  <section id="hero" class="hero-modern">
     <div class="hero-media" aria-hidden="true">
       <img src="images/zinal.jpg" alt="" class="slide s1">
       <img src="images/ovronnaz.jpg" alt="" class="slide s2">
       <img src="images/leukerbad.jpg" alt="" class="slide s3">
       <div class="overlay"></div>
     </div>
-
     <div class="container hero-inner">
-      <div class="hero-grid">
-        <figure class="hero-illustration" aria-hidden="true">
-          <img src="images/bus-cartoon.png" alt="Bus de ski avec passagers heureux" />
-        </figure>
-
-        <div class="hero-copy">
-          <h1 id="heroTitle">Navettes directes<br>vers les pistes</h1>
-          <p class="sub">
-            Un service <b>complémentaire aux Transports publics</b> — uniquement sur les axes où la
-            <b>voiture est nettement moins contraignante</b> (temps, correspondances, marche).
-            Autocar confort 40 places <b>2+2</b>.
-          </p>
-          <div class="cta-row">
-            <a class="btn brand" href="#reserve">Réserver maintenant</a>
-            <a class="btn ghost" href="#avantages-voiture">Avantages vs voiture</a>
-          </div>
-          <div class="hero-kpis" role="list" aria-label="Indicateurs clés">
-            <div class="kpi" role="listitem"><b>Ven–Dim</b><br><small>Saison de ski</small></div>
-            <div class="kpi" role="listitem"><b>3 bus</b><br><small>Confort 40 places</small></div>
-            <div class="kpi" role="listitem"><b>Départ matin</b><br><small>Retour & arrivée affichés</small></div>
-            <div class="kpi" role="listitem"><b>Siège premium</b><br><small>rangs 1–2</small></div>
-          </div>
+      <div class="hero-copy">
+        <h1>Navettes directes<br>vers les pistes</h1>
+        <p class="sub">
+          Un service <b>complémentaire aux Transports publics</b> — uniquement sur les axes où la
+          <b>voiture est nettement moins contraignante</b> (temps, correspondances, marche).
+          Autocar confort 40 places <b>2+2</b>.
+        </p>
+        <div class="cta-row">
+          <a class="btn brand" href="#reserve">Réserver maintenant</a>
+          <a class="btn ghost" href="#avantages-voiture">Avantages vs voiture</a>
+        </div>
+        <div class="hero-kpis">
+          <div class="kpi"><b>Ven–Dim</b><br><small>Saison de ski</small></div>
+          <div class="kpi"><b>3 bus</b><br><small>Confort 40 places</small></div>
+          <div class="kpi"><b>Départ matin</b><br><small>Retour & arrivée affichés</small></div>
+          <div class="kpi"><b>Siège premium</b><br><small>rangs 1–2</small></div>
         </div>
       </div>
     </div>
@@ -191,69 +120,48 @@
         <span class="benefit"><span class="ic">😌</span> Zéro stress route</span>
         <span class="benefit"><span class="ic">💸</span> Prix malins (dès 25.–)</span>
       </div>
-      <p class="benefits-note">Comparé à un trajet en voiture individuelle (temps, coûts & confort global).</p>
+      <div class="benefits-note">Comparé à un trajet en voiture individuelle (temps, coûts & confort global).</div>
     </div>
   </section>
 
   <!-- Réserver -->
-  <section id="reserve" aria-labelledby="reserveTitle">
-    <div class="container">
-      <h2 id="reserveTitle" class="section-title">Réserver</h2>
-      <p style="margin-bottom:16px;max-width:720px">
-        Uniquement sur axes éligibles. Départs le matin, retours fin de journée (Ven–Dim).
-        Nous affichons aussi l’<b>heure d’arrivée en ville</b> le soir.
-      </p>
+  <section id="reserve">
+    <h2 class="section-title">Réserver</h2>
+    <p style="margin-bottom:16px">Uniquement sur axes éligibles. Départs le matin, retours fin de journée (Ven–Dim, saison de ski). L’interface ci-dessous affiche aussi l’<b>heure d’arrivée en ville</b>.</p>
+    <div class="form-card">
+      <label for="origin">Ville de départ</label>
+      <select id="origin">
+        <option value="">Sélectionnez…</option>
+        <option>Genève</option>
+        <option>Lausanne</option>
+        <option>Fribourg</option>
+        <option>Yverdon</option>
+      </select>
 
-      <div class="form-card" role="form" aria-label="Sélecteur de trajets">
-        <div class="form-row">
-          <div>
-            <label for="origin">Ville de départ</label>
-            <select id="origin" aria-describedby="originHelp">
-              <option value="">Sélectionnez…</option>
-              <option>Genève</option>
-              <option>Lausanne</option>
-              <option>Fribourg</option>
-              <option>Yverdon</option>
-            </select>
-            <div id="originHelp" class="sr-only">Choisissez une ville de départ.</div>
-          </div>
+      <label for="date">Date disponible</label>
+      <select id="date"><option value="">Sélectionnez une date…</option></select>
 
-          <div>
-            <label for="date">Date disponible</label>
-            <select id="date"><option value="">Sélectionnez une date…</option></select>
-          </div>
-        </div>
+      <label for="dest">Station</label>
+      <select id="dest"><option value="">Sélectionnez une station…</option></select>
 
-        <div class="form-row" style="margin-top:8px">
-          <div>
-            <label for="dest">Station</label>
-            <select id="dest"><option value="">Sélectionnez une station…</option></select>
-          </div>
-          <div>
-            <label class="sr-only" for="seeTrips">Voir les départs</label>
-            <button id="seeTrips" class="btn brand" style="height:100%">Voir les départs</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="results" class="results" aria-live="polite"></div>
+      <button id="seeTrips" class="btn brand">Voir les départs</button>
     </div>
+
+    <div id="results" class="results" aria-live="polite"></div>
   </section>
 
   <!-- Pricing -->
-  <section id="pricing" aria-labelledby="pricingTitle">
-    <div class="container">
-      <h2 id="pricingTitle" class="section-title">Tarifs</h2>
-      <p>
-        • Forfait 5 allers-retours : <b>100.–</b><br />
-        • Achat à l’unité selon modèle <i>EasyJet</i> : dès <b>25.–</b><br />
-        • Option siège premium (rang 1–2) : +<b>10.–</b>
-      </p>
-    </div>
+  <section id="pricing">
+    <h2 class="section-title">Tarifs</h2>
+    <p>
+      • Forfait 5 allers-retours : <b>100.–</b><br>
+      • Achat à l’unité selon modèle <i>EasyJet</i> : dès <b>25.–</b><br>
+      • Option siège premium (rang 1–2) : +<b>10.–</b>
+    </p>
   </section>
 
   <script>
-    // Données : ret = départ de la station (retour), arrive = arrivée en ville (heure de l'ancien ret)
+    // Données officielles (ret = départ station, arrive = arrivée en ville le soir)
     const SCHEDULE = [
       { "date": "2026-01-09", "origin": "Genève",   "dest": "Zinal",           "dep": "07:00", "ret": "15:45", "arrive": "16:45" },
       { "date": "2026-01-09", "origin": "Lausanne", "dest": "Ovronnaz",        "dep": "07:15", "ret": "15:30", "arrive": "16:30" },
@@ -285,12 +193,12 @@
     const uniq = arr => [...new Set(arr)];
     const by = (k, v) => it => it[k] === v;
 
-    // Remplir les dates selon l'origine
+    // Remplit dates selon l'origine
     function fillDates(origin){
       const dateSel = $("#date");
       dateSel.innerHTML = '<option value="">Sélectionnez une date…</option>';
-      if (!origin) return;
-      uniq(SCHEDULE.filter(by("origin", origin)).map(t=>t.date))
+      if(!origin) return;
+      uniq(SCHEDULE.filter(by("origin", origin)).map(t => t.date))
         .sort()
         .forEach(d=>{
           const o=document.createElement("option");
@@ -298,28 +206,23 @@
         });
     }
 
-    // Remplir les stations selon origine + date
+    // Remplit stations selon l'origine + date
     function fillDest(origin, date){
       const destSel = $("#dest");
       destSel.innerHTML = '<option value="">Sélectionnez une station…</option>';
-      if (!origin || !date) return;
-      uniq(SCHEDULE.filter(t=>t.origin===origin && t.date===date).map(t=>t.dest))
+      if(!origin || !date) return;
+      uniq(SCHEDULE.filter(t => t.origin===origin && t.date===date).map(t=>t.dest))
         .forEach(st=>{
           const o=document.createElement("option");
           o.value=st; o.textContent=st; destSel.appendChild(o);
         });
     }
 
-    // Rendu des trajets
     function renderTrips(origin, date, dest){
       const wrap = $("#results");
       wrap.innerHTML = "";
-      const trips = SCHEDULE.filter(t =>
-        (!origin || t.origin===origin) &&
-        (!date || t.date===date) &&
-        (!dest || t.dest===dest)
-      );
-      if (trips.length===0){
+      let trips = SCHEDULE.filter(t => (!origin || t.origin===origin) && (!date || t.date===date) && (!dest || t.dest===dest));
+      if(trips.length===0){
         wrap.innerHTML = '<div class="trip"><div class="meta">Aucun départ pour cette combinaison.</div></div>';
         return;
       }
@@ -338,7 +241,7 @@
       });
     }
 
-    // Événements UI
+    // Events
     $("#origin").addEventListener("change", e=>{
       const origin = e.target.value;
       fillDates(origin);
