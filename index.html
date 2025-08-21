@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>PostBus Connect — Navettes ski (Prototype MobilityLab)</title>
-<meta name="description" content="Navettes directes CarPostal (bus confort 40 places). Offre complémentaire aux transports publics, uniquement sur les axes ou la voiture est nettement moins contraignante. Réservation simple, siège premium, météo.">
+<meta name="description" content="Navettes directes CarPostal (bus confort 40 places). Offre complémentaire aux transports publics, uniquement sur les axes où la voiture est nettement moins contraignante. Réservation simple, siège premium, météo.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -375,7 +375,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
   <div class="container foot">
     <div>
       <h3>PostBus Connect</h3>
-      <p>© 2025 MobilityLab by Eric — Prototype en beta. Offre <b>complémentaire</b> aux transports publics.</p>
+      <p>© 2025 MobilityLab by Eric — Prototype en bêta. Offre <b>complémentaire</b> aux transports publics.</p>
     </div>
     <div>
       <h3>Navigation</h3>
@@ -546,27 +546,25 @@ let CURRENT_SERVICE=null;
 let TAKEN_SEATS=new Set();
 
 /* ========= UI populate ========= */
-fromSel.addEventListener('change',()=>{ populateDates(); toSel.innerHTML='<option value="">Sélectionnez…</option>'; });
+fromSel.addEventListener('change',()=>{ populateDates(); toSel.innerHTML='<option value=\"\">Sélectionnez…</option>'; });
 dateSel.addEventListener('change',()=>{ populateDestination(); });
 
 function populateDates(){
-  dateSel.innerHTML='<option value="">Choisir une date…</option>';
+  dateSel.innerHTML='<option value=\"\">Choisir une date…</option>';
   const city=fromSel.value; if(!city) return;
   for(const iso of nextServiceDates()){
     const services=servicesForDate(iso);
     if(services.some(s=>s.from===city)){
       const opt=document.createElement('option');
-      opt.value=iso; opt.textContent=dateFromISO(iso).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
-      dateSel.appendChild(opt);
-    }
-  }
-});
+      opt.value=iso; 
+      opt.textContent=dateFromISO(iso).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
       dateSel.appendChild(opt);
     }
   }
 }
+
 function populateDestination(){
-  toSel.innerHTML='<option value="">Sélectionnez…</option>';
+  toSel.innerHTML='<option value=\"\">Sélectionnez…</option>';
   const city=fromSel.value, iso=dateSel.value; if(!city||!iso) return;
   const service=servicesForDate(iso).find(s=>s.from===city);
   if(service){
@@ -581,16 +579,16 @@ function isWeekendISO(iso){ return isWeekend(dateFromISO(iso)); }
 
 function showOptions(){
   const from=fromSel.value.trim(), to=toSel.value.trim(), date=dateSel.value, pack=document.getElementById('pack').value;
-  if(!from||!to||!date){alert("Complète tous les champs.");return;}
+  if(!from||!to||!date){alert(\"Complète tous les champs.\");return;}
   const svc=servicesForDate(date).find(s=>s.from===from && s.to===to);
-  if(!svc || !isWeekendISO(date) || !inSeason(new Date(date+"T00:00:00"))) { alert("Pas de service ce jour-là pour cette ville (saison: ven–dim, fin déc 2025 → mars 2026)."); return; }
+  if(!svc || !isWeekendISO(date) || !inSeason(new Date(date+\"T00:00:00\"))) { alert(\"Pas de service ce jour-là pour cette ville (saison: ven–dim, fin déc 2025 → mars 2026).\"); return; }
 
   const duration = rideMinutes(from, to);
   CURRENT_SERVICE={date, ...svc, duration};
   seedTakenSeats();
 
   const key=`${from} ⇄ ${to}`;
-  const meta=ELIGIBILITY[key] || {eligible:false, reason:"Axe bien desservi par les transports publics — on recommande les transports publics."};
+  const meta=ELIGIBILITY[key] || {eligible:false, reason:\"Axe bien desservi par les transports publics — on recommande les transports publics.\"};
   document.getElementById('r-route').textContent = `${from} → ${to}`;
 
   const arrStation = addMinutesToTime(svc.dep, duration);
@@ -602,20 +600,20 @@ function showOptions(){
 
   const badge=document.getElementById('eligBadge');
   if(!meta.eligible){
-    badge.className="badge block"; badge.textContent="Non éligible — privilégier les TP";
-    document.getElementById('result').style.display="block";
-    document.getElementById('r-price').textContent="—";
+    badge.className=\"badge block\"; badge.textContent=\"Non éligible — privilégier les TP\";
+    document.getElementById('result').style.display=\"block\";
+    document.getElementById('r-price').textContent=\"—\";
     return;
   }else{
-    badge.className="badge ok"; badge.textContent="Complément aux TP";
+    badge.className=\"badge ok\"; badge.textContent=\"Complément aux TP\";
   }
 
-  let price = (pack==="yes") ? 20 : basePrice(date);
+  let price = (pack===\"yes\") ? 20 : basePrice(date);
   window.__basePrice = price; updatePrice();
 
   updateSeatCount();
   buildSeats();
-  document.getElementById('result').style.display="block";
+  document.getElementById('result').style.display=\"block\";
 }
 
 function updatePrice(){
@@ -623,7 +621,7 @@ function updatePrice(){
   const total = (window.__basePrice||0) + premium;
   window.__totalPrice = total;
   document.getElementById('r-price').textContent = CHF(total);
-  document.getElementById('r-price-note').textContent = (window.__basePrice===20) ? "Forfait: 20.– / A-R" : "Early 25.– · Standard 32.– · Last 39.–";
+  document.getElementById('r-price-note').textContent = (window.__basePrice===20) ? \"Forfait: 20.– / A-R\" : \"Early 25.– · Standard 32.– · Last 39.–\";
 }
 
 /* ========= Seats mock ========= */
@@ -644,29 +642,25 @@ function updateSeatCount(){
 function buildSeats(){
   const wrap=document.getElementById('seatmap');
   wrap.innerHTML='';
+
   const grid=document.createElement('div');
   grid.className='bus';
-  const grid=document.createElement('div'); grid.className='bus';
-  const head=document.createElement('div'); head.className='bus-head'; head.textContent=`Avant • ${CURRENT_SERVICE.from}→${CURRENT_SERVICE.to} • ${dateFromISO(CURRENT_SERVICE.date).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit'})}`; grid.appendChild(head);
+
+  const head=document.createElement('div');
+  head.className='bus-head';
+  head.textContent=`Avant • ${CURRENT_SERVICE.from}→${CURRENT_SERVICE.to} • ${dateFromISO(CURRENT_SERVICE.date).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit'})}`;
+  grid.appendChild(head);
+
   for(let r=1;r<=10;r++){
-    for(let c=1;c<=2;c++){ grid.appendChild(makeSeatButton(r,c)); }
+    for(let c=1;c<=2; c++) { grid.appendChild(makeSeatButton(r,c)); }
     const spacer=document.createElement('div'); spacer.style.width='28px'; spacer.style.height='1px'; grid.appendChild(spacer);
-    for(let c=3;c<=4;c++){ grid.appendChild(makeSeatButton(r,c)); }
-  }
-  wrap.appendChild(grid);
-}→${CURRENT_SERVICE.to} • ${new Date(CURRENT_SERVICE.date).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit'})}`;
-  head.className="bus-head"; wrap.appendChild(head);
-  const grid=document.createElement('div'); grid.className="bus";
-  for(let r=1;r<=10;r++){
-    for(let c=1;c<=2)c=+c, grid.appendChild(makeSeatButton(r,c));
-    const spacer=document.createElement('div'); spacer.style.width="28px"; spacer.style.height="1px"; grid.appendChild(spacer);
-    for(let c=3;c<=4)c=+c, grid.appendChild(makeSeatButton(r,c));
+    for(let c=3;c<=4; c++) { grid.appendChild(makeSeatButton(r,c)); }
   }
   wrap.appendChild(grid);
 }
 function makeSeatButton(r,c){
   const id=seatId(r,c);
-  const b=document.createElement('button'); b.type="button"; b.className="seat"+(r<=2?" premium":""); b.textContent=id;
+  const b=document.createElement('button'); b.type=\"button\"; b.className=\"seat\"+(r<=2?\" premium\":\"\"); b.textContent=id;
   if(TAKEN_SEATS.has(id)){ b.classList.add('taken'); b.disabled=true; }
   b.onclick=()=>selectSeat(b,id);
   return b;
@@ -674,7 +668,7 @@ function makeSeatButton(r,c){
 function selectSeat(btn,id){
   document.querySelectorAll('.seat').forEach(s=>s.classList.remove('selected'));
   btn.classList.add('selected');
-  document.getElementById('seatChosen').textContent = `Siège ${id}` + (btn.classList.contains('premium') ? " · premium" : "");
+  document.getElementById('seatChosen').textContent = `Siège ${id}` + (btn.classList.contains('premium') ? \" · premium\" : \"\");
   updatePrice(); updateSeatCount();
 }
 
@@ -692,21 +686,21 @@ function pay(){
   let ok=true;
   if(!f.value.trim()){f.classList.add('invalid'); ok=false;}
   if(!l.value.trim()){l.classList.add('invalid'); ok=false;}
-  if(!/^\+?\d[\d\s\-()]{7,}$/.test(wa.value.trim())){wa.classList.add('invalid'); ok=false;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value.trim())){em.classList.add('invalid'); ok=false;}
+  if(!/^\\+?\\d[\\d\\s\\-()]{7,}$/.test(wa.value.trim())){wa.classList.add('invalid'); ok=false;}
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(em.value.trim())){em.classList.add('invalid'); ok=false;}
   const ageNum = parseInt(ag.value, 10);
   if(isNaN(ageNum)){ag.classList.add('invalid'); ok=false;}
-  if(!tc.checked){alert("Merci d’accepter les conditions."); ok=false;}
+  if(!tc.checked){alert(\"Merci d’accepter les conditions.\"); ok=false;}
   if(!ok) return;
-  if(ageNum < 10){ alert("Désolé, pas possible pour les < 10 ans."); return; }
-  const ageLabel = (ageNum < 18) ? "<18" : "≥18";
+  if(ageNum < 10){ alert(\"Désolé, pas possible pour les < 10 ans.\"); return; }
+  const ageLabel = (ageNum < 18) ? \"<18\" : \"≥18\";
 
   const total=window.__totalPrice||0;
   const ref = `PBC-${CURRENT_SERVICE.date.replaceAll('-','')}-${CURRENT_SERVICE.from.slice(0,2).toUpperCase()}-${CURRENT_SERVICE.to.split(/[ /]/)[0].toUpperCase()}-${seat}`;
   const payload = {
-    scheme:"TWINT-PBC-DEMO",
-    merchant:"PostBus Connect (Prototype)",
-    currency:"CHF",
+    scheme:\"TWINT-PBC-DEMO\",
+    merchant:\"PostBus Connect (Prototype)\",
+    currency:\"CHF\",
     amount: total,
     reference: ref,
     route: `${CURRENT_SERVICE.from}→${CURRENT_SERVICE.to}`,
