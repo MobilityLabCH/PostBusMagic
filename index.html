@@ -176,7 +176,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
         <a class="btn ghost" href="#why">Voir pourquoi</a>
       </div>
       <div class="hero-kpis">
-        <div class="kpi"><b>Ven–Dim</b><br><small>Saison de ski</small></div>
+        <div class="kpi"><b>Ven–Dim</b><br><small>Saison fin déc 2025 → mars 2026</small></div>
         <div class="kpi"><b>3 bus</b><br><small>Capacité 40 places</small></div>
         <div class="kpi"><b>Départ matin</b><br><small>Retour fin de journée</small></div>
         <div class="kpi"><b>Siège premium</b><br><small>rangs 1–2</small></div>
@@ -252,7 +252,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
         </div>
         <div class="full" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <button class="btn brand" type="submit">Voir les départs</button>
-          <span class="tag">Uniquement durant la saison de ski</span>
+          <span class="tag">Fin déc 2025 → mars 2026 (ven–dim)</span>
           <span class="tag">Réservé aux détenteurs d’un Magic Pass</span>
         </div>
       </form>
@@ -478,36 +478,29 @@ const CITY_POOLS={
   "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
 };
 
-// ====== SAISON: Week-ends (Ven-Dim) de janvier à mars ======
-// Choisit automatiquement l'année de saison: si on est entre janv-mars, prend l'année courante, sinon l'année suivante.
-function seasonYear(){
-  const today=new Date();
-  const m=today.getMonth(); // 0=janvier
-  return (m<=2) ? today.getFullYear() : today.getFullYear()+1;
-}
-const SEASON={ start: `${seasonYear()}-01-01`, end: `${seasonYear()}-03-31` };
-
+// ====== SAISON: Fin déc 2025 → mars 2026, week-ends (Ven–Dim) ======
+const SEASONS=[ { start:"2025-12-20", end:"2026-03-31" } ];
 function isWeekend(d){ const g=d.getDay(); return g===5||g===6||g===0; } // ven/sam/dim
-function inSeason(d){ return d>=new Date(SEASON.start+"T00:00:00") && d<=new Date(SEASON.end+"T23:59:59"); }
-
-// Génère TOUTES les dates Ven-Sam-Dim entre 1er janvier et 31 mars (beaucoup plus de dates)
+function inSeason(d){ return SEASONS.some(s=> d>=new Date(s.start+"T00:00:00") && d<=new Date(s.end+"T23:59:59")); }
+// Génère toutes les dates Ven–Sam–Dim sur la période ci-dessus
 function nextServiceDates(){
-  const dates=[];
-  const y=seasonYear();
-  const start=new Date(y,0,1);         // 1 janv
-  const end=new Date(y,2,31,23,59,59); // 31 mars
+  const out=[];
+  const start=new Date('2025-12-20T00:00:00');
+  const end  =new Date('2026-03-31T23:59:59');
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    if(isWeekend(d)) dates.push(new Date(d).toISOString().split('T')[0]);
+    if(isWeekend(d) && inSeason(d)) out.push(new Date(d).toISOString().split('T')[0]);
   }
-  return dates;
+  return out;
 }
 
-// ====== 3 bus maximum par jour (Genève, Lausanne + 3e ville alternée) ======
+// ====== 3 bus maximum/jour : Lausanne fixe + 2 villes alternées ======
 function hashDate(dateStr){ const d=dateStr.replaceAll('-',''); let h=0; for(const ch of d){ h=(h*33 + ch.charCodeAt(0))%997; } return h; }
 function servicesForDate(dateStr){
   const h=hashDate(dateStr);
-  const thirdCity = (h%2===0) ? "Fribourg" : "Yverdon"; // alterne pour varier
-  const cities=["Genève","Lausanne", thirdCity];        // ⇒ max 3 bus
+  const rotating=["Genève","Yverdon","Fribourg"]; // alternance
+  const a=rotating[h % rotating.length];
+  const b=rotating[(h+1) % rotating.length];
+  const cities=["Lausanne", a, b]; // ⇒ max 3 bus/jour
   const depSlots={"Genève":"06:30","Lausanne":"07:00","Yverdon":"07:10","Fribourg":"06:45"};
   const retSlots={"Genève":"16:45","Lausanne":"17:00","Yverdon":"16:30","Fribourg":"16:40"};
   return cities.map((city,idx)=>{
@@ -526,7 +519,7 @@ function basePrice(dateStr){
 function CHF(n){return "CHF "+n.toFixed(0)+".–";}
 
 /* ========= Durée route (à partir du texte 'véhicule ...') ========= */
-function minutes(h,m){return (parseInt(h,10)||0)*60 + (parseInt(m,10)||0);}
+function minutes(h,m){return (parseInt(h,10)||0)*60 + (parseInt(m,10)||0);} 
 function rideMinutes(from,to){
   const meta=ELIGIBILITY[`${from} ⇄ ${to}`];
   if(!meta) return 120;
@@ -563,7 +556,7 @@ function populateDates(){
     const services=servicesForDate(iso);
     if(services.some(s=>s.from===city)){
       const opt=document.createElement('option');
-      opt.value=iso; opt.textContent=new Date(iso).toLocaleDateString('fr-CH', {weekday:'short', day:'2-digit', month:'2-digit'});
+      opt.value=iso; opt.textContent=new Date(iso).toLocaleDateString('fr-CH', {weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
       dateSel.appendChild(opt);
     }
   }
@@ -585,7 +578,7 @@ function showOptions(){
   const from=fromSel.value.trim(), to=toSel.value.trim(), date=dateSel.value, pack=document.getElementById('pack').value;
   if(!from||!to||!date){alert("Complète tous les champs.");return;}
   const svc=servicesForDate(date).find(s=>s.from===from && s.to===to);
-  if(!svc || !isWeekendISO(date) || !inSeason(new Date(date+"T00:00:00"))) { alert("Pas de service ce jour-là pour cette ville (saison: ven–dim, jan–mars)."); return; }
+  if(!svc || !isWeekendISO(date) || !inSeason(new Date(date+"T00:00:00"))) { alert("Pas de service ce jour-là pour cette ville (saison: ven–dim, fin déc 2025 → mars 2026)."); return; }
 
   const duration = rideMinutes(from, to);
   CURRENT_SERVICE={date, ...svc, duration};
@@ -650,9 +643,9 @@ function buildSeats(){
   head.className="bus-head"; wrap.appendChild(head);
   const grid=document.createElement('div'); grid.className="bus";
   for(let r=1;r<=10;r++){
-    for(let c=1;c<=2;c++) grid.appendChild(makeSeatButton(r,c));
+    for(let c=1;c<=2)c=+c, grid.appendChild(makeSeatButton(r,c));
     const spacer=document.createElement('div'); spacer.style.width="28px"; spacer.style.height="1px"; grid.appendChild(spacer);
-    for(let c=3;c<=4;c++) grid.appendChild(makeSeatButton(r,c));
+    for(let c=3;c<=4)c=+c, grid.appendChild(makeSeatButton(r,c));
   }
   wrap.appendChild(grid);
 }
