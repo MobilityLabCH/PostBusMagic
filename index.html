@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -144,9 +144,37 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
 
 /* Form helper */
 .invalid{border-color:#FF6B6B!important; outline-color:rgba(255,107,107,.35)!important}
+
+/* ===== PATCH 1 : reveal visible par défaut et activé seulement si JS OK ===== */
+.reveal{opacity:1; transform:none}
+.js .reveal{opacity:0; transform:translateY(14px); transition:.6s ease}
+.js .reveal.show{opacity:1; transform:none}
+
+/* ===== PATCH 2 : layering/hauteur du HERO pour éviter tout masquage ===== */
+#hero{position:relative; min-height:86vh; padding:120px 0 76px}
+#hero .bg{position:absolute; inset:0; height:100%; z-index:0}
+.hero-wrap{position:relative; z-index:1}
 </style>
 </head>
 <body>
+
+<!-- ===== PATCH 2bis : mini-boot JS safe (aucun conflit de variable) ===== -->
+<script>
+  // Active le mode JS; si autre script casse, le contenu reste visible
+  document.documentElement.classList.add('js');
+  // Reveal protégé
+  (function(){
+    try{
+      const io = new IntersectionObserver(
+        (entries)=>entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('show'); }),
+        {threshold:.08}
+      );
+      document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+    }catch(e){
+      /* pas d'IO -> pas d'anim, mais contenu visible grâce à la CSS */
+    }
+  })();
+</script>
 
 <header>
   <div class="container nav">
@@ -176,7 +204,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
         <a class="btn ghost" href="#why">Voir pourquoi</a>
       </div>
       <div class="hero-kpis">
-        <div class="kpi"><b>Ven–Dim</b><br><small>Saison fin déc 2025 → mars 2026</small></div>
+        <div class="kpi"><b>Ven–Dim</b><br><small>Saison de ski</small></div>
         <div class="kpi"><b>3 bus</b><br><small>Capacité 40 places</small></div>
         <div class="kpi"><b>Départ matin</b><br><small>Retour fin de journée</small></div>
         <div class="kpi"><b>Siège premium</b><br><small>rangs 1–2</small></div>
@@ -252,7 +280,7 @@ footer{padding:40px 0;border-top:1px solid #171C2B;background:linear-gradient(18
         </div>
         <div class="full" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <button class="btn brand" type="submit">Voir les départs</button>
-          <span class="tag">Fin déc 2025 → mars 2026 (ven–dim)</span>
+          <span class="tag">Uniquement durant la saison de ski</span>
           <span class="tag">Réservé aux détenteurs d’un Magic Pass</span>
         </div>
       </form>
@@ -477,37 +505,31 @@ const CITY_POOLS={
   "Yverdon":["Ovronnaz","Leukerbad","Lötschental","Belalp"],
   "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
 };
+const SEASON={start:"2025-12-05", end:"2026-03-15"};
 
-// ====== SAISON: Fin déc 2025 → mars 2026, week-ends (Ven–Dim) ======
-const SEASONS=[ { start:"2025-12-20", end:"2026-03-31" } ];
-function isWeekend(d){ const g=d.getDay(); return g===5||g===6||g===0; } // ven/sam/dim
-function inSeason(d){ return SEASONS.some(s=> d>=new Date(s.start+"T00:00:00") && d<=new Date(s.end+"T23:59:59")); }
-// Génère toutes les dates Ven–Sam–Dim sur la période ci-dessus
-function nextServiceDates(){
-  const out=[];
-  const start=new Date('2025-12-20T00:00:00');
-  const end  =new Date('2026-03-31T23:59:59');
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    if(isWeekend(d) && inSeason(d)) out.push(new Date(d).toISOString().split('T')[0]);
-  }
-  return out;
-}
-
-// ====== 3 bus maximum/jour : Lausanne fixe + 2 villes alternées ======
-function hashDate(dateStr){ const d=dateStr.replaceAll('-',''); let h=0; for(const ch of d){ h=(h*33 + ch.charCodeAt(0))%997; } return h; }
+function isWeekend(d){const g=d.getDay();return g===5||g===6||g===0;}
+function inSeason(d){return d>=new Date(SEASON.start+"T00:00:00") && d<=new Date(SEASON.end+"T23:59:59");}
+function hashDate(dateStr){const d=dateStr.replaceAll('-','');let h=0;for(const ch of d){h=(h*33 + ch.charCodeAt(0))%997;}return h;}
 function servicesForDate(dateStr){
   const h=hashDate(dateStr);
-  const rotating=["Genève","Yverdon","Fribourg"]; // alternance
-  const a=rotating[h % rotating.length];
-  const b=rotating[(h+1) % rotating.length];
-  const cities=["Lausanne", a, b]; // ⇒ max 3 bus/jour
+  const thirdCity= (h%2===0) ? "Fribourg" : "Yverdon";
+  const cities=["Genève","Lausanne", thirdCity];
   const depSlots={"Genève":"06:30","Lausanne":"07:00","Yverdon":"07:10","Fribourg":"06:45"};
   const retSlots={"Genève":"16:45","Lausanne":"17:00","Yverdon":"16:30","Fribourg":"16:40"};
   return cities.map((city,idx)=>{
     const pool=CITY_POOLS[city];
-    const to=pool[(h+idx)%pool.length]; // destination variable/rotative
+    const to=pool[(h+idx)%pool.length];
     return {from:city, to, dep:depSlots[city], ret:retSlots[city]};
   });
+}
+function nextServiceDates(){
+  const res=[]; const today=new Date();
+  for(let i=0;i<16*7;i++){
+    const d=new Date(today.getTime()+i*86400000);
+    if(!isWeekend(d)||!inSeason(d)) continue;
+    res.push(d.toISOString().split('T')[0]);
+  }
+  return res;
 }
 
 /* ========= Pricing ========= */
@@ -519,7 +541,7 @@ function basePrice(dateStr){
 function CHF(n){return "CHF "+n.toFixed(0)+".–";}
 
 /* ========= Durée route (à partir du texte 'véhicule ...') ========= */
-function minutes(h,m){return (parseInt(h,10)||0)*60 + (parseInt(m,10)||0);} 
+function minutes(h,m){return (parseInt(h,10)||0)*60 + (parseInt(m,10)||0);}
 function rideMinutes(from,to){
   const meta=ELIGIBILITY[`${from} ⇄ ${to}`];
   if(!meta) return 120;
@@ -546,25 +568,23 @@ let CURRENT_SERVICE=null;
 let TAKEN_SEATS=new Set();
 
 /* ========= UI populate ========= */
-fromSel.addEventListener('change',()=>{ populateDates(); toSel.innerHTML='<option value=\"\">Sélectionnez…</option>'; });
+fromSel.addEventListener('change',()=>{ populateDates(); toSel.innerHTML='<option value="">Sélectionnez…</option>'; });
 dateSel.addEventListener('change',()=>{ populateDestination(); });
 
 function populateDates(){
-  dateSel.innerHTML='<option value=\"\">Choisir une date…</option>';
+  dateSel.innerHTML='<option value="">Choisir une date…</option>';
   const city=fromSel.value; if(!city) return;
   for(const iso of nextServiceDates()){
     const services=servicesForDate(iso);
     if(services.some(s=>s.from===city)){
       const opt=document.createElement('option');
-      opt.value=iso; 
-      opt.textContent=dateFromISO(iso).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'});
+      opt.value=iso; opt.textContent=new Date(iso).toLocaleDateString('fr-CH', {weekday:'short', day:'2-digit', month:'2-digit'});
       dateSel.appendChild(opt);
     }
   }
 }
-
 function populateDestination(){
-  toSel.innerHTML='<option value=\"\">Sélectionnez…</option>';
+  toSel.innerHTML='<option value="">Sélectionnez…</option>';
   const city=fromSel.value, iso=dateSel.value; if(!city||!iso) return;
   const service=servicesForDate(iso).find(s=>s.from===city);
   if(service){
@@ -574,21 +594,20 @@ function populateDestination(){
     CURRENT_SERVICE={date:iso, ...service, duration};
   }
 }
-function dateFromISO(iso){ const [y,m,d]=iso.split('-').map(Number); return new Date(y, m-1, d); }
-function isWeekendISO(iso){ return isWeekend(dateFromISO(iso)); }
+function isWeekendISO(iso){return isWeekend(new Date(iso+"T00:00:00"));}
 
 function showOptions(){
   const from=fromSel.value.trim(), to=toSel.value.trim(), date=dateSel.value, pack=document.getElementById('pack').value;
-  if(!from||!to||!date){alert(\"Complète tous les champs.\");return;}
+  if(!from||!to||!date){alert("Complète tous les champs.");return;}
   const svc=servicesForDate(date).find(s=>s.from===from && s.to===to);
-  if(!svc || !isWeekendISO(date) || !inSeason(new Date(date+\"T00:00:00\"))) { alert(\"Pas de service ce jour-là pour cette ville (saison: ven–dim, fin déc 2025 → mars 2026).\"); return; }
+  if(!svc || !isWeekendISO(date)) { alert("Pas de service ce jour-là pour cette ville."); return; }
 
   const duration = rideMinutes(from, to);
   CURRENT_SERVICE={date, ...svc, duration};
   seedTakenSeats();
 
   const key=`${from} ⇄ ${to}`;
-  const meta=ELIGIBILITY[key] || {eligible:false, reason:\"Axe bien desservi par les transports publics — on recommande les transports publics.\"};
+  const meta=ELIGIBILITY[key] || {eligible:false, reason:"Axe bien desservi par les transports publics — on recommande les transports publics."};
   document.getElementById('r-route').textContent = `${from} → ${to}`;
 
   const arrStation = addMinutesToTime(svc.dep, duration);
@@ -600,20 +619,20 @@ function showOptions(){
 
   const badge=document.getElementById('eligBadge');
   if(!meta.eligible){
-    badge.className=\"badge block\"; badge.textContent=\"Non éligible — privilégier les TP\";
-    document.getElementById('result').style.display=\"block\";
-    document.getElementById('r-price').textContent=\"—\";
+    badge.className="badge block"; badge.textContent="Non éligible — privilégier les TP";
+    document.getElementById('result').style.display="block";
+    document.getElementById('r-price').textContent="—";
     return;
   }else{
-    badge.className=\"badge ok\"; badge.textContent=\"Complément aux TP\";
+    badge.className="badge ok"; badge.textContent="Complément aux TP";
   }
 
-  let price = (pack===\"yes\") ? 20 : basePrice(date);
+  let price = (pack==="yes") ? 20 : basePrice(date);
   window.__basePrice = price; updatePrice();
 
   updateSeatCount();
   buildSeats();
-  document.getElementById('result').style.display=\"block\";
+  document.getElementById('result').style.display="block";
 }
 
 function updatePrice(){
@@ -621,14 +640,14 @@ function updatePrice(){
   const total = (window.__basePrice||0) + premium;
   window.__totalPrice = total;
   document.getElementById('r-price').textContent = CHF(total);
-  document.getElementById('r-price-note').textContent = (window.__basePrice===20) ? \"Forfait: 20.– / A-R\" : \"Early 25.– · Standard 32.– · Last 39.–\";
+  document.getElementById('r-price-note').textContent = (window.__basePrice===20) ? "Forfait: 20.– / A-R" : "Early 25.– · Standard 32.– · Last 39.–";
 }
 
 /* ========= Seats mock ========= */
 function seatId(r,c){return `${r}${String.fromCharCode(64+c)}`;}
 function seedTakenSeats(){
   const seed=(CURRENT_SERVICE.date+CURRENT_SERVICE.from+CURRENT_SERVICE.to).split('').reduce((a,ch)=>a+ch.charCodeAt(0),0);
-  const rand=()=>{const x=Math.sin(seed + (Math.random()*10)) * 10000; return x - Math.floor(x);} // pseudo
+  const rand=()=>{const x=Math.sin(seed + (Math.random()*10)) * 10000; return x - Math.floor(x);}
   TAKEN_SEATS=new Set();
   const occupancy= Math.floor(8 + (rand()*16));
   while(TAKEN_SEATS.size<occupancy){
@@ -640,27 +659,21 @@ function updateSeatCount(){
   document.getElementById('seatCount').textContent = `${left} places restantes`;
 }
 function buildSeats(){
-  const wrap=document.getElementById('seatmap');
-  wrap.innerHTML='';
-
-  const grid=document.createElement('div');
-  grid.className='bus';
-
+  const wrap=document.getElementById('seatmap'); wrap.innerHTML='';
   const head=document.createElement('div');
-  head.className='bus-head';
-  head.textContent=`Avant • ${CURRENT_SERVICE.from}→${CURRENT_SERVICE.to} • ${dateFromISO(CURRENT_SERVICE.date).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit'})}`;
-  grid.appendChild(head);
-
+  head.textContent=`Avant • ${CURRENT_SERVICE.from}→${CURRENT_SERVICE.to} • ${new Date(CURRENT_SERVICE.date).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit'})}`;
+  head.className="bus-head"; wrap.appendChild(head);
+  const grid=document.createElement('div'); grid.className="bus";
   for(let r=1;r<=10;r++){
-    for(let c=1;c<=2; c++) { grid.appendChild(makeSeatButton(r,c)); }
-    const spacer=document.createElement('div'); spacer.style.width='28px'; spacer.style.height='1px'; grid.appendChild(spacer);
-    for(let c=3;c<=4; c++) { grid.appendChild(makeSeatButton(r,c)); }
+    for(let c=1;c<=2;c++) grid.appendChild(makeSeatButton(r,c));
+    const spacer=document.createElement('div'); spacer.style.width="28px"; spacer.style.height="1px"; grid.appendChild(spacer);
+    for(let c=3;c<=4;c++) grid.appendChild(makeSeatButton(r,c));
   }
   wrap.appendChild(grid);
 }
 function makeSeatButton(r,c){
   const id=seatId(r,c);
-  const b=document.createElement('button'); b.type=\"button\"; b.className=\"seat\"+(r<=2?\" premium\":\"\"); b.textContent=id;
+  const b=document.createElement('button'); b.type="button"; b.className="seat"+(r<=2?" premium":""); b.textContent=id;
   if(TAKEN_SEATS.has(id)){ b.classList.add('taken'); b.disabled=true; }
   b.onclick=()=>selectSeat(b,id);
   return b;
@@ -668,7 +681,7 @@ function makeSeatButton(r,c){
 function selectSeat(btn,id){
   document.querySelectorAll('.seat').forEach(s=>s.classList.remove('selected'));
   btn.classList.add('selected');
-  document.getElementById('seatChosen').textContent = `Siège ${id}` + (btn.classList.contains('premium') ? \" · premium\" : \"\");
+  document.getElementById('seatChosen').textContent = `Siège ${id}` + (btn.classList.contains('premium') ? " · premium" : "");
   updatePrice(); updateSeatCount();
 }
 
@@ -686,21 +699,21 @@ function pay(){
   let ok=true;
   if(!f.value.trim()){f.classList.add('invalid'); ok=false;}
   if(!l.value.trim()){l.classList.add('invalid'); ok=false;}
-  if(!/^\\+?\\d[\\d\\s\\-()]{7,}$/.test(wa.value.trim())){wa.classList.add('invalid'); ok=false;}
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(em.value.trim())){em.classList.add('invalid'); ok=false;}
+  if(!/^\+?\d[\d\s\-()]{7,}$/.test(wa.value.trim())){wa.classList.add('invalid'); ok=false;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value.trim())){em.classList.add('invalid'); ok=false;}
   const ageNum = parseInt(ag.value, 10);
   if(isNaN(ageNum)){ag.classList.add('invalid'); ok=false;}
-  if(!tc.checked){alert(\"Merci d’accepter les conditions.\"); ok=false;}
+  if(!tc.checked){alert("Merci d’accepter les conditions."); ok=false;}
   if(!ok) return;
-  if(ageNum < 10){ alert(\"Désolé, pas possible pour les < 10 ans.\"); return; }
-  const ageLabel = (ageNum < 18) ? \"<18\" : \"≥18\";
+  if(ageNum < 10){ alert("Désolé, pas possible pour les < 10 ans."); return; }
+  const ageLabel = (ageNum < 18) ? "<18" : "≥18";
 
   const total=window.__totalPrice||0;
   const ref = `PBC-${CURRENT_SERVICE.date.replaceAll('-','')}-${CURRENT_SERVICE.from.slice(0,2).toUpperCase()}-${CURRENT_SERVICE.to.split(/[ /]/)[0].toUpperCase()}-${seat}`;
   const payload = {
-    scheme:\"TWINT-PBC-DEMO\",
-    merchant:\"PostBus Connect (Prototype)\",
-    currency:\"CHF\",
+    scheme:"TWINT-PBC-DEMO",
+    merchant:"PostBus Connect (Prototype)",
+    currency:"CHF",
     amount: total,
     reference: ref,
     route: `${CURRENT_SERVICE.from}→${CURRENT_SERVICE.to}`,
@@ -749,19 +762,22 @@ function onPaymentSuccess(qrPayload, customer){
   closePayModal();
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({unit:'pt', format:'a4'});
+  const pad=36;
 
-  // ====== Tokens (design)
-  const PAD = 40;
-  const BRAND = '#FFD300';
-  const INK = '#0B0B0B';
-  const MUTED = '#6B7280';
-  const LINE = '#E5E7EB';
+  // Header
+  doc.setFont('helvetica','bold'); doc.setFontSize(18);
+  doc.text('PostBus Connect — Billet / Reçu (prototype)', pad, 54);
+  doc.setFontSize(11); doc.setFont('helvetica','normal');
+  doc.text('Merci pour votre réservation !', pad, 74);
 
+  // Trajet
+  let y=110;
+  doc.setFont('helvetica','bold'); doc.text('Trajet', pad, y); doc.setFont('helvetica','normal'); y+=18;
   const dur = CURRENT_SERVICE.duration || 0;
   const arrStation = addMinutesToTime(CURRENT_SERVICE.dep, dur);
   const arrOrigin  = addMinutesToTime(CURRENT_SERVICE.ret, dur);
 
-  // CO2 calc
+  // Estimation distance & CO2
   const oneWayKm = Math.round(dur * AVG_SPEED_KM_PER_MIN);
   const roundTripKm = oneWayKm * 2;
   const carCO2_g   = roundTripKm * EF_CAR_G_PER_KM;
@@ -769,68 +785,53 @@ function onPaymentSuccess(qrPayload, customer){
   const saved_g    = Math.max(0, carCO2_g - coachCO2_g);
   const saved_kg   = (saved_g / 1000).toFixed(1);
 
-  // ====== Helpers
-  const hex = (c)=> doc.setTextColor(c);
-  const fill = (c)=> doc.setFillColor(c);
-  const stroke = (c)=> doc.setDrawColor(c);
-  const text = (t,x,y)=> doc.text(String(t), x, y);
-  function h1(t,y){ doc.setFont('helvetica','bold'); doc.setFontSize(20); hex(INK); text(t, PAD, y); }
-  function h2(t,y){ doc.setFont('helvetica','bold'); doc.setFontSize(13); hex(INK); text(t, PAD, y); }
-  function body(t,x,y){ doc.setFont('helvetica','normal'); doc.setFontSize(11); hex('#111'); text(t, x, y); }
-  function kv(label, value, x, y){ doc.setFont('helvetica','bold'); doc.setFontSize(11); hex('#111'); text(label, x, y); doc.setFont('helvetica','normal'); text(value, x+120, y); }
-  function tag(t, x, y){ fill('#111827'); doc.roundedRect(x, y-12, doc.getTextWidth(t)+14, 22, 6, 6, 'F'); doc.setFont('helvetica','bold'); doc.setFontSize(10); hex('#E5E7EB'); text(t, x+8, y+4); }
-  function priceBox(amount, x, y){ fill('#F9FAFB'); stroke(LINE); doc.roundedRect(x, y, 180, 66, 10,10,'FD'); doc.setFont('helvetica','bold'); doc.setFontSize(16); hex('#111'); text(amount, x+12, y+26); doc.setFont('helvetica','normal'); doc.setFontSize(10); hex(MUTED); text('A/R – siège premium +5.–', x+12, y+46); }
-  function divider(y){ stroke(LINE); doc.line(PAD, y, 555, y); }
+  const lines = [
+    `Date : ${new Date(CURRENT_SERVICE.date).toLocaleDateString('fr-CH')}`,
+    `Route : ${CURRENT_SERVICE.from} → ${CURRENT_SERVICE.to}`,
+    `Aller : départ ${CURRENT_SERVICE.dep} → arrivée station ${arrStation} (≈ ${dur} min)`,
+    `Retour : départ station ${CURRENT_SERVICE.ret} → arrivée ${CURRENT_SERVICE.from} ${arrOrigin} (≈ ${dur} min)`,
+    `Siège : ${document.querySelector('.seat.selected')?.textContent || ''}${document.querySelector('.seat.selected')?.classList.contains('premium')?' · premium':''}`,
+    `Montant : ${CHF(window.__totalPrice||0)}`,
+    `Distance estimée A/R : ~${roundTripKm} km`,
+    `CO₂ évité vs voiture : ≈ ${saved_kg} kg`
+  ];
+  lines.forEach(t=>{doc.text(t, pad, y); y+=16;});
 
-  // ====== Header banner
-  fill(BRAND); doc.rect(0,0,595,84,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(18); hex(INK);
-  text('PostBus Connect', PAD, 52);
-  doc.setFont('helvetica','normal'); doc.setFontSize(11);
-  text('Billet / Reçu — Prototype', PAD, 72);
+  // Passager
+  y+=8; doc.setFont('helvetica','bold'); doc.text('Passager', pad, y); doc.setFont('helvetica','normal'); y+=18;
+  const clines=[
+    `Nom : ${customer.first} ${customer.last}`,
+    `Âge : ${customer.age} ans (${customer.ageLabel})`,
+    `WhatsApp / Mobile : ${customer.wa}`,
+    `E-mail : ${customer.mail}`,
+    `Référence : ${qrPayload.reference}`
+  ];
+  clines.forEach(t=>{doc.text(t, pad, y); y+=16;});
 
-  // ====== Route + meta (two columns)
-  let y = 120;
-  h1(`${CURRENT_SERVICE.from} → ${CURRENT_SERVICE.to}`, y);
-  body(`Le ${dateFromISO(CURRENT_SERVICE.date).toLocaleDateString('fr-CH')} · Réf. ${qrPayload.reference}`, PAD, y+22);
-
-  // schedule block
-  y += 52;
-  h2('Horaires', y);
-  body(`Aller : départ ${CURRENT_SERVICE.dep} → arrivée station ${arrStation} (≈ ${dur} min)`, PAD, y+18);
-  body(`Retour : départ station ${CURRENT_SERVICE.ret} → arrivée ${CURRENT_SERVICE.from} ${arrOrigin} (≈ ${dur} min)`, PAD, y+34);
-  tag(`Siège ${document.querySelector('.seat.selected')?.textContent || ''}${document.querySelector('.seat.selected')?.classList.contains('premium')?' · premium':''}`, PAD, y+58);
-  tag(`${roundTripKm} km A/R`, PAD+140, y+58);
-  tag(`CO₂ évité ≈ ${saved_kg} kg`, PAD+250, y+58);
-
-  // price box on the right
-  priceBox(CHF(window.__totalPrice||0), 370, 128);
-
-  // QR on the right bottom of first section
-  const qrY = 230;
+  // QR
   const canvas=document.getElementById('twintQR');
-  try{ const dataURL=canvas.toDataURL('image/png'); doc.addImage(dataURL, 'PNG', 370, qrY, 180, 180); }catch(e){}
+  try{ const dataURL=canvas.toDataURL('image/png'); doc.addImage(dataURL, 'PNG', 370, 110, 180, 180); }catch(e){}
 
-  // ====== Passenger section
-  y = 350; divider(y); y += 26;
-  h2('Passager', y);
-  kv('Nom', `${customer.first} ${customer.last}`, PAD, y+18);
-  kv('Âge', `${customer.age} ans`, PAD, y+36);
-  kv('WhatsApp / Mobile', customer.wa, PAD, y+54);
-  kv('E-mail', customer.mail, PAD, y+72);
+  // Contact / assistance
+  y = 320;
+  doc.setDrawColor(220); doc.line(pad, y, 559, y); y+=18;
+  doc.setFont('helvetica','bold'); doc.text('Contact & assistance', pad, y); doc.setFont('helvetica','normal'); y+=16;
+  doc.text('Eric Imstepf · +41 79 46 46 443', pad, y); y+=16;
+  doc.text('Ce document fait foi de billet (prototype). Présentez le QR et une pièce d’identité au chauffeur.', pad, y); y+=16;
+  doc.text('TWINT affiché ici est une simulation pour design/UX. En prod, le paiement est capturé côté PSP.', pad, y);
 
-  // ====== Notes section
-  y += 96; divider(y); y += 22;
-  h2('Informations', y);
-  body('Présentez ce billet (QR) et une pièce d’identité au chauffeur. Ce document fait foi de titre de transport dans le cadre du prototype.', PAD, y+18);
-  body('Le paiement TWINT affiché ici est simulé pour la démonstration. En production, le paiement est capturé côté PSP.', PAD, y+34);
+  // Clin d’œil
+  y += 10;
+  doc.setDrawColor(220); doc.line(pad, y, 559, y); y += 18;
+  doc.setFont('helvetica','bold'); doc.text('Clin d’œil', pad, y);
+  doc.setFont('helvetica','normal'); y += 16;
+  doc.text('Ce billet n’émet que des sourires (et un soupçon de pixels). Bon ride ! 😎', pad, y);
 
-  // ====== Footer
-  y = 812; divider(y-12);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); hex(MUTED);
-  text('© 2025 MobilityLab — PostBus Connect (prototype) · Offre complémentaire aux TP · Page 1/1', PAD, 820);
+  // Footer
+  doc.setFontSize(9);
+  doc.text('© 2025 MobilityLab — PostBus Connect (prototype) · Offre complémentaire aux TP', pad, 812);
 
-  const filename = `PostBusConnect_${qrPayload.reference}.pdf`;
+  const filename=`PostBusConnect_${qrPayload.reference}.pdf`;
   doc.save(filename);
 }
 
