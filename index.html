@@ -477,31 +477,44 @@ const CITY_POOLS={
   "Yverdon":["Ovronnaz","Leukerbad","Lötschental","Belalp"],
   "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
 };
-const SEASON={start:"2025-12-05", end:"2026-03-15"};
 
-function isWeekend(d){const g=d.getDay();return g===5||g===6||g===0;}
-function inSeason(d){return d>=new Date(SEASON.start+"T00:00:00") && d<=new Date(SEASON.end+"T23:59:59");}
-function hashDate(dateStr){const d=dateStr.replaceAll('-','');let h=0;for(const ch of d){h=(h*33 + ch.charCodeAt(0))%997;}return h;}
+// ====== SAISON: Week-ends (Ven-Dim) de janvier à mars ======
+// Choisit automatiquement l'année de saison: si on est entre janv-mars, prend l'année courante, sinon l'année suivante.
+function seasonYear(){
+  const today=new Date();
+  const m=today.getMonth(); // 0=janvier
+  return (m<=2) ? today.getFullYear() : today.getFullYear()+1;
+}
+const SEASON={ start: `${seasonYear()}-01-01`, end: `${seasonYear()}-03-31` };
+
+function isWeekend(d){ const g=d.getDay(); return g===5||g===6||g===0; } // ven/sam/dim
+function inSeason(d){ return d>=new Date(SEASON.start+"T00:00:00") && d<=new Date(SEASON.end+"T23:59:59"); }
+
+// Génère TOUTES les dates Ven-Sam-Dim entre 1er janvier et 31 mars (beaucoup plus de dates)
+function nextServiceDates(){
+  const dates=[];
+  const y=seasonYear();
+  const start=new Date(y,0,1);         // 1 janv
+  const end=new Date(y,2,31,23,59,59); // 31 mars
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    if(isWeekend(d)) dates.push(new Date(d).toISOString().split('T')[0]);
+  }
+  return dates;
+}
+
+// ====== 3 bus maximum par jour (Genève, Lausanne + 3e ville alternée) ======
+function hashDate(dateStr){ const d=dateStr.replaceAll('-',''); let h=0; for(const ch of d){ h=(h*33 + ch.charCodeAt(0))%997; } return h; }
 function servicesForDate(dateStr){
   const h=hashDate(dateStr);
-  const thirdCity= (h%2===0) ? "Fribourg" : "Yverdon";
-  const cities=["Genève","Lausanne", thirdCity];
+  const thirdCity = (h%2===0) ? "Fribourg" : "Yverdon"; // alterne pour varier
+  const cities=["Genève","Lausanne", thirdCity];        // ⇒ max 3 bus
   const depSlots={"Genève":"06:30","Lausanne":"07:00","Yverdon":"07:10","Fribourg":"06:45"};
   const retSlots={"Genève":"16:45","Lausanne":"17:00","Yverdon":"16:30","Fribourg":"16:40"};
   return cities.map((city,idx)=>{
     const pool=CITY_POOLS[city];
-    const to=pool[(h+idx)%pool.length];
+    const to=pool[(h+idx)%pool.length]; // destination variable/rotative
     return {from:city, to, dep:depSlots[city], ret:retSlots[city]};
   });
-}
-function nextServiceDates(){
-  const res=[]; const today=new Date();
-  for(let i=0;i<16*7;i++){
-    const d=new Date(today.getTime()+i*86400000);
-    if(!isWeekend(d)||!inSeason(d)) continue;
-    res.push(d.toISOString().split('T')[0]);
-  }
-  return res;
 }
 
 /* ========= Pricing ========= */
@@ -572,7 +585,7 @@ function showOptions(){
   const from=fromSel.value.trim(), to=toSel.value.trim(), date=dateSel.value, pack=document.getElementById('pack').value;
   if(!from||!to||!date){alert("Complète tous les champs.");return;}
   const svc=servicesForDate(date).find(s=>s.from===from && s.to===to);
-  if(!svc || !isWeekendISO(date)) { alert("Pas de service ce jour-là pour cette ville."); return; }
+  if(!svc || !isWeekendISO(date) || !inSeason(new Date(date+"T00:00:00"))) { alert("Pas de service ce jour-là pour cette ville (saison: ven–dim, jan–mars)."); return; }
 
   const duration = rideMinutes(from, to);
   CURRENT_SERVICE={date, ...svc, duration};
@@ -619,7 +632,7 @@ function updatePrice(){
 function seatId(r,c){return `${r}${String.fromCharCode(64+c)}`;}
 function seedTakenSeats(){
   const seed=(CURRENT_SERVICE.date+CURRENT_SERVICE.from+CURRENT_SERVICE.to).split('').reduce((a,ch)=>a+ch.charCodeAt(0),0);
-  const rand=()=>{const x=Math.sin(seed + (Math.random()*10)) * 10000; return x - Math.floor(x);}
+  const rand=()=>{const x=Math.sin(seed + (Math.random()*10)) * 10000; return x - Math.floor(x);} // pseudo
   TAKEN_SEATS=new Set();
   const occupancy= Math.floor(8 + (rand()*16));
   while(TAKEN_SEATS.size<occupancy){
