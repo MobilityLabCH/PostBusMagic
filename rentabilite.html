@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Rentabilité — PostBus Connect (prototype)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0B10; --ink:#EDEEF2; --muted:#A7ADBD; --brand:#FFD300; --line:#1C2030;
+  --card:rgba(255,255,255,.06); --glass:blur(10px) saturate(130%); --good:#2EC27E; --bad:#FF6B6B; --warn:#F9A825;
+  --radius:16px; --shadow:0 20px 60px rgba(0,0,0,.35); --max:1180px;
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:radial-gradient(900px 600px at 85% -10%,#1B2040 0%,#0B0D14 40%,#07080D 100%) fixed;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:inherit;text-decoration:none}
+.container{width:min(92vw,var(--max));margin:36px auto}
+h1{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;font-weight:700;line-height:1.05;font-size:clamp(28px,4.8vw,48px);margin:0 0 6px}
+h2{font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;letter-spacing:-.01em;font-size:clamp(20px,3.5vw,28px);margin:0 0 8px}
+p.sub{color:var(--muted);margin:4px 0 18px}
+.card{background:var(--card);backdrop-filter:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;padding:12px 14px;border-radius:12px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;cursor:pointer}
+.btn.brand{background:var(--brand);color:#000;border-color:#C7A700}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+table{width:100%;border-collapse:separate;border-spacing:0 10px}
+th,td{padding:10px 12px;vertical-align:middle}
+th{font-size:.92rem;color:#C9D1EA;text-align:left}
+tr{background:rgba(255,255,255,.04);border:1px solid #22283A}
+tr td:first-child, tr th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
+tr td:last-child, tr th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
+input[type="number"],input[type="text"],input[type="date"]{width:100%;padding:8px 10px;border:1px solid #2A2F45;border-radius:10px;background:#0E1220;color:#E8EBF7}
+input:focus{outline:3px solid rgba(122,178,255,.35);outline-offset:1px}
+.note{font-size:.9rem;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 10px;font-weight:800;white-space:nowrap}
+.badge.ok{background:#10231C;border:1px solid #29503F;color:#9EF3C9}
+.badge.ko{background:#2A1010;border:1px solid #5A2A2A;color:#FFB3B3}
+.badge.warn{background:#2A230F;border:1px solid #5F4B15;color:#F7D06B}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpis .box{padding:12px;border:1px solid #232843;border-radius:12px;background:#101425;text-align:center}
+.kpis .box b{font-family:"Space Grotesk";font-size:22px}
+small{color:var(--muted)}
+hr{border:none;height:1px;background:#1C2236;margin:16px 0}
+tfoot td{font-weight:800}
+td.right{text-align:right}
+td.center{text-align:center}
+td.shrink{white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px dashed #2A2F45;background:#11131B}
+.switches{display:flex;gap:10px;flex-wrap:wrap}
+.switch{display:inline-flex;gap:8px;align-items:center;border:1px solid #2A2F45;background:#0E1220;border-radius:10px;padding:8px 10px}
+.switch input{width:auto}
+.panel-go{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.panel-go b{font-family:"Space Grotesk";font-size:20px}
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Rentabilité par bus & saison</h1>
+    <p class="sub">Le **GO/NO-GO** est pris **sur l’agrégé saison** : des lignes peuvent être <b>déficitaires</b> si le <b>total saison</b> reste positif et si la <b>commission Magic Pass</b> couvre <b>100% du Marketing & Vente</b>.</p>
+
+    <!-- ===== SAISON: paramètres ===== -->
+    <div class="card">
+      <h2>Paramètres de saison</h2>
+      <div class="row">
+        <div><small>Début</small><br><input type="date" id="s_start" value="2025-12-20"></div>
+        <div><small>Fin</small><br><input type="date" id="s_end" value="2026-03-31"></div>
+        <div class="switches">
+          <label class="switch"><input type="checkbox" id="d_fri" checked> Ven</label>
+          <label class="switch"><input type="checkbox" id="d_sat" checked> Sam</label>
+          <label class="switch"><input type="checkbox" id="d_sun" checked> Dim</label>
+        </div>
+        <div class="chips">
+          <span class="chip">Jours service calculés: <b id="s_days">—</b></span>
+          <button class="btn" id="applyDays">Appliquer à tous les scénarios</button>
+        </div>
+      </div>
+      <small class="note">Tu peux garder des “Jours (saison)” personnalisés par ligne si toutes ne roulent pas à chaque jour de service.</small>
+    </div>
+
+    <!-- ===== KPIs SAISON ===== -->
+    <div class="kpis" style="margin-top:12px">
+      <div class="box"><small>CA billets — Saison</small><br><b id="k_ca_season">—</b></div>
+      <div class="box"><small>Commission MP — Saison</small><br><b id="k_comm_season">—</b></div>
+      <div class="box"><small>Mkt & Vente — Saison</small><br><b id="k_mkt_season">—</b></div>
+      <div class="box"><small>Résultat d’exploitation — Saison</small><br><b id="k_profit_season">—</b></div>
+    </div>
+    <div class="chips" style="margin-top:8px">
+      <span class="chip">Lignes déficitaires : <b id="k_loss_lines">0</b> / <b id="k_total_lines">0</b></span>
+      <span class="chip">Marge saison (après comm.) : <b id="k_margin">—</b></span>
+    </div>
+
+    <!-- ===== Verdict & seuils ===== -->
+    <div class="card" style="margin-top:12px">
+      <div class="panel-go">
+        <span id="verdict" class="badge warn">Analyse en cours…</span>
+        <b>Seuil remplissage (profit=0, agrégé):</b> <span id="be_load">—</span>
+        <b>Seuil comm. MP couvre Mkt/Vente:</b> <span id="be_comm">—</span>
+      </div>
+      <small class="note">Règle GO: (1) Profit saison ≥ 0, et (2) Commission MP saison ≥ Mkt&Vente saison — même si certaines lignes restent négatives.</small>
+    </div>
+
+    <hr>
+
+    <!-- ===== TABLE SCÉNARIOS (par bus-jour) ===== -->
+    <div class="row">
+      <button class="btn brand" id="add">+ Ajouter un scénario (bus)</button>
+      <small class="note">Un scénario = un bus effectuant un A/R un jour (le chauffeur ne fait pas d’autre course).</small>
+    </div>
+
+    <div class="grid card">
+      <table id="tab">
+        <thead>
+          <tr>
+            <th>Nom scénario / Trajet</th>
+            <th class="shrink">Places</th>
+            <th class="shrink">Taux rempl. (%)</th>
+            <th class="shrink">Prix A/R (CHF)</th>
+            <th class="shrink">Distance A/R (km)</th>
+            <th class="shrink">Cons. (L/100)</th>
+            <th class="shrink">Diesel (CHF/L)</th>
+            <th class="shrink">Maint. (CHF/km)</th>
+            <th class="shrink">Chauffeur (CHF/j)</th>
+            <th class="shrink">Location bus (CHF/j)</th>
+            <th class="shrink">Péages/PK</th>
+            <th class="shrink">Autres</th>
+            <th class="shrink">Comm. MP (%)</th>
+            <th class="shrink">Mkt & Vente (CHF/j)</th>
+            <th class="shrink">Jours (saison)</th>
+            <th class="shrink center">Couverture MP</th>
+            <th class="right">Résultat/jour</th>
+            <th class="right">Résultat saison</th>
+            <th class="center">—</th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="16" class="right">Total saison (tous scénarios)</td>
+            <td class="right" id="tot_profit_season">—</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- ===== Sensibilité rapide ===== -->
+    <div class="card">
+      <h2>Analyse de sensibilité (saison)</h2>
+      <div class="chips">
+        <span class="chip">Remplissage −10 pp → <b id="sens_m10">—</b></span>
+        <span class="chip">Remplissage +10 pp → <b id="sens_p10">—</b></span>
+        <span class="chip">Prix −5 CHF → <b id="sens_pminus">—</b></span>
+        <span class="chip">Prix +5 CHF → <b id="sens_pplus">—</b></span>
+      </div>
+      <small class="note">Chocs appliqués uniformément à tous les scénarios (remplissage contraint 0–100%).</small>
+    </div>
+
+    <hr>
+    <p class="note">
+      Hypothèses par défaut (modifiables) : 40 places, <b>40%</b> de remplissage, <b>CHF 32</b> le billet A/R, commission Magic Pass <b>20%</b>.
+    </p>
+  </div>
+
+<script>
+const CHF = n => 'CHF ' + (Number(n)||0).toFixed(0) + '.–';
+
+const defaults = (serviceDays=36) => ({
+  name:'Lausanne → Saas-Fee',
+  seats:40,
+  load:40,    // %
+  price:32,   // CHF A/R
+  dist:260,   // km A/R
+  cons:28,    // L/100km
+  diesel:1.90,// CHF/L
+  maint:0.25, // CHF/km
+  driver:450, // CHF/j
+  rental:600, // CHF/j
+  tolls:40,   // CHF
+  other:30,   // CHF
+  comm:20,    // % commission MP
+  mkt:500,    // CHF/j (marketing & vente)
+  days:serviceDays
+});
+
+const body = document.getElementById('body');
+
+// ===== SAISON: nb de jours selon période & jours cochés =====
+const sStart = document.getElementById('s_start');
+const sEnd   = document.getElementById('s_end');
+const dFri   = document.getElementById('d_fri');
+const dSat   = document.getElementById('d_sat');
+const dSun   = document.getElementById('d_sun');
+const sDaysEl = document.getElementById('s_days');
+document.querySelectorAll('#s_start,#s_end,#d_fri,#d_sat,#d_sun').forEach(el=>el.addEventListener('input', ()=>{
+  sDaysEl.textContent = calcServiceDays();
+  recomputeAll();
+}));
+function calcServiceDays(){
+  const start = new Date(sStart.value+'T00:00:00');
+  const end   = new Date(sEnd.value+'T23:59:59');
+  if(!(start instanceof Date) || !(end instanceof Date) || isNaN(start) || isNaN(end) || start>end) return 0;
+  let days=0;
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const wd=d.getDay(); // 0 dim, 5 ven, 6 sam
+    if((wd===5 && dFri.checked) || (wd===6 && dSat.checked) || (wd===0 && dSun.checked)) days++;
+  }
+  return days;
+}
+sDaysEl.textContent = calcServiceDays();
+
+document.getElementById('applyDays').addEventListener('click', ()=>{
+  const n = calcServiceDays();
+  [...body.querySelectorAll('tr')].forEach(tr=>{
+    tr.querySelector('[data-days]').value = n;
+  });
+  recomputeAll();
+});
+
+// ===== SCÉNARIOS =====
+document.getElementById('add').addEventListener('click', ()=> addRow(defaults(calcServiceDays())));
+
+function addRow(data){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" value="${data.name}"></td>
+    <td class="shrink"><input type="number" value="${data.seats}" min="1"></td>
+    <td class="shrink"><input type="number" value="${data.load}" min="0" max="100"></td>
+    <td class="shrink"><input type="number" value="${data.price}" step="1" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.dist}" step="1" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.cons}" step="0.1" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.diesel}" step="0.01" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.maint}" step="0.01" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.driver}" step="1" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.rental}" step="1" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.tolls}" step="1" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.other}" step="1" min="0"></td>
+    <td class="shrink"><input type="number" value="${data.comm}" step="0.1" min="0" max="100"></td>
+    <td class="shrink"><input type="number" value="${data.mkt}" step="1" min="0"></td>
+    <td class="shrink"><input type="number" data-days value="${data.days}" step="1" min="0"></td>
+    <td class="shrink center"><span class="badge" data-badge>—</span></td>
+    <td class="right" data-profit>—</td>
+    <td class="right" data-profit-season>—</td>
+    <td class="center"><button class="btn" data-del>✕</button></td>
+  `;
+  body.appendChild(tr);
+
+  tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', recomputeAll));
+  tr.querySelector('[data-del]').addEventListener('click', ()=>{ tr.remove(); recomputeAll(); });
+
+  recomputeAll();
+}
+
+// ===== KPIs & verdict =====
+const kCA_season = document.getElementById('k_ca_season');
+const kComm_season = document.getElementById('k_comm_season');
+const kMkt_season = document.getElementById('k_mkt_season');
+const kProfit_season = document.getElementById('k_profit_season');
+const totProfitSeason = document.getElementById('tot_profit_season');
+const verdict = document.getElementById('verdict');
+const beLoad = document.getElementById('be_load');
+const beComm = document.getElementById('be_comm');
+const kLossLines = document.getElementById('k_loss_lines');
+const kTotalLines = document.getElementById('k_total_lines');
+const kMargin = document.getElementById('k_margin');
+
+const sensM10 = document.getElementById('sens_m10');
+const sensP10 = document.getElementById('sens_p10');
+const sensPminus = document.getElementById('sens_pminus');
+const sensPplus  = document.getElementById('sens_pplus');
+
+function recomputeAll(){
+  let sumCA_day=0, sumComm_day=0, sumMkt_day=0, sumProfit_day=0;
+  let sumCA_season=0, sumComm_season=0, sumMkt_season=0, sumProfit_season=0, sumNetRev_season=0;
+  let lossLines = 0, totalLines = 0;
+
+  const rows = [...body.querySelectorAll('tr')];
+
+  rows.forEach(tr=>{
+    const getNum = i => Number(tr.querySelectorAll('input')[i].value)||0;
+    const seats  = getNum(1), load = Math.max(0,Math.min(100,getNum(2)));
+    const price  = getNum(3), dist = getNum(4), cons = getNum(5), diesel = getNum(6), maint = getNum(7);
+    const driver = getNum(8), rental = getNum(9), tolls = getNum(10), other = getNum(11);
+    const comm   = Math.max(0,Math.min(100,getNum(12)));
+    const mkt    = getNum(13);
+    const days   = Math.max(0, Math.floor(getNum(14)));
+
+    const sold = seats * load/100;
+    const revenue = sold * price;                      // CA/jour
+    const commission = revenue * (comm/100);          // MP/jour
+    const fuel = (dist/100) * cons * diesel;          // carburant/jour
+    const maintenance = dist * maint;                 // maintenance variable/jour
+    const costs = driver + rental + tolls + other + fuel + maintenance;
+    const netRevenue = revenue - commission;          // après MP
+    const profit = netRevenue - costs - mkt + mkt;    // on évalue la couverture MP vs mkt au global; ici on affiche profit hors mkt pour cohérence agrégée
+    // (affichage jour = netRevenue - costs ; la couverture mkt est indiquée à part)
+
+    // Badge couverture MP vs mkt (par jour, indicatif)
+    const badge = tr.querySelector('[data-badge]');
+    if(commission >= mkt){
+      badge.textContent = 'OK — MP couvre Mkt/Vente';
+      badge.className = 'badge ok';
+    }else{
+      badge.textContent = `Déficit ${(mkt - commission).toFixed(0)} CHF/j (Mkt)`;
+      badge.className = 'badge ko';
+    }
+
+    tr.querySelector('[data-profit]').textContent = CHF(netRevenue - costs);
+    tr.querySelector('[data-profit-season]').textContent = CHF((netRevenue - costs) * days);
+
+    // Agrégats saison
+    sumCA_day += revenue;            sumComm_day += commission; sumMkt_day += mkt; sumProfit_day += (netRevenue - costs);
+    sumCA_season += revenue * days;  sumComm_season += commission * days; sumMkt_season += mkt * days;
+    const profitSeasonLine = (netRevenue - costs) * days;
+    sumProfit_season += profitSeasonLine;
+    sumNetRev_season += (netRevenue * days);
+
+    totalLines++;
+    if(profitSeasonLine < 0) lossLines++;
+  });
+
+  // KPIs saison
+  kCA_season.textContent = CHF(sumCA_season);
+  kComm_season.textContent = CHF(sumComm_season);
+  kMkt_season.textContent = CHF(sumMkt_season);
+  kProfit_season.textContent = CHF(sumProfit_season);
+  totProfitSeason.textContent = CHF(sumProfit_season);
+
+  // Lignes déficitaires & marge
+  kLossLines.textContent = lossLines;
+  kTotalLines.textContent = totalLines;
+  const margin = sumNetRev_season>0 ? (sumProfit_season / sumNetRev_season)*100 : 0;
+  kMargin.textContent = isFinite(margin) ? margin.toFixed(1)+' %' : '—';
+
+  // Verdict GO/NO-GO (agrégé)
+  const coversMkt = sumComm_season >= sumMkt_season;
+  const profitable = sumProfit_season >= 0.5; // petit buffer
+  if(coversMkt && profitable){
+    verdict.textContent = `GO — rentable (absorption de ${lossLines} ligne(s) déficitaire[s])`;
+    verdict.className = 'badge ok';
+  }else if(!coversMkt && profitable){
+    verdict.textContent = 'NO-GO — MP ne couvre pas Mkt/Vente (même si agrégé positif)';
+    verdict.className = 'badge ko';
+  }else if(coversMkt && !profitable){
+    verdict.textContent = 'NO-GO — déficitaire au global malgré couverture MP';
+    verdict.className = 'badge ko';
+  }else{
+    verdict.textContent = 'NO-GO — déficitaire & MP ne couvre pas Mkt/Vente';
+    verdict.className = 'badge ko';
+  }
+
+  // Seuils de remplissage (appliqué uniformément à toutes les lignes)
+  // Profit saison agrégé = A * load% - B
+  let A = 0, B = 0, Acomm = 0, M = sumMkt_season;
+  rows.forEach(tr=>{
+    const N = tr.querySelectorAll('input');
+    const seats  = Number(N[1].value)||0, price = Number(N[3].value)||0, days = Math.max(0, Math.floor(Number(N[14].value)||0));
+    const comm   = Math.max(0,Math.min(100, Number(N[12].value)||0));
+    // coûts fixes/variables indépendants du taux de remplissage:
+    const dist=Number(N[4].value)||0, cons=Number(N[5].value)||0, diesel=Number(N[6].value)||0, maint=Number(N[7].value)||0;
+    const driver=Number(N[8].value)||0, rental=Number(N[9].value)||0, tolls=Number(N[10].value)||0, other=Number(N[11].value)||0;
+    const costs = driver + rental + tolls + other + (dist/100)*cons*diesel + dist*maint;
+    // revenu net par point de remplissage (1%):
+    A += (seats * price * (1 - comm/100) / 100) * days;
+    // commission par point de remplissage:
+    Acomm += (seats * price * (comm/100) / 100) * days;
+    B += costs * days;
+  });
+  const loadBE = A>0 ? Math.min(100, Math.max(0, (B/A)*100 )) : 100;
+  beLoad.textContent = isFinite(loadBE) ? loadBE.toFixed(0) + ' %' : '—';
+
+  const loadComm = Acomm>0 ? Math.min(100, Math.max(0, (M/Acomm)*100 )) : 100;
+  beComm.textContent = isFinite(loadComm) ? loadComm.toFixed(0) + ' %' : '—';
+
+  // Sensibilité: ±10pp remplissage, ±5 CHF prix (agrégé)
+  const shock = (dLoad=0, dPrice=0)=>{
+    let p=0;
+    rows.forEach(tr=>{
+      const N = tr.querySelectorAll('input');
+      const seats=+N[1].value||0, load=+N[2].value||0, price=+N[3].value||0, dist=+N[4].value||0, cons=+N[5].value||0, diesel=+N[6].value||0, maint=+N[7].value||0;
+      const driver=+N[8].value||0, rental=+N[9].value||0, tolls=+N[10].value||0, other=+N[11].value||0, comm=+N[12].value||0, mkt=+N[13].value||0, days=Math.max(0,Math.floor(+N[14].value||0));
+      const newLoad = Math.max(0, Math.min(100, load + dLoad));
+      const newPrice = Math.max(0, price + dPrice);
+      const sold = seats * newLoad/100;
+      const revenue = sold * newPrice;
+      const commission = revenue * (comm/100);
+      const fuel = (dist/100) * cons * diesel;
+      const maintenance = dist * maint;
+      const costs = driver + rental + tolls + other + fuel + maintenance;
+      const profit = (revenue - commission - costs) * days;
+      p += profit;
+    });
+    return p;
+  };
+  sensM10.textContent = CHF(shock(-10, 0));
+  sensP10.textContent = CHF(shock(+10, 0));
+  sensPminus.textContent = CHF(shock(0, -5));
+  sensPplus.textContent  = CHF(shock(0, +5));
+}
+
+// Seed par défaut
+addRow(defaults(calcServiceDays()));
+</script>
+</body>
+</html>
