@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="robots" content="noindex,nofollow">
-<title>PostBus Connect — Analyse rentabilité (interne)</title>
+<title>PostBus Connect — Analyse rentabilité (interne, saison complète)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -51,7 +51,7 @@ hr{border:0;height:1px;background:#1E2233;margin:16px 0}
 <body>
   <div class="container">
     <h1>Analyse rentabilité — PostBus Connect (interne)</h1>
-    <p class="badge">Hypothèses de base : <b>commission Magic Pass = 0% pour l’opérateur</b> (prise en charge par Magic Pass) · <b>Contribution destination = CHF 150</b> par bus (modifiable par ligne) · <b>pas de surcharge premium</b>.</p>
+    <p class="badge">Hypothèses : <b>commission Magic Pass = 0% pour l’opérateur</b> (prise en charge par Magic Pass) · <b>Contribution destination = CHF 150</b> / bus (modifiable) · <b>pas de surcharge premium</b>.</p>
 
     <!-- PARAMÈTRES PAR DÉFAUT -->
     <div class="card">
@@ -84,9 +84,11 @@ hr{border:0;height:1px;background:#1E2233;margin:16px 0}
       <h2>Planification rapide</h2>
       <div class="row">
         <button class="btn brand" id="addOne">Ajouter 1 ligne</button>
-        <button class="btn" id="genWeekends">Générer tous les <b>week-ends jan–mars 2026</b> (1 bus/jour)</button>
+        <button class="btn" id="genSeason">Générer toute la saison (ven–sam–dim : 20.12.2025 → 31.03.2026)</button>
+        <button class="btn ghost" id="resetSeason">Effacer & générer saison</button>
+        <button class="btn" id="genWeekends">Générer jan–mars 2026 (ven–sam–dim)</button>
         <button class="btn ghost" id="clearAll">Vider le tableau</button>
-        <span class="small">Astuce : utilise “Dupliquer” sur une ligne pour faire un second bus le même jour.</span>
+        <span class="small">Astuce : “Dupliquer” sur une ligne = 2e bus le même jour.</span>
       </div>
     </div>
 
@@ -160,11 +162,11 @@ hr{border:0;height:1px;background:#1E2233;margin:16px 0}
           <tbody></tbody>
         </table>
       </div>
-      <small class="small">Rappel : la “Contribution destination” est saisie par ligne et par défaut à <b>CHF 150</b>.</small>
+      <small class="small">“Contribution destination” est saisie par ligne (défaut <b>CHF 150</b>), modifiable si une station paie plus.</small>
     </div>
 
     <hr>
-    <p class="small">© 2025 MobilityLab — Page interne de simulation. Les chiffres sont indicatifs; ajuste les coûts variables selon ton exploitation.</p>
+    <p class="small">© 2025 MobilityLab — Page interne de simulation. Ajuste les coûts variables selon ton exploitation (carburant, chauffeur, péages, etc.).</p>
   </div>
 
 <script>
@@ -175,23 +177,16 @@ const clamp = (v, a, b)=> Math.max(a, Math.min(b, v));
 const qs=(s,p=document)=>p.querySelector(s);
 
 /* ===== State ===== */
-let defaults = {
-  cap: 40,
-  lf: 40,
-  fare: 32,
-  cost: 450,
-  subsidy: 150
-};
+let defaults = { cap: 40, lf: 40, fare: 32, cost: 450, subsidy: 150 };
 let rows = []; // {id,date,from,to,cap,lf,fare,cost,subsidy}
 
 /* ===== Storage ===== */
-const LS_KEY='pbc_fin_rows_v2';
-const LS_DEF='pbc_fin_defs_v2';
+const LS_KEY='pbc_fin_rows_v3';
+const LS_DEF='pbc_fin_defs_v3';
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(rows)); localStorage.setItem(LS_DEF, JSON.stringify(defaults)); }
 function load(){
   try{ const r=JSON.parse(localStorage.getItem(LS_KEY)||'[]'); if(Array.isArray(r)) rows=r; }catch(e){}
   try{ const d=JSON.parse(localStorage.getItem(LS_DEF)||'{}'); defaults={...defaults, ...d}; }catch(e){}
-  // hydrate UI
   qs('#defCap').value = defaults.cap;
   qs('#defLF').value = defaults.lf;
   qs('#defFare').value = defaults.fare;
@@ -246,7 +241,6 @@ function paint(){
     tPax+=d.pax; tTicket+=d.tickets; tOther+=d.other; tRev+=d.revenue; tMargin+=d.margin;
 
     const tr = document.createElement('tr');
-
     tr.innerHTML = `
       <td><input type="date" value="${r.date}" data-k="date"></td>
       <td><input type="text" placeholder="Genève" value="${r.from}" data-k="from"></td>
@@ -267,9 +261,8 @@ function paint(){
         <button class="btn" data-act="del">Suppr.</button>
       </td>
     `;
-    // Attach events
     tr.querySelectorAll('input').forEach(inp=>{
-      inp.addEventListener('input', (e)=>{
+      inp.addEventListener('input', ()=>{
         const k = inp.dataset.k;
         if(k==='date'||k==='from'||k==='to'){ r[k]=inp.value; }
         else { r[k]= num(inp.value, r[k]); }
@@ -337,17 +330,28 @@ function paintByDestination(){
   });
 }
 
-/* ===== Week-ends Jan–Mar 2026 (ven–dim) ===== */
-function genWeekends(){
-  const start = new Date('2026-01-01T00:00:00');
-  const end   = new Date('2026-03-31T23:59:59');
+/* ===== Génération week-ends ===== */
+const D_SEASON_START = '2025-12-20';
+const D_SEASON_END   = '2026-03-31';
+
+function addIfNewDate(iso){
+  // on n'ajoute qu'un bus par jour via générateur (mais tu peux dupliquer ensuite)
+  if(!rows.some(r=>r.date===iso)) addRow({date: iso});
+}
+
+function genByRange(startIso, endIso){
+  const start = new Date(startIso + 'T00:00:00');
+  const end   = new Date(endIso   + 'T23:59:59');
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
     const dow=d.getDay(); // 0=dim … 6=sam
-    if(dow===0||dow===5||dow===6){ // dim, ven, sam
-      addRow({ date: d.toISOString().split('T')[0] });
+    if(dow===5||dow===6||dow===0){ // ven, sam, dim
+      addIfNewDate(d.toISOString().split('T')[0]);
     }
   }
 }
+
+function genSeason(){ genByRange(D_SEASON_START, D_SEASON_END); }
+function genWeekends(){ genByRange('2026-01-01','2026-03-31'); }
 
 /* ===== Events ===== */
 qs('#applyDefaults').addEventListener('click', ()=>{
@@ -358,8 +362,13 @@ qs('#applyDefaults').addEventListener('click', ()=>{
   defaults.subsidy = num(qs('#defSubsidy').value, defaults.subsidy);
   save(); paint();
 });
-
 qs('#addOne').addEventListener('click', ()=> addRow({}));
+qs('#genSeason').addEventListener('click', genSeason);
+qs('#resetSeason').addEventListener('click', ()=>{
+  if(confirm('Effacer toutes les lignes puis générer toute la saison ?')){
+    rows=[]; paint(); save(); genSeason();
+  }
+});
 qs('#genWeekends').addEventListener('click', genWeekends);
 qs('#clearAll').addEventListener('click', ()=>{
   if(confirm('Effacer toutes les lignes ?')){ rows=[]; paint(); save(); }
@@ -368,10 +377,10 @@ qs('#clearAll').addEventListener('click', ()=>{
 /* ===== Init ===== */
 load();
 paint();
-// Si vide, ajoute un exemple
+// Exemple si vide
 if(rows.length===0){
-  addRow({date:'2026-01-03', from:'Genève', to:'Ovronnaz'});
-  addRow({date:'2026-01-04', from:'Lausanne', to:'Leukerbad', lf:45, cost:480});
+  addRow({date:'2025-12-20', from:'Genève', to:'Ovronnaz'});
+  addRow({date:'2026-01-03', from:'Lausanne', to:'Leukerbad', lf:45, cost:480});
 }
 </script>
 </body>
