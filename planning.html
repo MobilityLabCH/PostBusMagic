@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PostBus Connect — Planning exploitation (interne)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0B10; --bg-2:#0F1118; --ink:#EDEEF2; --muted:#A7ADBD;
+  --brand:#FFD300; --brand-ink:#0B0B0B; --line:#1C2030;
+  --card:rgba(255,255,255,.06); --glass:blur(10px) saturate(130%);
+  --green:#35E0A1; --red:#FF6B6B; --blue:#7AB2FF;
+  --radius:16px; --radius-lg:22px; --shadow:0 20px 60px rgba(0,0,0,.35);
+  --max:1100px;
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{
+  background:radial-gradient(900px 600px at 85% -10%,#1B2040 0%,#0B0D14 40%,#07080D 100%) fixed;
+  color:var(--ink); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+}
+.container{width:min(92vw,var(--max));margin:auto}
+h1{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;font-weight:700;line-height:1.04;
+   font-size:clamp(28px,4.6vw,54px);margin:0}
+h2{font-family:"Space Grotesk";font-weight:700;margin:0 0 8px}
+h3{margin:.4rem 0}
+p,small{color:var(--muted)}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(8,9,15,.9),rgba(8,9,15,.55) 70%,transparent);backdrop-filter:var(--glass);border-bottom:1px solid #141829}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800}
+.logo .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(255,211,0,.15)}
+.badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:#11131B;border:1px solid var(--line);font-weight:800}
+.btn{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:12px 14px;border-radius:12px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 40px rgba(122,178,255,.18)}
+.btn.brand{background:var(--brand); color:#000; border-color:#C7A700; box-shadow:0 10px 40px rgba(255,211,0,.25)}
+.btn.ghost{background:#11131B}
+.card{background:var(--card);backdrop-filter:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:900px){.grid-2{grid-template-columns:1fr}}
+section{padding:22px 0}
+label{font-weight:800;font-size:.92rem}
+select,input{width:100%;padding:12px;border:1px solid #2A2F45;border-radius:12px;background:#0E1220;color:#E8EBF7}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tag{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid #2A2F45;border-radius:999px;background:#11131B}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.kpi .box{background:#101320;border:1px solid #252B42;border-radius:10px;padding:10px;text-align:center}
+.ok{color:#9EF3C9}
+.warn{color:#FFD17A}
+.bad{color:#FFB3B3}
+.timeline{display:grid;grid-template-columns:160px 1fr;gap:10px}
+.tl{display:contents}
+.tl .t{font-weight:800}
+.tl .d{color:#D6DBF2}
+.hr{height:1px;background:#1E2436;margin:10px 0}
+.small{font-size:.9rem;color:#A7ADBD}
+.panel{padding:14px}
+.panel h3{margin:0 0 6px}
+input[type="number"]{width:110px}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px dashed #2A2F45;padding:8px 6px;text-align:left}
+th{color:#CFE0FF}
+.status{font-weight:800}
+footer{padding:28px 0;border-top:1px solid #171C2B;background:linear-gradient(180deg,#0B0D14,#0A0B10);margin-top:22px}
+</style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <div class="logo">
+      <span class="dot"></span><span>PostBus Connect</span>
+      <span class="badge">Planning exploitation — Interne</span>
+    </div>
+    <div class="row">
+      <button class="btn" id="btnPrint">Imprimer</button>
+      <button class="btn brand" id="btnPDF">Exporter PDF</button>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <div class="card panel">
+      <div class="grid-2">
+        <div>
+          <h2>Journée à planifier</h2>
+          <div class="row" style="gap:12px;align-items:flex-end">
+            <div style="min-width:280px">
+              <label for="selDate">Date (week-ends fin déc. 2025 → mars 2026)</label>
+              <select id="selDate"></select>
+            </div>
+            <div>
+              <button class="btn brand" id="btnGenerate">Générer le planning</button>
+            </div>
+            <span class="tag">Service : <b>Ven–Sam–Dim uniquement</b></span>
+          </div>
+          <p class="small">Le système génère jusqu’à <b>3 bus/jour</b> : Lausanne (fixe) + 2 villes alternées (Genève / Fribourg / Yverdon). Une seule course A/R par chauffeur.</p>
+        </div>
+        <div>
+          <h2>Paramètres (deadhead & buffers)</h2>
+          <div class="row">
+            <div>
+              <label>Pré-service dépôt → départ</label><br>
+              <input id="preTrip" type="number" value="20"> <small>min</small>
+            </div>
+            <div>
+              <label>Fin de service (arrivée → dépôt)</label><br>
+              <input id="postTrip" type="number" value="20"> <small>min</small>
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div><label>Deadhead Genève</label><br><input id="dh-Geneve" type="number" value="15"> <small>min</small></div>
+            <div><label>Deadhead Lausanne</label><br><input id="dh-Lausanne" type="number" value="15"> <small>min</small></div>
+            <div><label>Deadhead Yverdon</label><br><input id="dh-Yverdon" type="number" value="10"> <small>min</small></div>
+            <div><label>Deadhead Fribourg</label><br><input id="dh-Fribourg" type="number" value="15"> <small>min</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="dayKPIs" class="kpi" style="margin:12px 0 6px; display:none">
+      <div class="box"><b id="k-date">—</b><br><small>Date</small></div>
+      <div class="box"><b id="k-bus">—</b><br><small>Bus planifiés</small></div>
+      <div class="box"><b id="k-legal">—</b><br><small>Conformité OTR 1</small></div>
+      <div class="box"><b id="k-pause">—</b><br><small>Pause ≥45 min</small></div>
+    </div>
+
+    <div id="plans"></div>
+
+    <div class="card panel" style="margin-top:14px">
+      <h2>Informations utiles</h2>
+      <div class="grid-2">
+        <div>
+          <h3>Dépôts (à confirmer avec Région Ouest)</h3>
+          <table>
+            <thead><tr><th>Ville</th><th>Zone d’exploitation probable</th></tr></thead>
+            <tbody>
+              <tr><td>Genève</td><td>Vernier / secteur aéroport</td></tr>
+              <tr><td>Lausanne</td><td>Renens / Crissier</td></tr>
+              <tr><td>Yverdon</td><td>Yverdon-les-Bains (siège régional)</td></tr>
+              <tr><td>Fribourg</td><td>Givisiez</td></tr>
+            </tbody>
+          </table>
+          <small class="small">Confirmer les adresses exactes avec CarPostal Région Ouest — une fois figées, remplace ces libellés.</small>
+        </div>
+        <div>
+          <h3>Règles CH (OTR 1 — synthèse terrain)</h3>
+          <ul class="small">
+            <li>Pause conduite : <b>45 min</b> après <b>4 h 30</b> max (fractionnable 15+30).</li>
+            <li>Conduite/jour : <b>9 h</b> (jusqu’à <b>10 h</b> 2×/semaine).</li>
+            <li>Repos journalier : en principe <b>11 h</b>.</li>
+            <li>Ici, la pause est prise à la station (long arrêt midi).</li>
+          </ul>
+          <h3>Consignes</h3>
+          <ul class="small">
+            <li>1 chauffeur = <b>1 A/R/jour</b> (pas d’autres courses).</li>
+            <li>Check véhicule au dépôt (départ) + retour dépôt (plein/contrôle).</li>
+            <li>Hotline exploitation : <b>+41 79 464 64 43</b> (exemple).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <small>© 2025 MobilityLab — PostBus Connect (interne). Prototype planning.</small>
+  </div>
+</footer>
+
+<!-- jsPDF pour export -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+/* ====== Données d'offre & règles ====== */
+const ELIGIBILITY={
+  "Genève ⇄ Zinal": {eligible:true, reason:"TP ~4h24 · véhicule ~2h27"},
+  "Genève ⇄ Ovronnaz": {eligible:true, reason:"TP ~3h35 · véhicule ~1h59"},
+  "Genève ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h00–4h15 · véhicule ~2h45"},
+  "Genève ⇄ Belalp": {eligible:true, reason:"TP ~3h50 · véhicule ~2h35"},
+  "Genève ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h45–4h00 · véhicule ~2h30"},
+  "Genève ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~4h00–4h20 · véhicule ~2h35"},
+  "Genève ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h45 · véhicule ~2h20"},
+
+  "Lausanne ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h42 · véhicule 1h06–1h12"},
+  "Lausanne ⇄ Leukerbad": {eligible:true, reason:"TP ~2h17 · véhicule ~1h32"},
+  "Lausanne ⇄ Lötschental": {eligible:true, reason:"TP ~2h40 · véhicule ~1h40"},
+  "Lausanne ⇄ Saas-Fee": {eligible:true, reason:"TP ~3h30 · véhicule ~2h20"},
+  "Lausanne ⇄ Belalp": {eligible:true, reason:"TP ~3h10 · véhicule ~2h05"},
+  "Lausanne ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h20 · véhicule ~2h05"},
+  "Lausanne ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~3h30 · véhicule ~2h05"},
+  "Lausanne ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h15 · véhicule ~1h50"},
+
+  "Yverdon ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h45 · véhicule ~1h35"},
+  "Yverdon ⇄ Leukerbad": {eligible:true, reason:"TP ~3h05 · véhicule ~1h55"},
+  "Yverdon ⇄ Lötschental": {eligible:true, reason:"TP ~3h00 · véhicule ~1h50"},
+  "Yverdon ⇄ Belalp": {eligible:true, reason:"TP ~3h20 · véhicule ~2h10"},
+
+  "Fribourg ⇄ Zinal": {eligible:true, reason:"TP ~3h50 · véhicule ~2h30"},
+  "Fribourg ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h05 · véhicule ~2h40"},
+  "Fribourg ⇄ Belalp": {eligible:true, reason:"TP ~3h40 · véhicule ~2h20"},
+  "Fribourg ⇄ Adelboden": {eligible:true, reason:"TP ~2h35 · véhicule ~1h40"}
+};
+
+const CITY_POOLS={
+  "Genève":["Zinal","Ovronnaz","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
+  "Lausanne":["Ovronnaz","Leukerbad","Lötschental","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
+  "Yverdon":["Ovronnaz","Leukerbad","Lötschental","Belalp"],
+  "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
+};
+
+const DEP_HOURS = { // heures "produit"
+  "Genève":  {dep:"06:30", ret:"16:45"},
+  "Lausanne":{dep:"07:00", ret:"17:00"},
+  "Yverdon": {dep:"07:10", ret:"16:30"},
+  "Fribourg":{dep:"06:45", ret:"16:40"}
+};
+
+// Saison : fin déc 2025 → mars 2026, Ven–Sam–Dim uniquement
+const SEASONS=[{start:"2025-12-20", end:"2026-03-31"}];
+function isWeekend(d){ const g=d.getDay(); return g===5||g===6||g===0; } // ven/sam/dim
+function inSeason(d){ return SEASONS.some(s=> d>=new Date(s.start+"T00:00:00") && d<=new Date(s.end+"T23:59:59")); }
+
+function minutes(h,m){return (parseInt(h,10)||0)*60+(parseInt(m,10)||0);}
+function hhmmToMin(t){const [h,m]=t.split(":").map(Number);return h*60+m;}
+function minToHHMM(x){const H=((Math.floor(x/60))%24+24)%24, M=((x%60)+60)%60; return String(H).padStart(2,"0")+":"+String(M).padStart(2,"0");}
+
+function rideMinutes(from,to){
+  const meta=ELIGIBILITY[`${from} ⇄ ${to}`]; if(!meta) return 120;
+  const s=meta.reason;
+  // cherche "1h06–1h12" ou "~1h55" ou "2h45"
+  let r=s.match(/(\d{1,2})h(\d{1,2})\s*[–-]\s*(\d{1,2})h(\d{1,2})/);
+  if(r){ const a=minutes(r[1],r[2]), b=minutes(r[3],r[4]); return Math.round((a+b)/2); }
+  r=s.match(/~?\s*(\d{1,2})h(\d{1,2})/);
+  if(r){ return minutes(r[1],r[2]); }
+  r=s.match(/~?\s*(\d{1,2})h\b/);
+  if(r){ return parseInt(r[1],10)*60; }
+  return 120;
+}
+
+// rotation : Lausanne fixe + 2 villes alternées (Genève/Yverdon/Fribourg)
+function hashDate(dateStr){ const d=dateStr.replaceAll('-',''); let h=0; for(const ch of d){ h=(h*33 + ch.charCodeAt(0))%997; } return h; }
+function servicesForDate(dateStr){
+  const h=hashDate(dateStr);
+  const rotating=["Genève","Yverdon","Fribourg"];
+  const a=rotating[h % rotating.length];
+  const b=rotating[(h+1) % rotating.length];
+  const cities=["Lausanne", a, b];
+  return cities.map((city,idx)=>{
+    const pool=CITY_POOLS[city]; const to=pool[(h+idx)%pool.length];
+    return {from:city, to, dep:DEP_HOURS[city].dep, ret:DEP_HOURS[city].ret};
+  });
+}
+
+function weekendDatesList(){
+  const out=[];
+  const start=new Date("2025-12-20T00:00:00");
+  const end  =new Date("2026-03-31T23:59:59");
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    if(isWeekend(d) && inSeason(d)) out.push(new Date(d));
+  }
+  return out;
+}
+
+/* ====== UI ====== */
+const selDate=document.getElementById("selDate");
+const plansWrap=document.getElementById("plans");
+const kDate=document.getElementById("k-date");
+const kBus=document.getElementById("k-bus");
+const kLegal=document.getElementById("k-legal");
+const kPause=document.getElementById("k-pause");
+const dayKPIs=document.getElementById("dayKPIs");
+
+(function populateDates(){
+  selDate.innerHTML="";
+  for(const d of weekendDatesList()){
+    const iso=d.toISOString().split("T")[0];
+    const opt=document.createElement("option");
+    opt.value=iso; opt.textContent=d.toLocaleDateString("fr-CH",{weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"});
+    selDate.appendChild(opt);
+  }
+})();
+
+/* ====== Génération planning ====== */
+function getNum(id){ return parseInt(document.getElementById(id).value,10)||0; }
+function deadhead(city){
+  const map={"Genève":"dh-Geneve","Lausanne":"dh-Lausanne","Yverdon":"dh-Yverdon","Fribourg":"dh-Fribourg"};
+  return getNum(map[city]||"dh-Lausanne");
+}
+const OTR={BREAK_AFTER_MIN:270, BREAK_MIN:45, MAX_DRIVE_DAY:540}; // 4h30, 45’, 9h
+
+function genPlanCard(dateISO, svc){
+  const rideMin = rideMinutes(svc.from, svc.to);
+  const pre   = getNum("preTrip");
+  const post  = getNum("postTrip");
+  const dh    = deadhead(svc.from);
+
+  const depClient = hhmmToMin(svc.dep);
+  const retClient = hhmmToMin(svc.ret);
+
+  const depoOut   = depClient - (dh + pre);
+  const arrSta    = depClient + rideMin;
+  const arrOri    = retClient + rideMin;
+  const depoBack  = arrOri + dh + post;
+
+  const driveTotal = (rideMin*2) + (dh*2); // simple : deadheads considérés conduite
+  const middayStop = retClient - arrSta;
+
+  const legalDriveOK = driveTotal <= OTR.MAX_DRIVE_DAY;
+  const breakOK = middayStop >= OTR.BREAK_MIN;
+  const breakNeed = rideMin > OTR.BREAK_AFTER_MIN ? "⚠ prévoir pause à l'aller" : "pause à la station";
+
+  const status = (legalDriveOK && breakOK) ? "ok" : (legalDriveOK ? "warn" : "bad");
+  const statusTxt = legalDriveOK ? (breakOK ? "OK" : "Pause insuffisante") : "> 9 h conduite";
+
+  const card=document.createElement("div");
+  card.className="card panel";
+  card.innerHTML=`
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div>
+        <h2>${svc.from} → ${svc.to} <span class="tag">Aller/Retour</span></h2>
+        <small>Date : ${new Date(dateISO).toLocaleDateString('fr-CH',{weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</small>
+        <div class="hr"></div>
+        <div class="timeline">
+          <div class="tl"><div class="t">${minToHHMM(depoOut)}</div><div class="d">Dépôt (${svc.from}) — prise de service + sortie</div></div>
+          <div class="tl"><div class="t">${minToHHMM(depClient - dh)}</div><div class="d">Arrivée point de départ (deadhead ~${dh} min)</div></div>
+          <div class="tl"><div class="t">${svc.dep}</div><div class="d"><b>Départ client</b> — ${svc.from} → ${svc.to}</div></div>
+          <div class="tl"><div class="t">${minToHHMM(arrSta)}</div><div class="d">Arrivée station (conduite ≈ ${rideMin} min)</div></div>
+          <div class="tl"><div class="t">${svc.ret}</div><div class="d"><b>Départ retour</b> — station → ${svc.from}</div></div>
+          <div class="tl"><div class="t">${minToHHMM(arrOri)}</div><div class="d">Arrivée ${svc.from} (conduite ≈ ${rideMin} min)</div></div>
+          <div class="tl"><div class="t">${minToHHMM(arrOri + dh)}</div><div class="d">Retour dépôt (${svc.from}) (deadhead ~${dh} min)</div></div>
+          <div class="tl"><div class="t">${minToHHMM(depoBack)}</div><div class="d">Fin de service (post-checks ~${post} min)</div></div>
+        </div>
+      </div>
+      <div style="min-width:240px">
+        <h3>Conformité</h3>
+        <table>
+          <tr><td>Conduite totale</td><td><b>${(driveTotal/60).toFixed(1)} h</b> (max 9 h)</td></tr>
+          <tr><td>Pause midi</td><td><b>${middayStop} min</b> (≥ 45 min)</td></tr>
+          <tr><td>Remarque</td><td>${breakNeed}</td></tr>
+          <tr><td>Statut</td><td class="status ${status}">${statusTxt}</td></tr>
+        </table>
+        <div class="hr"></div>
+        <h3>Notes exploitation</h3>
+        <ul class="small">
+          <li>Le chauffeur effectue <b>uniquement</b> cet A/R.</li>
+          <li>Pause prise à la station (resto staff / salle chauffeurs si dispo).</li>
+          <li>Check carburant & propreté au retour dépôt.</li>
+        </ul>
+      </div>
+    </div>`;
+  return {card, legalDriveOK, breakOK};
+}
+
+function generateDay(){
+  const iso=selDate.value;
+  if(!iso){ alert("Choisis une date."); return; }
+  plansWrap.innerHTML="";
+  const services=servicesForDate(iso);
+  let okDrive=0, okBreak=0;
+
+  services.forEach(svc=>{
+    const {card, legalDriveOK, breakOK}=genPlanCard(iso, svc);
+    plansWrap.appendChild(card);
+    if(legalDriveOK) okDrive++; if(breakOK) okBreak++;
+  });
+
+  dayKPIs.style.display="grid";
+  kDate.textContent=new Date(iso).toLocaleDateString("fr-CH",{weekday:"long", day:"2-digit", month:"long", year:"numeric"});
+  kBus.textContent=services.length+" / 3";
+  kLegal.textContent=(okDrive===services.length)?"OK":"À surveiller";
+  kPause.textContent=(okBreak===services.length)?"OK":"Vérifier";
+}
+
+document.getElementById("btnGenerate").addEventListener("click", generateDay);
+
+/* ====== Impression & PDF ====== */
+document.getElementById("btnPrint").addEventListener("click", ()=>window.print());
+
+document.getElementById("btnPDF").addEventListener("click", ()=>{
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF({unit:"pt", format:"a4"});
+  const PAD=40, W=595, LINE="#E5E7EB";
+
+  function divider(y){ doc.setDrawColor(220); doc.line(PAD,y,W-PAD,y); }
+
+  // En-tête
+  doc.setFillColor("#FFD300"); doc.rect(0,0,W,70,"F");
+  doc.setTextColor("#0B0B0B"); doc.setFont("helvetica","bold"); doc.setFontSize(18);
+  doc.text("PostBus Connect — Planning exploitation (interne)", PAD, 44);
+
+  // Date
+  const dTxt = selDate.value ? new Date(selDate.value).toLocaleDateString("fr-CH",{weekday:"long", day:"2-digit", month:"long", year:"numeric"}) : "—";
+  doc.setFont("helvetica","normal"); doc.setFontSize(11); doc.setTextColor("#111");
+  doc.text("Date : "+dTxt+" — Ven–Sam–Dim uniquement · 1 A/R par chauffeur", PAD, 86);
+  divider(96);
+
+  // Rendu simple des cartes
+  let y=112; let page=1;
+  const services=servicesForDate(selDate.value||"2026-01-03"); // fallback si vide
+  for(const svc of services){
+    const rideMin=rideMinutes(svc.from, svc.to);
+    const pre=getNum("preTrip"), post=getNum("postTrip"), dh=deadhead(svc.from);
+    const dep = hhmmToMin(svc.dep), ret = hhmmToMin(svc.ret);
+    const depoOut=dep-(dh+pre), arrSta=dep+rideMin, arrOri=ret+rideMin, depoBack=arrOri+dh+post;
+    const driveTotal=(rideMin*2)+(dh*2), middayStop=ret-arrSta;
+
+    // Titre
+    doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.setTextColor("#111");
+    doc.text(`${svc.from} → ${svc.to} (A/R)`, PAD, y);
+    y+=16; doc.setFont("helvetica","normal"); doc.setFontSize(11);
+    const rows=[
+      [`${minToHHMM(depoOut)}`, `Dépôt ${svc.from} — prise de service + sortie`],
+      [`${minToHHMM(dep - dh)}`, `Arrivée point de départ (deadhead ~${dh} min)`],
+      [`${svc.dep}`, `Départ client — ${svc.from} → ${svc.to}`],
+      [`${minToHHMM(arrSta)}`, `Arrivée station (conduite ≈ ${rideMin} min)`],
+      [`${svc.ret}`, `Départ retour — station → ${svc.from}`],
+      [`${minToHHMM(arrOri)}`, `Arrivée ${svc.from} (conduite ≈ ${rideMin} min)`],
+      [`${minToHHMM(arrOri + dh)}`, `Retour dépôt ${svc.from} (deadhead ~${dh} min)`],
+      [`${minToHHMM(depoBack)}`, `Fin de service (post-checks ~${post} min)`],
+    ];
+    for(const [t,desc] of rows){
+      doc.text(t, PAD, y); doc.text("— "+desc, PAD+70, y);
+      y+=14;
+    }
+    // Bloc conformité
+    y+=2; divider(y); y+=12;
+    doc.text(`Conduite totale : ${(driveTotal/60).toFixed(1)} h (≤ 9 h)  ·  Pause à la station : ${middayStop} min (≥ 45)`, PAD, y);
+    y+=16; divider(y); y+=18;
+
+    // Saut de page si besoin
+    if(y>770){ doc.text(`© MobilityLab — page ${page}`, PAD, 820); doc.addPage(); page++; y=70; }
+  }
+
+  doc.text(`© MobilityLab — page ${page}`, PAD, 820);
+  const fname = `Planning_PBC_${selDate.value||"jour"}.pdf`;
+  doc.save(fname);
+});
+</script>
+</body>
+</html>
