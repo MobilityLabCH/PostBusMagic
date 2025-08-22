@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="robots" content="noindex,nofollow">
-<title>PostBus Connect — Analyse rentabilité (interne, saison complète)</title>
+<title>PostBus Connect — Analyse rentabilité (planning réel)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -35,7 +35,7 @@ input:focus,select:focus{outline:3px solid rgba(122,178,255,.45);outline-offset:
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media (max-width:900px){.grid{grid-template-columns:1fr 1fr}}
 .table{overflow:auto;border-radius:12px;border:1px solid #22283A}
-table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px;background:#0C0F1A}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:1100px;background:#0C0F1A}
 th,td{padding:10px 10px;border-bottom:1px solid #1B2030;text-align:left;font-size:14px}
 th{position:sticky;top:0;background:#0F1323;font-weight:800}
 tfoot td{font-weight:800;background:#0F1323}
@@ -50,8 +50,8 @@ hr{border:0;height:1px;background:#1E2233;margin:16px 0}
 </head>
 <body>
   <div class="container">
-    <h1>Analyse rentabilité — PostBus Connect (interne)</h1>
-    <p class="badge">Hypothèses : <b>commission Magic Pass = 0% pour l’opérateur</b> (prise en charge par Magic Pass) · <b>Contribution destination = CHF 150</b> / bus (modifiable) · <b>pas de surcharge premium</b>.</p>
+    <h1>Analyse rentabilité — Planning réel</h1>
+    <p class="badge">Commission Magic Pass pour l’opérateur: <b>0%</b> (couverte par Magic Pass) · Contribution station par bus: <b>CHF 150</b> (modifiable) · Pas de surcharge premium.</p>
 
     <!-- PARAMÈTRES PAR DÉFAUT -->
     <div class="card">
@@ -74,22 +74,21 @@ hr{border:0;height:1px;background:#1E2233;margin:16px 0}
         <label>Contribution destination par bus (CHF)
           <input id="defSubsidy" type="number" min="0" step="1" value="150">
         </label>
-        <span class="tag">Commission Magic Pass (opérateur) : 0% — couverte par Magic Pass</span>
         <button class="btn" id="applyDefaults">Appliquer aux nouvelles lignes</button>
       </div>
     </div>
 
     <!-- OUTILS DE PLANIF -->
     <div class="card" style="margin-top:12px">
-      <h2>Planification rapide</h2>
+      <h2>Planification (planning réel)</h2>
       <div class="row">
-        <button class="btn brand" id="addOne">Ajouter 1 ligne</button>
-        <button class="btn" id="genSeason">Générer toute la saison (ven–sam–dim : 20.12.2025 → 31.03.2026)</button>
-        <button class="btn ghost" id="resetSeason">Effacer & générer saison</button>
-        <button class="btn" id="genWeekends">Générer jan–mars 2026 (ven–sam–dim)</button>
+        <button class="btn brand" id="genRealSeason">Générer planning réel · saison complète</button>
+        <button class="btn" id="genRealQ1">Générer planning réel · jan–mars 2026</button>
+        <button class="btn ghost" id="resetRealSeason">Effacer & générer (réel)</button>
+        <button class="btn" id="addOne">Ajouter 1 ligne libre</button>
         <button class="btn ghost" id="clearAll">Vider le tableau</button>
-        <span class="small">Astuce : “Dupliquer” sur une ligne = 2e bus le même jour.</span>
       </div>
+      <small class="small">Règle: <b>3 bus/jour max</b> — Lausanne fixe + 2 villes en rotation (Genève, Yverdon, Fribourg). Jours: <b>ven–sam–dim</b> uniquement, du <b>20.12.2025</b> au <b>31.03.2026</b>.</small>
     </div>
 
     <!-- TABLEAU COURSES -->
@@ -107,7 +106,7 @@ hr{border:0;height:1px;background:#1E2233;margin:16px 0}
             <th>Contribution destination</th>
             <th>Pax</th>
             <th>Recettes billets</th>
-            <th>Recettes autres</th>
+            <th>Contributions</th>
             <th>Revenu total</th>
             <th>Marge / bus</th>
             <th>GO ?</th>
@@ -162,11 +161,11 @@ hr{border:0;height:1px;background:#1E2233;margin:16px 0}
           <tbody></tbody>
         </table>
       </div>
-      <small class="small">“Contribution destination” est saisie par ligne (défaut <b>CHF 150</b>), modifiable si une station paie plus.</small>
+      <small class="small">Tu peux ajuster la <b>contribution</b> par ligne si une station met davantage que 150.–.</small>
     </div>
 
     <hr>
-    <p class="small">© 2025 MobilityLab — Page interne de simulation. Ajuste les coûts variables selon ton exploitation (carburant, chauffeur, péages, etc.).</p>
+    <p class="small">© 2025 MobilityLab — Page interne de simulation. Le planning “réel” ci-dessous est aligné sur la logique d’offre de la plateforme (Lausanne fixe + 2 villes alternées), jours ven–sam–dim.</p>
   </div>
 
 <script>
@@ -181,8 +180,8 @@ let defaults = { cap: 40, lf: 40, fare: 32, cost: 450, subsidy: 150 };
 let rows = []; // {id,date,from,to,cap,lf,fare,cost,subsidy}
 
 /* ===== Storage ===== */
-const LS_KEY='pbc_fin_rows_v3';
-const LS_DEF='pbc_fin_defs_v3';
+const LS_KEY='pbc_fin_rows_v4';
+const LS_DEF='pbc_fin_defs_v4';
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(rows)); localStorage.setItem(LS_DEF, JSON.stringify(defaults)); }
 function load(){
   try{ const r=JSON.parse(localStorage.getItem(LS_KEY)||'[]'); if(Array.isArray(r)) rows=r; }catch(e){}
@@ -192,6 +191,40 @@ function load(){
   qs('#defFare').value = defaults.fare;
   qs('#defCost').value = defaults.cost;
   qs('#defSubsidy').value = defaults.subsidy;
+}
+
+/* ===== Planning réel (même logique que la plateforme) ===== */
+const CITY_POOLS={
+  "Genève":["Zinal","Ovronnaz","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
+  "Lausanne":["Ovronnaz","Leukerbad","Lötschental","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
+  "Yverdon":["Ovronnaz","Leukerbad","Lötschental","Belalp"],
+  "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
+};
+const SEASONS=[ { start:"2025-12-20", end:"2026-03-31" } ];
+function isWeekend(d){ const g=d.getDay(); return g===5||g===6||g===0; } // ven/sam/dim
+function inSeason(d){ return SEASONS.some(s=> d>=new Date(s.start+"T00:00:00") && d<=new Date(s.end+"T23:59:59")); }
+function nextServiceDates(){
+  const out=[]; for(const s of SEASONS){
+    const start=new Date(s.start+"T00:00:00"); const end=new Date(s.end+"T23:59:59");
+    for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){ if(isWeekend(d)) out.push(d.toISOString().split('T')[0]); }
+  }
+  return out;
+}
+function hashDate(dateStr){ const d=dateStr.replaceAll('-',''); let h=0; for(const ch of d){ h=(h*33 + ch.charCodeAt(0))%997; } return h; }
+// 3 bus/jour: Lausanne fixe + 2 villes de rotation (Genève/Yverdon/Fribourg)
+function servicesForDate(dateStr){
+  const h=hashDate(dateStr);
+  const rotating=["Genève","Yverdon","Fribourg"];
+  const a=rotating[h % rotating.length];
+  const b=rotating[(h+1) % rotating.length];
+  const cities=["Lausanne", a, b];
+  const depSlots={"Genève":"06:30","Lausanne":"07:00","Yverdon":"07:10","Fribourg":"06:45"};
+  const retSlots={"Genève":"16:45","Lausanne":"17:00","Yverdon":"16:30","Fribourg":"16:40"};
+  return cities.map((city,idx)=>{
+    const pool=CITY_POOLS[city];
+    const to=pool[(h+idx)%pool.length]; // destination varie avec la date
+    return {date:dateStr, from:city, to, dep:depSlots[city], ret:retSlots[city]};
+  });
 }
 
 /* ===== Row Ops ===== */
@@ -223,7 +256,7 @@ function derive(r){
   const lf  = clamp(num(r.lf), 0, 100);
   const pax = Math.round(cap * lf / 100);
   const tickets = pax * Math.max(0, num(r.fare));
-  const other   = Math.max(0, num(r.subsidy)); // CHF 150 par défaut, modifiable
+  const other   = Math.max(0, num(r.subsidy)); // contribution station
   const cost    = Math.max(0, num(r.cost));
   const revenue = tickets + other;
   const margin  = revenue - cost;
@@ -330,28 +363,31 @@ function paintByDestination(){
   });
 }
 
-/* ===== Génération week-ends ===== */
-const D_SEASON_START = '2025-12-20';
-const D_SEASON_END   = '2026-03-31';
-
-function addIfNewDate(iso){
-  // on n'ajoute qu'un bus par jour via générateur (mais tu peux dupliquer ensuite)
-  if(!rows.some(r=>r.date===iso)) addRow({date: iso});
+/* ===== Génération “planning réel” ===== */
+function addIfMissing(r){
+  // évite les doublons (date+from+to)
+  if(!rows.some(x=>x.date===r.date && x.from===r.from && x.to===r.to)){
+    addRow(r);
+  }
 }
-
-function genByRange(startIso, endIso){
+function genRealByRange(startIso, endIso){
   const start = new Date(startIso + 'T00:00:00');
   const end   = new Date(endIso   + 'T23:59:59');
   for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    const dow=d.getDay(); // 0=dim … 6=sam
-    if(dow===5||dow===6||dow===0){ // ven, sam, dim
-      addIfNewDate(d.toISOString().split('T')[0]);
-    }
+    if(!isWeekend(d) || !inSeason(d)) continue;
+    const iso = d.toISOString().split('T')[0];
+    const services = servicesForDate(iso);
+    services.forEach(s=>{
+      addIfMissing({
+        date: iso, from: s.from, to: s.to,
+        cap: defaults.cap, lf: defaults.lf, fare: defaults.fare,
+        cost: defaults.cost, subsidy: defaults.subsidy
+      });
+    });
   }
 }
-
-function genSeason(){ genByRange(D_SEASON_START, D_SEASON_END); }
-function genWeekends(){ genByRange('2026-01-01','2026-03-31'); }
+function genRealSeason(){ SEASONS.forEach(s=> genRealByRange(s.start, s.end)); }
+function genRealQ1(){ genRealByRange('2026-01-01', '2026-03-31'); }
 
 /* ===== Events ===== */
 qs('#applyDefaults').addEventListener('click', ()=>{
@@ -362,14 +398,14 @@ qs('#applyDefaults').addEventListener('click', ()=>{
   defaults.subsidy = num(qs('#defSubsidy').value, defaults.subsidy);
   save(); paint();
 });
-qs('#addOne').addEventListener('click', ()=> addRow({}));
-qs('#genSeason').addEventListener('click', genSeason);
-qs('#resetSeason').addEventListener('click', ()=>{
-  if(confirm('Effacer toutes les lignes puis générer toute la saison ?')){
-    rows=[]; paint(); save(); genSeason();
+qs('#genRealSeason').addEventListener('click', genRealSeason);
+qs('#genRealQ1').addEventListener('click', genRealQ1);
+qs('#resetRealSeason').addEventListener('click', ()=>{
+  if(confirm('Effacer toutes les lignes puis générer la saison complète (planning réel) ?')){
+    rows=[]; paint(); save(); genRealSeason();
   }
 });
-qs('#genWeekends').addEventListener('click', genWeekends);
+qs('#addOne').addEventListener('click', ()=> addRow({}));
 qs('#clearAll').addEventListener('click', ()=>{
   if(confirm('Effacer toutes les lignes ?')){ rows=[]; paint(); save(); }
 });
@@ -377,11 +413,8 @@ qs('#clearAll').addEventListener('click', ()=>{
 /* ===== Init ===== */
 load();
 paint();
-// Exemple si vide
-if(rows.length===0){
-  addRow({date:'2025-12-20', from:'Genève', to:'Ovronnaz'});
-  addRow({date:'2026-01-03', from:'Lausanne', to:'Leukerbad', lf:45, cost:480});
-}
+// Si aucune donnée sauvegardée, on génère automatiquement toute la saison (planning réel)
+if(rows.length===0){ genRealSeason(); save(); }
 </script>
 </body>
 </html>
