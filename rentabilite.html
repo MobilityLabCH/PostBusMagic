@@ -3,330 +3,376 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Analyse rentabilité — Courses prévues (jan–mar 2026)</title>
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="noindex,nofollow">
+<title>PostBus Connect — Analyse rentabilité (interne)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0A0B10; --ink:#EDEEF2; --muted:#A7ADBD; --brand:#FFD300;
-  --line:#1C2030; --card:rgba(255,255,255,.06); --glass:blur(10px) saturate(130%);
+  --bg:#0A0B10; --bg-2:#0F1118; --ink:#EDEEF2; --muted:#A7ADBD;
+  --brand:#FFD300; --brand-ink:#0B0B0B; --line:#1C2030;
+  --card:rgba(255,255,255,.06); --glass:blur(10px) saturate(130%);
+  --green:#35E0A1; --red:#FF6B6B; --blue:#7AB2FF;
   --radius:16px; --shadow:0 20px 60px rgba(0,0,0,.35); --max:1180px;
-  --good:#2EC27E; --bad:#FF6B6B; --warn:#F9A825;
 }
 *{box-sizing:border-box} html,body{margin:0}
-body{background:radial-gradient(900px 600px at 85% -10%,#1B2040 0%,#0B0D14 40%,#07080D 100%) fixed;color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-a{color:inherit;text-decoration:none}
-.container{width:min(92vw,var(--max));margin:28px auto}
-h1{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;font-weight:700;line-height:1.05;font-size:clamp(26px,4.5vw,44px);margin:0 0 6px}
-h2{font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;letter-spacing:-.01em;font-size:clamp(18px,3.5vw,26px);margin:0 0 8px}
-p.sub{color:var(--muted);margin:4px 0 16px}
-.card{background:var(--card);backdrop-filter:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
-.grid{display:grid;grid-template-columns:1fr;gap:14px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-small{color:var(--muted)}
-.badge{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 10px;font-weight:800;white-space:nowrap}
-.badge.ok{background:#10231C;border:1px solid #29503F;color:#9EF3C9}
-.badge.ko{background:#2A1010;border:1px solid #5A2A2A;color:#FFB3B3}
-.badge.info{background:#1A1D2A;border:1px solid #2C3350;color:#C9D1EA}
-.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.kpis .box{padding:10px;border:1px solid #232843;border-radius:12px;background:#101425;text-align:center}
-.kpis .box b{font-family:"Space Grotesk";font-size:20px}
-input[type="number"],input[type="text"]{width:100%;padding:8px 10px;border:1px solid #2A2F45;border-radius:10px;background:#0E1220;color:#E8EBF7}
-input:focus{outline:3px solid rgba(122,178,255,.35);outline-offset:1px}
-.btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;cursor:pointer}
+body{background:radial-gradient(900px 650px at 85% -10%,#1B2040 0%,#0B0D14 40%,#07080D 100%) fixed;
+     color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.container{width:min(92vw,var(--max));margin:auto}
+h1,h2{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.01em}
+h1{font-size:clamp(28px,5vw,48px);margin:18px 0}
+h2{font-size:clamp(20px,3vw,28px);margin:16px 0 10px}
+p,small{color:var(--muted)}
+.card{background:var(--card);backdrop-filter:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.btn{display:inline-flex;gap:8px;align-items:center;padding:12px 14px;border-radius:12px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;cursor:pointer}
 .btn.brand{background:var(--brand);color:#000;border-color:#C7A700}
-table{width:100%;border-collapse:separate;border-spacing:0 10px}
-th,td{padding:10px 12px;vertical-align:middle}
-th{font-size:.9rem;color:#C9D1EA;text-align:left}
-tr{background:rgba(255,255,255,.04);border:1px solid #22283A}
-tr td:first-child, tr th:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
-tr td:last-child, tr th:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
-td.right{text-align:right}
-td.center{text-align:center}
-hr{border:none;height:1px;background:#1C2236;margin:14px 0}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px dashed #2A2F45;background:#11131B}
+.btn.ghost{background:#11131B}
+.badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:#11131B;border:1px solid var(--line);font-weight:800}
+.ok{color:#0C5;}.ko{color:#F66}
+input,select{width:100%;padding:10px;border:1px solid #2A2F45;border-radius:10px;background:#0E1220;color:#EDEEF2}
+input:focus,select:focus{outline:3px solid rgba(122,178,255,.45);outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:900px){.grid{grid-template-columns:1fr 1fr}}
+.table{overflow:auto;border-radius:12px;border:1px solid #22283A}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px;background:#0C0F1A}
+th,td{padding:10px 10px;border-bottom:1px solid #1B2030;text-align:left;font-size:14px}
+th{position:sticky;top:0;background:#0F1323;font-weight:800}
+tfoot td{font-weight:800;background:#0F1323}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi .card{display:grid;gap:6px}
+.kpi b{font-size:22px}
+.tag{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid #2A2F45;border-radius:999px;background:#11131B}
+hr{border:0;height:1px;background:#1E2233;margin:16px 0}
+.small{font-size:12px}
+.right{text-align:right}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Analyse de rentabilité — courses prévues (jan–mar 2026)</h1>
-  <p class="sub">Hypothèses : week-ends <b>ven-sam-dim</b> uniquement. <b>3 bus/jour</b> (Lausanne fixe + 2 villes alternées). <b>Marketing/Vente</b> <u>couverts</u> par la <b>commission Magic Pass</b> (donc non déduits en plus). Location bus : <b>minimale</b> (véhicule disponible).</p>
+  <div class="container">
+    <h1>Analyse rentabilité — PostBus Connect (interne)</h1>
+    <p class="badge">Hypothèses de base : <b>commission Magic Pass = 0% pour l’opérateur</b> (prise en charge par Magic Pass) · <b>Contribution destination = CHF 150</b> par bus (modifiable par ligne) · <b>pas de surcharge premium</b>.</p>
 
-  <!-- PARAMÈTRES GLOBAUX -->
-  <div class="card">
-    <h2>Paramètres globaux (modifiable)</h2>
-    <div class="row">
-      <div><small>Prix A/R (CHF)</small><br><input id="p_price" type="number" value="32" step="1" min="0"></div>
-      <div><small>Taux de remplissage (%)</small><br><input id="p_load" type="number" value="40" step="1" min="0" max="100"></div>
-      <div><small>Places / bus</small><br><input id="p_seats" type="number" value="40" step="1" min="1"></div>
-      <div><small>Commission MP (%)</small><br><input id="p_comm" type="number" value="20" step="0.1" min="0" max="100"></div>
-      <div><small>Carburant (L/100 km)</small><br><input id="p_cons" type="number" value="28" step="0.1" min="0"></div>
-      <div><small>Prix diesel (CHF/L)</small><br><input id="p_diesel" type="number" value="1.90" step="0.01" min="0"></div>
-      <div><small>Maintenance (CHF/km)</small><br><input id="p_maint" type="number" value="0.25" step="0.01" min="0"></div>
-      <div><small>Chauffeur (CHF/jour)</small><br><input id="p_driver" type="number" value="450" step="1" min="0"></div>
-      <div><small>Location bus (min, CHF/jour)</small><br><input id="p_rental" type="number" value="0" step="1" min="0"></div>
-      <div><small>Péages/Parking (CHF/j)</small><br><input id="p_tolls" type="number" value="40" step="1" min="0"></div>
-      <div style="align-self:flex-start"><button id="btnRun" class="btn brand">Recalculer</button></div>
-      <div style="align-self:flex-start"><button id="btnCSV" class="btn">Exporter CSV</button></div>
+    <!-- PARAMÈTRES PAR DÉFAUT -->
+    <div class="card">
+      <h2>Paramètres par défaut</h2>
+      <div class="grid">
+        <label>Capacité (places)
+          <input id="defCap" type="number" min="1" value="40">
+        </label>
+        <label>Taux de remplissage (%)
+          <input id="defLF" type="number" min="0" max="100" step="1" value="40">
+        </label>
+        <label>Prix billet (CHF)
+          <input id="defFare" type="number" min="0" step="1" value="32">
+        </label>
+        <label>Coûts variables par bus (CHF)
+          <input id="defCost" type="number" min="0" step="1" value="450">
+        </label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label>Contribution destination par bus (CHF)
+          <input id="defSubsidy" type="number" min="0" step="1" value="150">
+        </label>
+        <span class="tag">Commission Magic Pass (opérateur) : 0% — couverte par Magic Pass</span>
+        <button class="btn" id="applyDefaults">Appliquer aux nouvelles lignes</button>
+      </div>
     </div>
-    <div class="chips" style="margin-top:8px">
-      <span class="chip"><b>Période :</b> 01.01.2026 → 31.03.2026</span>
-      <span class="chip"><b>Jours :</b> ven · sam · dim (aucun jeudi)</span>
-      <span class="chip"><b>Remarque :</b> Mkt/Vente couverts par la commission MP</span>
+
+    <!-- OUTILS DE PLANIF -->
+    <div class="card" style="margin-top:12px">
+      <h2>Planification rapide</h2>
+      <div class="row">
+        <button class="btn brand" id="addOne">Ajouter 1 ligne</button>
+        <button class="btn" id="genWeekends">Générer tous les <b>week-ends jan–mars 2026</b> (1 bus/jour)</button>
+        <button class="btn ghost" id="clearAll">Vider le tableau</button>
+        <span class="small">Astuce : utilise “Dupliquer” sur une ligne pour faire un second bus le même jour.</span>
+      </div>
     </div>
-  </div>
 
-  <!-- KPIs -->
-  <div class="kpis" style="margin-top:12px">
-    <div class="box"><small>Jours d’exploitation</small><br><b id="k_days">—</b></div>
-    <div class="box"><small>Courses (bus-jour)</small><br><b id="k_runs">—</b></div>
-    <div class="box"><small>Passagers estimés</small><br><b id="k_pax">—</b></div>
-    <div class="box"><small>CA brut billets</small><br><b id="k_gross">—</b></div>
-    <div class="box"><small>Commission MP</small><br><b id="k_commission">—</b></div>
-    <div class="box"><small>Résultat net (saison)</small><br><b id="k_profit">—</b></div>
-  </div>
-  <div class="chips" style="margin-top:8px">
-    <span id="verdict" class="badge info">Analyse en cours…</span>
-  </div>
+    <!-- TABLEAU COURSES -->
+    <div class="card table" style="margin-top:12px">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Origine</th>
+            <th>Destination</th>
+            <th>Capacité</th>
+            <th>Remplissage %</th>
+            <th>Prix billet</th>
+            <th>Coûts variables</th>
+            <th>Contribution destination</th>
+            <th>Pax</th>
+            <th>Recettes billets</th>
+            <th>Recettes autres</th>
+            <th>Revenu total</th>
+            <th>Marge / bus</th>
+            <th>GO ?</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="8" class="right">Totaux</td>
+            <td id="tPax">0</td>
+            <td id="tTicket">CHF 0.–</td>
+            <td id="tOther">CHF 0.–</td>
+            <td id="tRev">CHF 0.–</td>
+            <td id="tMargin">CHF 0.–</td>
+            <td id="tGo" class="ok">—</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
 
-  <hr>
+    <!-- KPIs SAISON -->
+    <div class="kpi" style="margin-top:12px">
+      <div class="card">
+        <small>Total bus</small>
+        <b id="kBus">0</b>
+      </div>
+      <div class="card">
+        <small>Pax saison (est.)</small>
+        <b id="kPax">0</b>
+      </div>
+      <div class="card">
+        <small>Marge saison</small>
+        <b id="kMargin">CHF 0.–</b>
+      </div>
+      <div class="card">
+        <small>Break-even remplissage (≈)</small>
+        <b id="kBE">—</b>
+        <small class="small">Capacité & coût moyen actuels</small>
+      </div>
+    </div>
 
-  <!-- TABLEAU COURSES -->
-  <div class="card grid">
-    <h2>Courses générées (jan–mar 2026, ven–sam–dim)</h2>
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Trajet</th>
-          <th class="center">Dep</th>
-          <th class="center">Ret</th>
-          <th class="right">Dist. A/R (km)</th>
-          <th class="right">Pax</th>
-          <th class="right">CA</th>
-          <th class="right">Com. MP</th>
-          <th class="right">Coûts op.</th>
-          <th class="right">Résultat</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-      <tfoot>
-        <tr>
-          <td colspan="5" class="right">Totaux saison</td>
-          <td class="right" id="f_pax">—</td>
-          <td class="right" id="f_ca">—</td>
-          <td class="right" id="f_comm">—</td>
-          <td class="right" id="f_costs">—</td>
-          <td class="right" id="f_profit">—</td>
-        </tr>
-      </tfoot>
-    </table>
+    <!-- AGRÉGAT PAR DESTINATION -->
+    <div class="card" style="margin-top:12px">
+      <h2>Par destination</h2>
+      <div class="table">
+        <table id="byDest">
+          <thead>
+            <tr><th>Destination</th><th>Bus</th><th>Pax</th><th>Billets</th><th>Contributions</th><th>Coûts</th><th>Marge</th><th>GO ?</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <small class="small">Rappel : la “Contribution destination” est saisie par ligne et par défaut à <b>CHF 150</b>.</small>
+    </div>
+
+    <hr>
+    <p class="small">© 2025 MobilityLab — Page interne de simulation. Les chiffres sont indicatifs; ajuste les coûts variables selon ton exploitation.</p>
   </div>
-
-</div>
 
 <script>
-/* ===== Helpers ===== */
-const CHF = n => 'CHF ' + (Number(n)||0).toFixed(0) + '.–';
-const AVG_SPEED_KM_PER_MIN = 1.0; // ~60 km/h
+/* ===== Utils ===== */
+const CHF = (n)=> (isFinite(n)? n.toLocaleString('fr-CH',{style:'currency',currency:'CHF',maximumFractionDigits:0}) : 'CHF 0.–');
+const num = (v, fallback=0)=>{ if(typeof v==='number') return v; const s=String(v).trim().replace(/\s/g,'').replace(',','.'); const x=parseFloat(s); return isNaN(x)? fallback : x; };
+const clamp = (v, a, b)=> Math.max(a, Math.min(b, v));
+const qs=(s,p=document)=>p.querySelector(s);
 
-/* ===== Eligibilité & temps véhicule (sert à estimer la distance) ===== */
-const ELIGIBILITY={
-  "Genève ⇄ Zinal": {eligible:true, reason:"TP ~4h24 · véhicule ~2h27"},
-  "Genève ⇄ Ovronnaz": {eligible:true, reason:"TP ~3h35 · véhicule ~1h59"},
-  "Genève ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h00–4h15 · véhicule ~2h45"},
-  "Genève ⇄ Belalp": {eligible:true, reason:"TP ~3h50 · véhicule ~2h35"},
-  "Genève ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h45–4h00 · véhicule ~2h30"},
-  "Genève ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~4h00–4h20 · véhicule ~2h35"},
-  "Genève ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h45 · véhicule ~2h20"},
-
-  "Lausanne ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h42 · véhicule 1h06–1h12"},
-  "Lausanne ⇄ Leukerbad": {eligible:true, reason:"TP ~2h17 · véhicule ~1h32"},
-  "Lausanne ⇄ Lötschental": {eligible:true, reason:"TP ~2h40 · véhicule ~1h40"},
-  "Lausanne ⇄ Saas-Fee": {eligible:true, reason:"TP ~3h30 · véhicule ~2h20"},
-  "Lausanne ⇄ Belalp": {eligible:true, reason:"TP ~3h10 · véhicule ~2h05"},
-  "Lausanne ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h20 · véhicule ~2h05"},
-  "Lausanne ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~3h30 · véhicule ~2h05"},
-  "Lausanne ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h15 · véhicule ~1h50"},
-  "Lausanne ⇄ Gstaad": {eligible:false, reason:"TP ~2h15 vs véhicule ~1h30"},
-
-  "Yverdon ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h45 · véhicule ~1h35"},
-  "Yverdon ⇄ Leukerbad": {eligible:true, reason:"TP ~3h05 · véhicule ~1h55"},
-  "Yverdon ⇄ Lötschental": {eligible:true, reason:"TP ~3h00 · véhicule ~1h50"},
-  "Yverdon ⇄ Belalp": {eligible:true, reason:"TP ~3h20 · véhicule ~2h10"},
-
-  "Fribourg ⇄ Zinal": {eligible:true, reason:"TP ~3h50 · véhicule ~2h30"},
-  "Fribourg ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h05 · véhicule ~2h40"},
-  "Fribourg ⇄ Belalp": {eligible:true, reason:"TP ~3h40 · véhicule ~2h20"},
-  "Fribourg ⇄ Adelboden": {eligible:true, reason:"TP ~2h35 · véhicule ~1h40"},
-  "Fribourg ⇄ Gstaad": {eligible:false, reason:"TP ~2h00–2h10 vs ~1h20–1h30 véhicule"}
+/* ===== State ===== */
+let defaults = {
+  cap: 40,
+  lf: 40,
+  fare: 32,
+  cost: 450,
+  subsidy: 150
 };
-function minutes(h,m){return (parseInt(h,10)||0)*60 + (parseInt(m,10)||0);}
-function rideMinutes(from,to){
-  const meta=ELIGIBILITY[`${from} ⇄ ${to}`];
-  if(!meta) return 120;
-  const s=meta.reason;
-  const part=(s.split("véhicule")[1]||s);
-  let r=part.match(/(\d{1,2})h(\d{1,2})\s*[–-]\s*(\d{1,2})h(\d{1,2})/);
-  if(r){ const a=minutes(r[1],r[2]), b=minutes(r[3],r[4]); return Math.round((a+b)/2); }
-  r=part.match(/~?\s*(\d{1,2})h(\d{1,2})/);
-  if(r){ return minutes(r[1],r[2]); }
-  return 120;
+let rows = []; // {id,date,from,to,cap,lf,fare,cost,subsidy}
+
+/* ===== Storage ===== */
+const LS_KEY='pbc_fin_rows_v2';
+const LS_DEF='pbc_fin_defs_v2';
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(rows)); localStorage.setItem(LS_DEF, JSON.stringify(defaults)); }
+function load(){
+  try{ const r=JSON.parse(localStorage.getItem(LS_KEY)||'[]'); if(Array.isArray(r)) rows=r; }catch(e){}
+  try{ const d=JSON.parse(localStorage.getItem(LS_DEF)||'{}'); defaults={...defaults, ...d}; }catch(e){}
+  // hydrate UI
+  qs('#defCap').value = defaults.cap;
+  qs('#defLF').value = defaults.lf;
+  qs('#defFare').value = defaults.fare;
+  qs('#defCost').value = defaults.cost;
+  qs('#defSubsidy').value = defaults.subsidy;
 }
 
-/* ===== Offre prévue: 3 bus/jour (Lausanne fixe + 2 villes alternées) ===== */
-const CITY_POOLS={
-  "Genève":["Zinal","Ovronnaz","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
-  "Lausanne":["Ovronnaz","Leukerbad","Lötschental","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
-  "Yverdon":["Ovronnaz","Leukerbad","Lötschental","Belalp"],
-  "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
-};
-const depSlots={"Genève":"06:30","Lausanne":"07:00","Yverdon":"07:10","Fribourg":"06:45"};
-const retSlots={"Genève":"16:45","Lausanne":"17:00","Yverdon":"16:30","Fribourg":"16:40"};
-
-function hashDate(dateStr){ const d=dateStr.replaceAll('-',''); let h=0; for(const ch of d){ h=(h*33 + ch.charCodeAt(0))%997; } return h; }
-function servicesForDate(dateStr){
-  const h=hashDate(dateStr);
-  const rotating=["Genève","Yverdon","Fribourg"];
-  const a=rotating[h % rotating.length];
-  const b=rotating[(h+1) % rotating.length];
-  const cities=["Lausanne", a, b];
-  return cities.map((city,idx)=>{
-    const pool=CITY_POOLS[city];
-    const to=pool[(h+idx)%pool.length];
-    return {from:city, to, dep:depSlots[city], ret:retSlots[city]};
-  });
-}
-function weekendDatesJanToMar2026(){
-  const start=new Date('2026-01-01T00:00:00');
-  const end  =new Date('2026-03-31T23:59:59');
-  const out=[];
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    const wd=d.getDay(); // 0=dim ... 5=ven 6=sam
-    if(wd===5||wd===6||wd===0){
-      out.push(d.toISOString().split('T')[0]);
-    }
-  }
-  return out;
-}
-
-/* ===== UI elements ===== */
-const $=sel=>document.querySelector(sel);
-const tbody=$("#tbody");
-const kDays=$("#k_days"), kRuns=$("#k_runs"), kPax=$("#k_pax"), kGross=$("#k_gross"), kComm=$("#k_commission"), kProfit=$("#k_profit");
-const fPax=$("#f_pax"), fCA=$("#f_ca"), fComm=$("#f_comm"), fCosts=$("#f_costs"), fProfit=$("#f_profit");
-const verdict=$("#verdict");
-const inputs={
-  price:$("#p_price"), load:$("#p_load"), seats:$("#p_seats"), comm:$("#p_comm"),
-  cons:$("#p_cons"), diesel:$("#p_diesel"), maint:$("#p_maint"),
-  driver:$("#p_driver"), rental:$("#p_rental"), tolls:$("#p_tolls")
-};
-
-/* ===== Calcul principal ===== */
-function recalc(){
-  const dates=weekendDatesJanToMar2026();
-  const cfg={
-    price:+inputs.price.value||0, load:Math.max(0,Math.min(100,+inputs.load.value||0)),
-    seats:+inputs.seats.value||40, comm:Math.max(0,Math.min(100,+inputs.comm.value||0)),
-    cons:+inputs.cons.value||0, diesel:+inputs.diesel.value||0, maint:+inputs.maint.value||0,
-    driver:+inputs.driver.value||0, rental:+inputs.rental.value||0, tolls:+inputs.tolls.value||0
+/* ===== Row Ops ===== */
+function addRow(init={}){
+  const r = {
+    id: crypto.randomUUID(),
+    date: init.date || '',
+    from: init.from || '',
+    to: init.to || '',
+    cap: num(init.cap??defaults.cap),
+    lf:  num(init.lf??defaults.lf),
+    fare: num(init.fare??defaults.fare),
+    cost: num(init.cost??defaults.cost),
+    subsidy: num(init.subsidy??defaults.subsidy)
   };
+  rows.push(r); paint(); save();
+}
+function removeRow(id){ rows = rows.filter(r=>r.id!==id); paint(); save(); }
+function duplicateRow(id){
+  const src = rows.find(r=>r.id===id);
+  if(!src) return;
+  const copy = {...src, id: crypto.randomUUID()};
+  rows.push(copy); paint(); save();
+}
 
-  let totalRuns=0, totPax=0, totCA=0, totComm=0, totCosts=0, totProfit=0;
-  const rows=[];
+/* ===== Calculs ===== */
+function derive(r){
+  const cap = Math.max(0, num(r.cap));
+  const lf  = clamp(num(r.lf), 0, 100);
+  const pax = Math.round(cap * lf / 100);
+  const tickets = pax * Math.max(0, num(r.fare));
+  const other   = Math.max(0, num(r.subsidy)); // CHF 150 par défaut, modifiable
+  const cost    = Math.max(0, num(r.cost));
+  const revenue = tickets + other;
+  const margin  = revenue - cost;
+  const go      = margin >= 0;
+  return {pax, tickets, other, revenue, margin, go};
+}
 
-  dates.forEach(iso=>{
-    const svcs=servicesForDate(iso);
-    svcs.forEach(s=>{
-      totalRuns++;
-      const dur=rideMinutes(s.from, s.to); // minutes (one-way)
-      const oneWayKm=Math.round(dur * AVG_SPEED_KM_PER_MIN);
-      const dist=oneWayKm*2; // A/R
-      const pax=Math.round(cfg.seats * cfg.load/100);
-      const ca=pax * cfg.price;
-      const commission=ca * (cfg.comm/100);
-      const fuel=(dist/100) * cfg.cons * cfg.diesel;
-      const maintenance=dist * cfg.maint;
-      const costs=cfg.driver + cfg.rental + cfg.tolls + fuel + maintenance;
-      const profit = (ca - commission) - costs;
+/* ===== Rendering ===== */
+function paint(){
+  const body = qs('#body'); body.innerHTML='';
+  let tPax=0, tTicket=0, tOther=0, tRev=0, tMargin=0;
 
-      totPax+=pax; totCA+=ca; totComm+=commission; totCosts+=costs; totProfit+=profit;
+  rows.forEach(r=>{
+    const d = derive(r);
+    tPax+=d.pax; tTicket+=d.tickets; tOther+=d.other; tRev+=d.revenue; tMargin+=d.margin;
 
-      rows.push({
-        date: new Date(iso).toLocaleDateString('fr-CH',{weekday:'short', day:'2-digit', month:'2-digit'}),
-        route: `${s.from} → ${s.to}`,
-        dep:s.dep, ret:s.ret,
-        dist, pax, ca, commission, costs, profit
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td><input type="date" value="${r.date}" data-k="date"></td>
+      <td><input type="text" placeholder="Genève" value="${r.from}" data-k="from"></td>
+      <td><input type="text" placeholder="Ovronnaz" value="${r.to}" data-k="to"></td>
+      <td><input type="number" min="1" value="${r.cap}" data-k="cap"></td>
+      <td><input type="number" min="0" max="100" value="${r.lf}" data-k="lf"></td>
+      <td><input type="number" min="0" step="1" value="${r.fare}" data-k="fare"></td>
+      <td><input type="number" min="0" step="1" value="${r.cost}" data-k="cost"></td>
+      <td><input type="number" min="0" step="1" value="${r.subsidy}" data-k="subsidy"></td>
+      <td>${d.pax}</td>
+      <td>${CHF(d.tickets)}</td>
+      <td>${CHF(d.other)}</td>
+      <td>${CHF(d.revenue)}</td>
+      <td style="font-weight:800; ${d.margin>=0?'color:#35E0A1':'color:#FF6B6B'}">${CHF(d.margin)}</td>
+      <td style="font-weight:800; ${d.go?'color:#35E0A1':'color:#FF6B6B'}">${d.go?'GO':'NO-GO'}</td>
+      <td>
+        <button class="btn ghost" data-act="dup">Dupliquer</button>
+        <button class="btn" data-act="del">Suppr.</button>
+      </td>
+    `;
+    // Attach events
+    tr.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', (e)=>{
+        const k = inp.dataset.k;
+        if(k==='date'||k==='from'||k==='to'){ r[k]=inp.value; }
+        else { r[k]= num(inp.value, r[k]); }
+        save(); paint();
       });
     });
+    tr.querySelector('[data-act="del"]').addEventListener('click', ()=>removeRow(r.id));
+    tr.querySelector('[data-act="dup"]').addEventListener('click', ()=>duplicateRow(r.id));
+
+    body.appendChild(tr);
   });
 
-  // UI: KPIs
-  kDays.textContent = String(new Set(dates).size);
-  kRuns.textContent = String(totalRuns);
-  kPax.textContent  = String(totPax);
-  kGross.textContent = CHF(totCA);
-  kComm.textContent  = CHF(totComm);
-  kProfit.textContent= CHF(totProfit);
+  // Totaux
+  qs('#tPax').textContent = tPax.toLocaleString('fr-CH');
+  qs('#tTicket').textContent = CHF(tTicket);
+  qs('#tOther').textContent = CHF(tOther);
+  qs('#tRev').textContent = CHF(tRev);
+  qs('#tMargin').textContent = CHF(tMargin);
+  qs('#tGo').textContent = (tMargin>=0)? 'Globalement GO' : 'Globalement NO-GO';
+  qs('#tGo').className = (tMargin>=0)? 'ok' : 'ko';
 
-  verdict.textContent = (totProfit>=0 ? 'GO — saison rentable (marketing couvert par MP)' : 'NO-GO — saison déficitaire');
-  verdict.className   = 'badge ' + (totProfit>=0 ? 'ok' : 'ko');
+  // KPIs saison
+  qs('#kBus').textContent = rows.length;
+  qs('#kPax').textContent = tPax.toLocaleString('fr-CH');
+  qs('#kMargin').textContent = CHF(tMargin);
 
-  // Table
-  tbody.innerHTML='';
+  // Break-even (approx) = coût moyen / prix moyen
+  const avgCost = rows.length? (rows.reduce((s,r)=>s+num(r.cost),0)/rows.length) : 0;
+  const avgFare = rows.length? (rows.reduce((s,r)=>s+num(r.fare),0)/rows.length) : defaults.fare;
+  const avgCap  = rows.length? (rows.reduce((s,r)=>s+num(r.cap),0)/rows.length) : defaults.cap;
+  let be = '—';
+  if(avgFare>0 && avgCap>0){
+    const neededPax = avgCost / avgFare;
+    const bePct = clamp((neededPax/avgCap)*100,0,200);
+    be = `${bePct.toFixed(0)}%`;
+  }
+  qs('#kBE').textContent = be;
+
+  paintByDestination();
+}
+
+function paintByDestination(){
+  const tb = qs('#byDest tbody'); tb.innerHTML='';
+  const map = new Map();
   rows.forEach(r=>{
+    const d = derive(r);
+    const key = (r.to||'—').trim() || '—';
+    if(!map.has(key)) map.set(key,{bus:0,pax:0,tickets:0,other:0,cost:0,margin:0});
+    const ag = map.get(key);
+    ag.bus++; ag.pax+=d.pax; ag.tickets+=d.tickets; ag.other+=d.other; ag.cost+=num(r.cost); ag.margin+=d.margin;
+  });
+  [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0],'fr')).forEach(([dest,ag])=>{
     const tr=document.createElement('tr');
     tr.innerHTML = `
-      <td>${r.date}</td>
-      <td>${r.route}</td>
-      <td class="center">${r.dep}</td>
-      <td class="center">${r.ret}</td>
-      <td class="right">${r.dist}</td>
-      <td class="right">${r.pax}</td>
-      <td class="right">${CHF(r.ca)}</td>
-      <td class="right">${CHF(r.commission)}</td>
-      <td class="right">${CHF(r.costs)}</td>
-      <td class="right" style="font-weight:800;${r.profit<0?'color:#FFB3B3':''}">${CHF(r.profit)}</td>
+      <td>${dest}</td>
+      <td>${ag.bus}</td>
+      <td>${ag.pax.toLocaleString('fr-CH')}</td>
+      <td>${CHF(ag.tickets)}</td>
+      <td>${CHF(ag.other)}</td>
+      <td>${CHF(ag.cost)}</td>
+      <td style="font-weight:800; ${ag.margin>=0?'color:#35E0A1':'color:#FF6B6B'}">${CHF(ag.margin)}</td>
+      <td style="font-weight:800; ${ag.margin>=0?'color:#35E0A1':'color:#FF6B6B'}">${ag.margin>=0?'GO':'NO-GO'}</td>
     `;
-    tbody.appendChild(tr);
+    tb.appendChild(tr);
   });
-
-  fPax.textContent = String(totPax);
-  fCA.textContent  = CHF(totCA);
-  fComm.textContent= CHF(totComm);
-  fCosts.textContent=CHF(totCosts);
-  fProfit.textContent=CHF(totProfit);
-
-  // Stock CSV pour export
-  window.__rowsForCSV = rows;
 }
 
-/* ===== Export CSV ===== */
-function toCSV(rows){
-  const header=['Date','Trajet','Départ','Retour','Distance_km_AR','Pax','CA_CHF','Commission_MP_CHF','Couts_op_CHF','Résultat_CHF'];
-  const lines=[header.join(';')];
-  rows.forEach(r=>{
-    lines.push([r.date,r.route,r.dep,r.ret,r.dist,r.pax,Math.round(r.ca),Math.round(r.commission),Math.round(r.costs),Math.round(r.profit)].join(';'));
-  });
-  return '\uFEFF' + lines.join('\n'); // BOM pour Excel
-}
-function downloadCSV(){
-  const rows=window.__rowsForCSV||[];
-  const blob=new Blob([toCSV(rows)],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download='analyse_courses_jan-mar_2026.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+/* ===== Week-ends Jan–Mar 2026 (ven–dim) ===== */
+function genWeekends(){
+  const start = new Date('2026-01-01T00:00:00');
+  const end   = new Date('2026-03-31T23:59:59');
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const dow=d.getDay(); // 0=dim … 6=sam
+    if(dow===0||dow===5||dow===6){ // dim, ven, sam
+      addRow({ date: d.toISOString().split('T')[0] });
+    }
+  }
 }
 
-/* ===== Events & init ===== */
-document.getElementById('btnRun').addEventListener('click', recalc);
-document.getElementById('btnCSV').addEventListener('click', downloadCSV);
-Object.values(inputs).forEach(i=>i.addEventListener('change', recalc));
-recalc();
+/* ===== Events ===== */
+qs('#applyDefaults').addEventListener('click', ()=>{
+  defaults.cap = num(qs('#defCap').value, defaults.cap);
+  defaults.lf  = num(qs('#defLF').value, defaults.lf);
+  defaults.fare= num(qs('#defFare').value, defaults.fare);
+  defaults.cost= num(qs('#defCost').value, defaults.cost);
+  defaults.subsidy = num(qs('#defSubsidy').value, defaults.subsidy);
+  save(); paint();
+});
+
+qs('#addOne').addEventListener('click', ()=> addRow({}));
+qs('#genWeekends').addEventListener('click', genWeekends);
+qs('#clearAll').addEventListener('click', ()=>{
+  if(confirm('Effacer toutes les lignes ?')){ rows=[]; paint(); save(); }
+});
+
+/* ===== Init ===== */
+load();
+paint();
+// Si vide, ajoute un exemple
+if(rows.length===0){
+  addRow({date:'2026-01-03', from:'Genève', to:'Ovronnaz'});
+  addRow({date:'2026-01-04', from:'Lausanne', to:'Leukerbad', lf:45, cost:480});
+}
 </script>
 </body>
 </html>
