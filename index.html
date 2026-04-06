@@ -4,642 +4,718 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#08040E">
-<title>El Ratito Pérez · Implants · Dentista Hospital Vilanova</title>
+<meta name="theme-color" content="#06020E">
+<title>El Ratito Pérez · Implants Dentals · Dentista Hospital Vilanova</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ══ RESET ══ */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:auto;overflow-x:hidden}
-body{height:1000vh;background:#000;font-family:Inter,sans-serif;overflow-x:hidden}
+body{height:1100vh;background:#000;font-family:Inter,sans-serif;overflow-x:hidden}
 @media(pointer:fine){body{cursor:none}}
 
-/* ══ CANVAS ══ */
 #canvas{position:fixed;inset:0;overflow:hidden}
 #bg{position:absolute;inset:0}
 #stars{position:absolute;inset:0;pointer-events:none}
-#light-rays{position:absolute;inset:0;pointer-events:none;opacity:0}
+#light-rays{position:absolute;inset:0;pointer-events:none;opacity:0;will-change:opacity}
 
-/* ══ PROGRESS ══ */
 #progress{position:fixed;bottom:0;left:0;right:0;height:2px;
 background:linear-gradient(90deg,#8B6000,#FFD700,#FFA500);
 z-index:300;transform-origin:left center;transform:scaleX(0);
 box-shadow:0 0 10px rgba(255,215,0,.5)}
 
-/* ══ CHAPTER PIPS ══ */
 #ch-nav{position:fixed;right:1rem;top:50%;transform:translateY(-50%);
 z-index:250;display:flex;flex-direction:column;gap:8px}
 @media(max-width:480px){#ch-nav{right:.5rem;gap:6px}}
 .pip{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18);
-cursor:pointer;transition:background .4s,transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s;
--webkit-tap-highlight-color:transparent}
+cursor:pointer;transition:background .4s,transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .4s}
 .pip.active{background:rgba(255,215,0,.9);transform:scale(2.0);box-shadow:0 0 7px rgba(255,215,0,.6)}
 .pip.past{background:rgba(255,255,255,.38)}
 
-/* ══ CHAPTER LABEL (desktop) ══ */
-#ch-tag{position:fixed;left:1.5rem;top:50%;z-index:250;
-writing-mode:vertical-lr;transform:translateY(-50%) rotate(180deg);
-font-size:.55rem;font-weight:500;letter-spacing:.3em;text-transform:uppercase;
-color:rgba(255,255,255,.2);pointer-events:none}
+#ch-tag{position:fixed;left:1.5rem;top:50%;z-index:250;writing-mode:vertical-lr;
+transform:translateY(-50%) rotate(180deg);font-size:.55rem;font-weight:500;
+letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.2);pointer-events:none}
 @media(max-width:768px){#ch-tag{display:none}}
 
-/* ══ HINT ══ */
 #hint{position:fixed;bottom:4rem;left:50%;transform:translateX(-50%);
 z-index:250;display:flex;flex-direction:column;align-items:center;gap:6px;
 color:rgba(255,255,255,.42);font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;
-animation:hintF 2s ease-in-out infinite;transition:opacity .6s}
-#hint .hl{width:1px;height:30px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.45));
-animation:hintP 2s ease-in-out infinite}
-@keyframes hintF{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(5px)}}
-@keyframes hintP{0%,100%{opacity:.2}50%{opacity:.8}}
+animation:hF 2s ease-in-out infinite;transition:opacity .6s}
+#hint .hl{width:1px;height:30px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.45));animation:hP 2s ease-in-out infinite}
+@keyframes hF{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(5px)}}
+@keyframes hP{0%,100%{opacity:.2}50%{opacity:.8}}
 @media(max-width:480px){#hint{bottom:3rem}}
 
-/* ══ BARS ══ */
 #bar-top,#bar-bot{position:fixed;left:0;right:0;background:#000;z-index:200;pointer-events:none;height:48px}
-#bar-top{top:0}
-#bar-bot{bottom:0}
+#bar-top{top:0}#bar-bot{bottom:0}
 @media(max-width:480px){#bar-top,#bar-bot{height:36px}}
 
-/* ══ VIGNETTE ══ */
 #vignette{position:fixed;inset:0;pointer-events:none;z-index:100;
 background:radial-gradient(ellipse 88% 88% at 50% 50%,transparent 35%,rgba(0,0,0,.72) 100%)}
-@media(max-width:768px){
-#vignette{background:radial-gradient(ellipse 120% 100% at 50% 50%,transparent 25%,rgba(0,0,0,.62) 100%)}}
+@media(max-width:768px){#vignette{background:radial-gradient(ellipse 120% 100% at 50% 50%,transparent 25%,rgba(0,0,0,.62) 100%)}}
 
-/* ══ GRAIN (desktop only) ══ */
 #grain{position:fixed;inset:0;pointer-events:none;z-index:150;opacity:.022;
 background-image:url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 200 200’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=’.85’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’/%3E%3C/svg%3E”);
-animation:grainA .5s steps(1) infinite}
+animation:gA .5s steps(1) infinite}
 @media(max-width:768px){#grain{display:none}}
-@keyframes grainA{0%{background-position:0 0}25%{background-position:-40px 20px}50%{background-position:20px -40px}75%{background-position:-20px 40px}100%{background-position:40px -20px}}
+@keyframes gA{0%{background-position:0 0}25%{background-position:-40px 20px}50%{background-position:20px -40px}75%{background-position:-20px 40px}100%{background-position:40px -20px}}
 
-/* ══ CURSOR (desktop) ══ */
 #cursor{position:fixed;pointer-events:none;z-index:9999;mix-blend-mode:exclusion}
 #cursor-dot{width:8px;height:8px;background:white;border-radius:50%;position:absolute;transform:translate(-50%,-50%)}
-#cursor-ring{width:34px;height:34px;border:1.5px solid rgba(255,255,255,.45);border-radius:50%;position:absolute;
-transform:translate(-50%,-50%);transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .2s}
+#cursor-ring{width:34px;height:34px;border:1.5px solid rgba(255,255,255,.45);border-radius:50%;position:absolute;transform:translate(-50%,-50%);transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .2s}
 @media(pointer:coarse){#cursor{display:none}}
 
-/* ══ RATITO CONTAINER ══ */
 #ratito{position:absolute;bottom:0;pointer-events:none;transform-origin:bottom center}
 
-/* ══ RATITO EMOTIONAL STATE OVERRIDES ══ */
-/* Default: happy — defined in SVG. Overrides via JS class on #ratito-svg */
-
-/* State: worried */
-#ratito-svg.worried #brow-l{d:path(“M102 120 Q114 114 126 118”);transform-origin:114px 117px;transform:rotate(5deg) translateY(2px)}
-#ratito-svg.worried #brow-r{d:path(“M150 118 Q162 114 174 120”);transform-origin:162px 117px;transform:rotate(-5deg) translateY(2px)}
-#ratito-svg.worried #mouth-path{d:path(“M120 190 Q138 180 156 190”)}
-#ratito-svg.worried #cheek-l,#ratito-svg.worried #cheek-r{opacity:.1}
-
-/* State: amazed */
-#ratito-svg.amazed circle#pupil-l,#ratito-svg.amazed circle#pupil-r{r:10}
-#ratito-svg.amazed #brow-l{transform:translateY(-5px)}
-#ratito-svg.amazed #brow-r{transform:translateY(-5px)}
-#ratito-svg.amazed #mouth-path{d:path(“M126 182 Q138 200 150 182 Q150 196 138 200 Q126 196 126 182 Z”)}
-
-/* State: joyful — squinting eyes */
-#ratito-svg.joyful #mouth-path{d:path(“M116 184 Q138 202 160 184”)}
-#ratito-svg.joyful #cheek-l{opacity:.48}
-#ratito-svg.joyful #cheek-r{opacity:.48}
-
-/* ══ SCENE TEXTS ══ */
+.s-el{position:absolute;pointer-events:none}
 .txt{position:absolute;pointer-events:none}
-.sc-label{font-family:Inter,sans-serif;font-size:.62rem;font-weight:600;
-letter-spacing:.38em;text-transform:uppercase;margin-bottom:.85rem;display:block}
+.sc-label{font-family:Inter,sans-serif;font-size:.62rem;font-weight:600;letter-spacing:.38em;text-transform:uppercase;margin-bottom:.85rem;display:block}
 .sc-h2{font-family:“Playfair Display”,serif;font-weight:700;line-height:1.15;color:white;margin-bottom:1rem}
 .sc-p{font-family:Inter,sans-serif;font-weight:300;line-height:1.85;color:rgba(255,255,255,.5)}
 
-/* ══ CTA ══ */
-.btn-cta{display:inline-flex;align-items:center;gap:.5rem;padding:1rem 2.2rem;
+/* ══ CTA OFFER CARD ══ */
+.offer-card{
+background:linear-gradient(135deg,rgba(255,215,0,.08),rgba(255,140,0,.05));
+border:1px solid rgba(255,215,0,.25);border-radius:8px;
+padding:1.2rem 1.6rem;margin-top:1.2rem;max-width:480px;
+pointer-events:all;
+}
+.offer-tag{
+display:inline-block;
+background:linear-gradient(135deg,#B8860B,#FFD700);
+color:#0A0400;font-size:.62rem;font-weight:700;
+letter-spacing:.2em;text-transform:uppercase;
+padding:.3rem .8rem;border-radius:2px;margin-bottom:.8rem;
+}
+.offer-price{font-family:“Playfair Display”,serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;color:#FFD700;line-height:1}
+.offer-old{font-size:.9rem;color:rgba(255,255,255,.3);text-decoration:line-through;margin-left:.5rem}
+.offer-detail{font-family:Inter,sans-serif;font-size:.8rem;color:rgba(255,255,255,.5);margin-top:.4rem;line-height:1.6}
+.btn-cta{display:inline-flex;align-items:center;gap:.5rem;padding:1.1rem 2.4rem;
 background:linear-gradient(135deg,#9A6500,#FFD700,#E8A000);color:#160800;
 font-family:Inter,sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.14em;
-text-transform:uppercase;text-decoration:none;border-radius:2px;border:none;
-cursor:pointer;box-shadow:0 6px 30px rgba(255,160,0,.45);pointer-events:all;
+text-transform:uppercase;text-decoration:none;border-radius:2px;
+box-shadow:0 6px 32px rgba(255,160,0,.45);pointer-events:all;
 transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
-.btn-cta:hover,.btn-cta:active{transform:scale(1.06) translateY(-2px);box-shadow:0 14px 48px rgba(255,160,0,.62)}
-.btn-phone{font-size:1.6rem;font-weight:300;color:rgba(255,255,255,.82);letter-spacing:.06em;pointer-events:all}
+.btn-cta:hover,.btn-cta:active{transform:scale(1.06) translateY(-2px);box-shadow:0 14px 50px rgba(255,160,0,.65)}
+.btn-phone{font-size:1.5rem;font-weight:300;color:rgba(255,255,255,.82);letter-spacing:.06em;pointer-events:all}
 .btn-phone a{color:inherit;text-decoration:none}
-@media(max-width:480px){.btn-cta{padding:.9rem 1.5rem;font-size:.82rem}.btn-phone{font-size:1.3rem}}
+@media(max-width:480px){.btn-cta{padding:.9rem 1.5rem;font-size:.82rem}.btn-phone{font-size:1.25rem}.offer-card{padding:.9rem 1.2rem}}
+
+/* ══ TRUST BADGES ══ */
+.badges{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:1rem}
+.badge{display:flex;align-items:center;gap:.4rem;font-family:Inter,sans-serif;font-size:.72rem;color:rgba(255,255,255,.45)}
+.badge-icon{font-size:1rem}
 </style>
 
 </head>
 <body>
-
 <div id="cursor"><div id="cursor-dot"></div><div id="cursor-ring"></div></div>
 <div id="progress"></div>
 <div id="grain"></div>
 <div id="vignette"></div>
-<div id="bar-top"></div>
-<div id="bar-bot"></div>
+<div id="bar-top"></div><div id="bar-bot"></div>
 <div id="ch-tag">Dentista Hospital · Vilanova i la Geltrú</div>
-
 <div id="ch-nav">
-  <div class="pip" data-i="0"></div>
-  <div class="pip" data-i="1"></div>
-  <div class="pip" data-i="2"></div>
-  <div class="pip" data-i="3"></div>
-  <div class="pip" data-i="4"></div>
-  <div class="pip" data-i="5"></div>
-  <div class="pip" data-i="6"></div>
+  <div class="pip" data-i="0"></div><div class="pip" data-i="1"></div>
+  <div class="pip" data-i="2"></div><div class="pip" data-i="3"></div>
+  <div class="pip" data-i="4"></div><div class="pip" data-i="5"></div>
+  <div class="pip" data-i="6"></div><div class="pip" data-i="7"></div>
 </div>
-
-<div id="hint"><span>Entra a la història</span><div class="hl"></div></div>
-
-<!-- ═══════════════════ CANVAS ═══════════════════ -->
+<div id="hint"><span>Comença la història</span><div class="hl"></div></div>
 
 <div id="canvas">
 <div id="bg"></div>
 <svg id="stars" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"></svg>
 
-<!-- LIGHT RAYS -->
+<!-- LIGHT RAYS (golden, warm) -->
 
 <svg id="light-rays" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
 <defs>
-<radialGradient id="rayG" cx="50%" cy="10%" r="70%">
-<stop offset="0%" stop-color="#FFD700" stop-opacity=".15"/>
-<stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+<radialGradient id="rG1" cx="50%" cy="8%" r="72%">
+  <stop offset="0%" stop-color="#FFB830" stop-opacity=".22"/>
+  <stop offset="100%" stop-color="#FF8C00" stop-opacity="0"/>
 </radialGradient>
 </defs>
-<rect width="1920" height="1080" fill="url(#rayG)"/>
-<g transform="translate(960,160)" opacity=".5">
-<line x1="0" y1="0" x2="-500" y2="920" stroke="rgba(255,210,60,.05)" stroke-width="110"/>
-<line x1="0" y1="0" x2="-240" y2="920" stroke="rgba(255,210,60,.04)" stroke-width="140"/>
-<line x1="0" y1="0" x2="0"    y2="920" stroke="rgba(255,210,60,.05)" stroke-width="120"/>
-<line x1="0" y1="0" x2="240"  y2="920" stroke="rgba(255,210,60,.04)" stroke-width="130"/>
-<line x1="0" y1="0" x2="500"  y2="920" stroke="rgba(255,210,60,.05)" stroke-width="105"/>
+<rect width="1920" height="1080" fill="url(#rG1)"/>
+<g transform="translate(960,100)" opacity=".52">
+  <line x1="0" y1="0" x2="-580" y2="980" stroke="rgba(255,185,50,.055)" stroke-width="130"/>
+  <line x1="0" y1="0" x2="-280" y2="980" stroke="rgba(255,185,50,.045)" stroke-width="155"/>
+  <line x1="0" y1="0" x2="0"    y2="980" stroke="rgba(255,185,50,.055)" stroke-width="140"/>
+  <line x1="0" y1="0" x2="280"  y2="980" stroke="rgba(255,185,50,.045)" stroke-width="150"/>
+  <line x1="0" y1="0" x2="580"  y2="980" stroke="rgba(255,185,50,.055)" stroke-width="120"/>
 </g>
 </svg>
 
-<!-- SCENE ELEMENTS (same SVGs as before - tooth, scan, implant, roots, smile) -->
+<!-- ══ TOOTH (scene 1) — relatable, not scary ══ -->
 
-<svg id="el-tooth" class="s-el" viewBox="0 0 340 420" style="opacity:0;position:absolute;pointer-events:none">
+<svg id="el-tooth" class="s-el" viewBox="0 0 300 380" style="opacity:0;width:300px;height:380px">
 <defs>
-<radialGradient id="painA" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FF1A1A" stop-opacity=".28"/><stop offset="100%" stop-color="#FF1A1A" stop-opacity="0"/></radialGradient>
-<linearGradient id="toothGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#BE9060"/><stop offset="100%" stop-color="#785028"/></linearGradient>
-<filter id="pGlow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<radialGradient id="toothBodyG" cx="40%" cy="30%" r="65%">
+  <stop offset="0%" stop-color="#E8D8B8"/>
+  <stop offset="100%" stop-color="#A88858"/>
+</radialGradient>
+<filter id="sadGlow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
-<ellipse cx="170" cy="190" rx="160" ry="162" fill="url(#painA)"><animate attributeName="rx" values="160;185;160" dur="2s" repeatCount="indefinite"/><animate attributeName="ry" values="162;186;162" dur="2s" repeatCount="indefinite"/></ellipse>
-<path d="M100 295 C88 335 88 368 84 398" stroke="#9A7848" stroke-width="14" fill="none" stroke-linecap="round"/>
-<path d="M170 300 C168 340 168 372 168 398" stroke="#9A7848" stroke-width="14" fill="none" stroke-linecap="round"/>
-<path d="M240 295 C252 335 252 368 256 398" stroke="#9A7848" stroke-width="14" fill="none" stroke-linecap="round"/>
-<path d="M55 270 C35 235 28 185 30 138 C32 80 58 30 90 14 C108 6 128 2 145 3 C152 2 160 1 170 1 C180 1 188 2 195 3 C212 2 232 6 250 14 C282 30 308 80 310 138 C312 185 305 235 285 270 C265 300 225 315 170 315 C115 315 75 300 55 270Z" fill="url(#toothGrad)" filter="url(#pGlow)"/>
-<path d="M55 270 C35 235 28 185 30 138 C32 80 58 30 90 14 C108 6 128 2 145 3 C152 2 160 1 170 1 C180 1 188 2 195 3 C212 2 232 6 250 14 C282 30 308 80 310 138 C312 185 305 235 285 270 C265 300 225 315 170 315 C115 315 75 300 55 270Z" fill="#420606" opacity=".42"/>
-<ellipse cx="185" cy="88" rx="40" ry="32" fill="#0E0202" opacity=".92"/>
-<path d="M120 35 L108 78 L124 102 L112 145" stroke="#300A02" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M210 45 L220 88 L205 108" stroke="#300A02" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-<g stroke="#180404" stroke-width="7" stroke-linecap="round" opacity=".72">
-<line x1="118" y1="168" x2="142" y2="192"/><line x1="142" y1="168" x2="118" y2="192"/>
-<line x1="198" y1="168" x2="222" y2="192"/><line x1="222" y1="168" x2="198" y2="192"/>
+<!-- Soft sad halo (grey, not scary) -->
+<ellipse cx="150" cy="165" rx="130" ry="140" fill="rgba(120,100,80,0.15)">
+  <animate attributeName="rx" values="130;148;130" dur="3s" repeatCount="indefinite"/>
+</ellipse>
+<!-- Roots (3 simple) -->
+<path d="M88 265 C78 295 78 325 76 352" stroke="#C0A070" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M150 270 C148 305 148 335 148 355" stroke="#C0A070" stroke-width="12" fill="none" stroke-linecap="round"/>
+<path d="M212 265 C222 295 222 325 224 352" stroke="#C0A070" stroke-width="12" fill="none" stroke-linecap="round"/>
+<!-- Tooth body (dull/grey-beige, missing) -->
+<path d="M40 242 C24 212 18 168 20 126 C22 70 46 24 78 10 C95 3 114 0 130 1 C137 0 144 0 150 0 C156 0 163 0 170 1 C186 0 205 3 222 10 C254 24 278 70 280 126 C282 168 276 212 260 242 C242 270 205 284 150 284 C95 284 58 270 40 242Z"
+      fill="url(#toothBodyG)" filter="url(#sadGlow)"/>
+<!-- Gap / missing area -->
+<ellipse cx="180" cy="80" rx="36" ry="28" fill="#5A3810" opacity="0.7"/>
+<ellipse cx="178" cy="78" rx="22" ry="18" fill="#3A2008" opacity="0.85"/>
+<!-- Small crack (subtle, not horror) -->
+<path d="M108 28 L100 62 L112 80 L102 118" stroke="#7A5030" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+<!-- Sad eyes -->
+<g fill="#5A3010" opacity="0.7">
+  <path d="M100 150 Q106 145 112 150 Q110 158 106 160 Q102 158 100 150Z"/>
+  <path d="M170 150 Q176 145 182 150 Q180 158 176 160 Q172 158 170 150Z"/>
 </g>
-<path d="M138 225 Q170 210 202 225" stroke="#180404" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-<path d="M128 200 Q124 218 128 224 Q136 230 138 218 Q138 205 128 200Z" fill="#4A90C4" opacity=".72"/>
+<!-- Frown (gentle) -->
+<path d="M118 200 Q150 190 182 200" stroke="#7A4020" stroke-width="4.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+<!-- Question mark above -->
+<text x="150" y="-18" text-anchor="middle" font-family="Inter,sans-serif" font-size="36" fill="rgba(200,160,80,0.5)" font-weight="300">?</text>
 </svg>
 
-<svg id="el-scan" class="s-el" viewBox="0 0 500 400" style="opacity:0;position:absolute;pointer-events:none">
+<!-- ══ SCAN (scene 2) ══ -->
+
+<svg id="el-scan" class="s-el" viewBox="0 0 500 400" style="opacity:0;width:500px;height:400px">
 <defs>
-<linearGradient id="scanLG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00C8FF" stop-opacity="0"/><stop offset="50%" stop-color="#00C8FF" stop-opacity="1"/><stop offset="100%" stop-color="#00C8FF" stop-opacity="0"/></linearGradient>
+<linearGradient id="scanLG" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0%" stop-color="#00C8FF" stop-opacity="0"/>
+  <stop offset="50%" stop-color="#00C8FF" stop-opacity="1"/>
+  <stop offset="100%" stop-color="#00C8FF" stop-opacity="0"/>
+</linearGradient>
 <filter id="tG"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
 <g stroke="rgba(0,200,255,.1)" stroke-width="1">
-<line x1="0" y1="40" x2="500" y2="40"/><line x1="0" y1="80" x2="500" y2="80"/><line x1="0" y1="120" x2="500" y2="120"/><line x1="0" y1="160" x2="500" y2="160"/><line x1="0" y1="200" x2="500" y2="200"/><line x1="0" y1="240" x2="500" y2="240"/><line x1="0" y1="280" x2="500" y2="280"/><line x1="0" y1="320" x2="500" y2="320"/><line x1="0" y1="360" x2="500" y2="360"/>
-<line x1="50" y1="0" x2="50" y2="400"/><line x1="100" y1="0" x2="100" y2="400"/><line x1="150" y1="0" x2="150" y2="400"/><line x1="200" y1="0" x2="200" y2="400"/><line x1="250" y1="0" x2="250" y2="400"/><line x1="300" y1="0" x2="300" y2="400"/><line x1="350" y1="0" x2="350" y2="400"/><line x1="400" y1="0" x2="400" y2="400"/><line x1="450" y1="0" x2="450" y2="400"/>
+  <line x1="0" y1="40" x2="500" y2="40"/><line x1="0" y1="80" x2="500" y2="80"/><line x1="0" y1="120" x2="500" y2="120"/>
+  <line x1="0" y1="160" x2="500" y2="160"/><line x1="0" y1="200" x2="500" y2="200"/><line x1="0" y1="240" x2="500" y2="240"/>
+  <line x1="0" y1="280" x2="500" y2="280"/><line x1="0" y1="320" x2="500" y2="320"/><line x1="0" y1="360" x2="500" y2="360"/>
+  <line x1="50" y1="0" x2="50" y2="400"/><line x1="100" y1="0" x2="100" y2="400"/><line x1="150" y1="0" x2="150" y2="400"/>
+  <line x1="200" y1="0" x2="200" y2="400"/><line x1="250" y1="0" x2="250" y2="400"/><line x1="300" y1="0" x2="300" y2="400"/>
+  <line x1="350" y1="0" x2="350" y2="400"/><line x1="400" y1="0" x2="400" y2="400"/><line x1="450" y1="0" x2="450" y2="400"/>
 </g>
-<path d="M80 350 C60 310 48 260 50 210 C52 145 75 92 118 60 C142 44 175 36 205 35 C235 36 268 44 292 60 C335 92 358 145 360 210 C362 260 350 310 330 350 C308 385 268 400 205 400 C142 400 102 385 80 350Z" fill="none" stroke="rgba(0,200,255,.32)" stroke-width="1.5" stroke-dasharray="8 6" filter="url(#tG)"/>
-<rect x="0" y="-4" width="500" height="3" fill="url(#scanLG)"><animate attributeName="y" values="-4;404" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.04;0.96;1" dur="2.4s" repeatCount="indefinite"/></rect>
-<circle cx="205" cy="220" r="28" fill="none" stroke="#FF6B35" stroke-width="2" filter="url(#tG)"><animate attributeName="r" values="28;38;28" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;.3;.9" dur="2s" repeatCount="indefinite"/></circle>
+<!-- Jaw outline -->
+<path d="M80 350 C60 310 48 260 50 210 C52 145 75 92 118 60 C142 44 175 36 205 35 C235 36 268 44 292 60 C335 92 358 145 360 210 C362 260 350 310 330 350 C308 385 268 400 205 400 C142 400 102 385 80 350Z"
+      fill="rgba(0,184,255,0.04)" stroke="rgba(0,200,255,.35)" stroke-width="1.5" stroke-dasharray="8 6" filter="url(#tG)"/>
+<!-- Scan line -->
+<rect x="0" y="-4" width="500" height="3" fill="url(#scanLG)">
+  <animate attributeName="y" values="-4;404" dur="2.4s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.04;0.96;1" dur="2.4s" repeatCount="indefinite"/>
+</rect>
+<!-- Target -->
+<circle cx="205" cy="220" r="28" fill="none" stroke="#FF6B35" stroke-width="2" filter="url(#tG)">
+  <animate attributeName="r" values="28;38;28" dur="2s" repeatCount="indefinite"/>
+  <animate attributeName="opacity" values=".9;.3;.9" dur="2s" repeatCount="indefinite"/>
+</circle>
 <circle cx="205" cy="220" r="7" fill="#FF6B35"><animate attributeName="opacity" values=".9;.2;.9" dur="1s" repeatCount="indefinite"/></circle>
 <line x1="173" y1="220" x2="193" y2="220" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
 <line x1="217" y1="220" x2="237" y2="220" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
 <line x1="205" y1="188" x2="205" y2="208" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
 <line x1="205" y1="232" x2="205" y2="252" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
 <line x1="231" y1="208" x2="292" y2="172" stroke="rgba(255,107,53,.45)" stroke-width="1"/>
-<rect x="293" y="154" width="140" height="38" rx="4" fill="rgba(0,0,0,.75)" stroke="rgba(255,107,53,.38)" stroke-width="1"/>
-<text x="363" y="170" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#FF6B35" letter-spacing="1.5">IMPLANT ZONE</text>
-<text x="363" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="rgba(255,255,255,.5)">BONE DENSITY: 94%</text>
+<rect x="293" y="154" width="142" height="40" rx="4" fill="rgba(0,0,0,.75)" stroke="rgba(255,107,53,.38)" stroke-width="1"/>
+<text x="364" y="170" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#FF6B35" letter-spacing="1.5">ZONA PERFECTA</text>
+<text x="364" y="185" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="rgba(255,255,255,.5)">OS: 94% · CANDIDAT IDEAL</text>
 <g stroke="rgba(0,200,255,.5)" stroke-width="1.5" fill="none" filter="url(#tG)">
-<path d="M12 12 L12 34 M12 12 L34 12"/><path d="M488 12 L488 34 M488 12 L466 12"/>
-<path d="M12 388 L12 366 M12 388 L34 388"/><path d="M488 388 L488 366 M488 388 L466 388"/>
+  <path d="M12 12 L12 34 M12 12 L34 12"/><path d="M488 12 L488 34 M488 12 L466 12"/>
+  <path d="M12 388 L12 366 M12 388 L34 388"/><path d="M488 388 L488 366 M488 388 L466 388"/>
 </g>
-<text x="16" y="10" font-family="Inter,sans-serif" font-size="7" fill="rgba(0,200,255,.4)" letter-spacing="1">TAC 3D · CBCT</text>
-<text x="484" y="10" text-anchor="end" font-family="Inter,sans-serif" font-size="7" fill="rgba(0,200,255,.4)" letter-spacing="1">0.1mm PRECISION</text>
+<text x="16" y="10" font-family="Inter,sans-serif" font-size="7" fill="rgba(0,200,255,.4)" letter-spacing="1">TAC 3D · CBCT 0.1mm</text>
+<text x="484" y="10" text-anchor="end" font-family="Inter,sans-serif" font-size="7" fill="rgba(0,200,255,.4)" letter-spacing="1">PLANIFICACIÓ DIGITAL</text>
 </svg>
 
-<svg id="el-implant" class="s-el" viewBox="0 0 200 460" style="opacity:0;position:absolute;pointer-events:none">
+<!-- ══ GOLDEN IMPLANT CROSS-SECTION (scene 3) — inspired by TikTok image ══ -->
+
+<svg id="el-implant" class="s-el" viewBox="0 0 320 520" style="opacity:0;width:320px;height:520px">
 <defs>
-<linearGradient id="tiG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#5A7A8A"/><stop offset="28%" stop-color="#A8C8D8"/><stop offset="50%" stop-color="#E8F4FF"/><stop offset="76%" stop-color="#C0D8E8"/><stop offset="100%" stop-color="#6A8A9A"/></linearGradient>
-<linearGradient id="hexG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8D8E8"/><stop offset="100%" stop-color="#8899AA"/></linearGradient>
-<filter id="mG"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<ellipse cx="100" cy="235" rx="62" ry="200" fill="none" stroke="rgba(255,200,50,.09)" stroke-width="40" filter="url(#mG)"/>
-<polygon points="100,18 128,32 128,62 100,76 72,62 72,32" fill="url(#hexG)" filter="url(#mG)"/>
-<polygon points="100,26 121,37 121,58 100,70 79,58 79,37" fill="#D8E8F4"/>
-<line x1="88" y1="34" x2="112" y2="34" stroke="#9AAABB" stroke-width="2.5"/>
-<line x1="100" y1="26" x2="100" y2="46" stroke="#9AAABB" stroke-width="2.5"/>
-<rect x="72" y="76" width="56" height="268" rx="28" fill="url(#tiG)" filter="url(#mG)"/>
-<g fill="none" stroke-linecap="round" stroke="#8AAABB" stroke-width="2.8" opacity=".7">
-<path d="M72 104 C76 100 124 100 128 104"/><path d="M72 120 C76 116 124 116 128 120"/>
-<path d="M72 136 C76 132 124 132 128 136"/><path d="M72 152 C76 148 124 148 128 152"/>
-<path d="M72 168 C76 164 124 164 128 168"/><path d="M72 184 C76 180 124 180 128 184"/>
-<path d="M72 200 C76 196 124 196 128 200"/><path d="M72 216 C76 212 124 212 128 216"/>
-<path d="M72 232 C76 228 124 228 128 232"/><path d="M72 248 C76 244 124 244 128 248"/>
-<path d="M72 264 C76 260 124 260 128 264"/><path d="M72 280 C76 276 124 276 128 280"/>
-<path d="M72 296 C76 292 124 292 128 296"/><path d="M72 312 C76 308 124 308 128 312"/>
-<path d="M72 328 C76 324 124 324 128 328"/><path d="M72 340 C76 336 124 336 128 340"/>
-</g>
-<path d="M72 344 L100 384 L128 344Z" fill="url(#tiG)"/>
-<path d="M84 82 C84 200 84 290 84 365" stroke="rgba(255,255,255,.52)" stroke-width="4" fill="none" stroke-linecap="round"/>
-<rect x="132" y="145" width="64" height="50" rx="4" fill="rgba(0,0,0,.65)" stroke="rgba(255,200,50,.42)" stroke-width="1"/>
-<text x="164" y="162" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#FFD700" letter-spacing="2">Ti-6Al-4V</text>
-<text x="164" y="175" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="rgba(255,255,255,.5)">TITANI PUR</text>
-<text x="164" y="188" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="rgba(255,255,255,.5)">BIOCOMPATIBLE</text>
-</svg>
-
-<svg id="el-roots" class="s-el" viewBox="0 0 400 280" style="opacity:0;position:absolute;pointer-events:none">
-<defs><filter id="rG"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<rect x="0" y="60" width="400" height="220" fill="rgba(180,140,90,.14)"/>
-<rect x="0" y="60" width="400" height="10" fill="rgba(200,160,100,.3)"/>
-<rect x="170" y="0" width="60" height="170" rx="30" fill="rgba(160,195,215,.48)" stroke="rgba(160,195,215,.22)" stroke-width="1"/>
-<path d="M170 170 L200 195 L230 170Z" fill="rgba(160,195,215,.48)"/>
-<path d="M170 90 C148 85 120 97 103 118 C88 137 93 160 110 167" stroke="#43A047" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="130" stroke-dashoffset="130"><animate attributeName="stroke-dashoffset" values="130;0;130" dur="3.2s" repeatCount="indefinite"/></path>
-<path d="M170 115 C143 108 112 124 94 148 C78 170 84 196 104 202" stroke="#66BB6A" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="150" stroke-dashoffset="150"><animate attributeName="stroke-dashoffset" values="150;0;150" dur="3.8s" begin=".4s" repeatCount="indefinite"/></path>
-<path d="M230 90 C252 85 280 97 297 118 C312 137 307 160 290 167" stroke="#43A047" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="130" stroke-dashoffset="130"><animate attributeName="stroke-dashoffset" values="130;0;130" dur="3.2s" begin=".2s" repeatCount="indefinite"/></path>
-<path d="M230 115 C257 108 288 124 306 148 C322 170 316 196 296 202" stroke="#66BB6A" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="150" stroke-dashoffset="150"><animate attributeName="stroke-dashoffset" values="150;0;150" dur="3.8s" begin=".6s" repeatCount="indefinite"/></path>
-<path d="M185 196 C178 222 174 244 170 268" stroke="#81C784" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="85" stroke-dashoffset="85"><animate attributeName="stroke-dashoffset" values="85;0;85" dur="2.8s" begin=".9s" repeatCount="indefinite"/></path>
-<path d="M215 196 C222 222 226 244 230 268" stroke="#81C784" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="85" stroke-dashoffset="85"><animate attributeName="stroke-dashoffset" values="85;0;85" dur="2.8s" begin="1.1s" repeatCount="indefinite"/></path>
-<circle cx="110" cy="167" r="5" fill="#43A047" filter="url(#rG)"><animate attributeName="opacity" values=".9;.1;.9" dur="1.6s" repeatCount="indefinite"/></circle>
-<circle cx="290" cy="167" r="5" fill="#43A047" filter="url(#rG)"><animate attributeName="opacity" values=".9;.1;.9" dur="1.6s" begin=".5s" repeatCount="indefinite"/></circle>
-<text x="200" y="252" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="500" fill="rgba(100,200,100,.5)" letter-spacing="3">OSSEOINTEGRACIÓ</text>
-</svg>
-
-<svg id="el-smile" class="s-el" viewBox="0 0 600 200" style="opacity:0;position:absolute;pointer-events:none">
-<defs>
-<filter id="sG"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<radialGradient id="sAura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,220,100,.18)"/><stop offset="100%" stop-color="rgba(255,220,100,0)"/></radialGradient>
-</defs>
-<ellipse cx="300" cy="100" rx="290" ry="92" fill="url(#sAura)"/>
-<path d="M80 100 Q300 200 520 100" stroke="rgba(255,220,100,.11)" stroke-width="55" fill="none" stroke-linecap="round"/>
-<g filter="url(#sG)">
-<rect x="100" y="68" width="48" height="64" rx="10" fill="white"/><rect x="104" y="70" width="18" height="40" rx="5" fill="rgba(240,248,255,.8)"/>
-<rect x="152" y="58" width="55" height="74" rx="12" fill="white"/><rect x="157" y="60" width="20" height="46" rx="6" fill="rgba(240,248,255,.8)"/>
-<rect x="211" y="52" width="58" height="80" rx="13" fill="white"/><rect x="216" y="54" width="22" height="52" rx="6" fill="rgba(248,252,255,.92)"/>
-<circle cx="248" cy="72" r="3.5" fill="#FFD700" opacity=".6"><animate attributeName="opacity" values=".6;0;.6" dur="2.2s" repeatCount="indefinite"/></circle>
-<rect x="273" y="52" width="58" height="80" rx="13" fill="white"/><rect x="278" y="54" width="22" height="52" rx="6" fill="rgba(248,252,255,.88)"/>
-<rect x="335" y="58" width="55" height="74" rx="12" fill="white"/><rect x="340" y="60" width="20" height="46" rx="6" fill="rgba(240,248,255,.8)"/>
-<rect x="394" y="68" width="48" height="64" rx="10" fill="white"/><rect x="399" y="70" width="18" height="40" rx="5" fill="rgba(240,248,255,.8)"/>
-<g stroke="rgba(225,238,255,.45)" stroke-width="1">
-<line x1="152" y1="60" x2="148" y2="132"/><line x1="211" y1="55" x2="207" y2="130"/>
-<line x1="273" y1="55" x2="269" y2="130"/><line x1="335" y1="60" x2="331" y2="132"/>
-<line x1="394" y1="68" x2="390" y2="132"/>
-</g>
-</g>
-</svg>
-
-<!-- ══ RATITO SVG CHARACTER ══ -->
-
-<div id="ratito">
-
-<svg id="ratito-svg" viewBox="0 0 280 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;overflow:visible">
-<defs>
-  <!-- Fur gradient -->
-  <radialGradient id="furG" cx="45%" cy="35%" r="60%">
-    <stop offset="0%" stop-color="#E0A060"/>
-    <stop offset="55%" stop-color="#C07838"/>
-    <stop offset="100%" stop-color="#8A5018"/>
-  </radialGradient>
-  <!-- Belly gradient -->
-  <radialGradient id="bellyG" cx="50%" cy="40%" r="55%">
-    <stop offset="0%" stop-color="#F0D8A0"/>
-    <stop offset="100%" stop-color="#D8B870"/>
-  </radialGradient>
-  <!-- Ear inner gradient -->
-  <radialGradient id="earInG" cx="50%" cy="50%" r="50%">
-    <stop offset="0%" stop-color="#FFB8C8"/>
-    <stop offset="100%" stop-color="#E88898"/>
-  </radialGradient>
-  <!-- Eye gradient (iris) -->
-  <radialGradient id="eyeIrisG" cx="35%" cy="30%" r="65%">
-    <stop offset="0%" stop-color="#8B5020"/>
-    <stop offset="60%" stop-color="#4A2008"/>
-    <stop offset="100%" stop-color="#1A0800"/>
-  </radialGradient>
-  <!-- Bag gradient -->
-  <radialGradient id="bagG" cx="30%" cy="25%" r="70%">
-    <stop offset="0%" stop-color="#6A3818"/>
-    <stop offset="100%" stop-color="#2A1008"/>
-  </radialGradient>
-  <!-- Tooth gradient -->
-  <linearGradient id="toothG" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0%" stop-color="#FFFFFF"/>
-    <stop offset="100%" stop-color="#D8E8F8"/>
+  <!-- Titanium gradient (warm gold like TikTok) -->
+  <linearGradient id="tiG" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%"   stop-color="#7A6030"/>
+    <stop offset="22%"  stop-color="#C8A048"/>
+    <stop offset="45%"  stop-color="#F0D080"/>
+    <stop offset="65%"  stop-color="#E0B850"/>
+    <stop offset="100%" stop-color="#8A6828"/>
   </linearGradient>
-  <!-- Shine filter (soft) -->
-  <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
-    <feDropShadow dx="2" dy="4" stdDeviation="6" flood-color="#00000040"/>
-  </filter>
-  <filter id="glowGold">
-    <feGaussianBlur stdDeviation="3" result="blur"/>
-    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-  </filter>
+  <!-- Crown gradient (white ceramic) -->
+  <radialGradient id="crownG" cx="35%" cy="25%" r="70%">
+    <stop offset="0%"   stop-color="#FFFFFF"/>
+    <stop offset="60%"  stop-color="#F0F8FF"/>
+    <stop offset="100%" stop-color="#D8E8F0"/>
+  </radialGradient>
+  <!-- Cross-section bone fill (amber/golden like TikTok) -->
+  <radialGradient id="boneG" cx="50%" cy="45%" r="55%">
+    <stop offset="0%"   stop-color="#E8A040"/>
+    <stop offset="45%"  stop-color="#C07820"/>
+    <stop offset="100%" stop-color="#7A4008"/>
+  </radialGradient>
+  <!-- Inner bone marrow -->
+  <radialGradient id="marrowG" cx="50%" cy="50%" r="50%">
+    <stop offset="0%"   stop-color="#F0C060"/>
+    <stop offset="100%" stop-color="#D08830"/>
+  </radialGradient>
+  <!-- Glow filter -->
+  <filter id="goldGl"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="crownGl"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
 
-<!-- ══ SHADOW ══ -->
+<!-- Golden outer glow -->
 
-<ellipse cx="140" cy="388" rx="68" ry="10" fill="rgba(0,0,0,0.25)"/>
+<ellipse cx="160" cy="260" rx="110" ry="230" fill="none" stroke="rgba(255,185,50,.15)" stroke-width="55" filter="url(#goldGl)"/>
 
-<!-- ══ TAIL ══ -->
+<!-- ── CROWN (top, ceramic white) ── -->
 
-<path d="M185 285 Q235 265 248 230 Q260 198 238 185 Q220 176 208 188" 
-stroke="#B06828" stroke-width="10" fill="none" stroke-linecap="round"
-style="filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.3))"/>
-<path d="M185 285 Q235 265 248 230 Q260 198 238 185 Q220 176 208 188"
-stroke="#D08848" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.5"/>
+<!-- Crown glow halo -->
 
-<!-- ══ BODY ══ -->
-
-<ellipse cx="138" cy="290" rx="72" ry="80" fill="url(#furG)" filter="url(#softShadow)"/>
-<!-- Fur texture shading -->
-<ellipse cx="118" cy="265" rx="35" ry="45" fill="rgba(80,30,0,0.12)"/>
-<!-- Belly -->
-<ellipse cx="138" cy="298" rx="44" ry="55" fill="url(#bellyG)"/>
-
-<!-- ══ BAG (leather satchel) ══ -->
-
-<!-- Strap going over shoulder -->
-
-<path d="M110 242 C100 258 98 275 105 290 C110 300 120 305 130 310"
-stroke="#3A1808" stroke-width="9" fill="none" stroke-linecap="round"/>
-<path d="M110 242 C100 258 98 275 105 290 C110 300 120 305 130 310"
-stroke="#6A3018" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.6"/>
-
-<!-- Bag body -->
-
-<rect x="108" y="300" width="56" height="46" rx="6" fill="url(#bagG)" filter="url(#softShadow)"/>
-<rect x="112" y="304" width="48" height="38" rx="4" fill="#3A1808"/>
-<!-- Bag flap -->
-<path d="M108 300 L164 300 L164 320 Q164 326 158 326 L114 326 Q108 326 108 320 Z"
-      fill="#5A2810"/>
-<!-- Bag flap stitch line -->
-<path d="M112 322 L160 322" stroke="#8A5828" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>
-<!-- Bag clasp (gold) -->
-<ellipse cx="136" cy="325" rx="8" ry="5" fill="#D4A020" filter="url(#glowGold)"/>
-<ellipse cx="136" cy="325" rx="5" ry="3" fill="#F0C840"/>
-<!-- Bag rivets -->
-<circle cx="116" cy="308" r="2.5" fill="#C08820"/>
-<circle cx="156" cy="308" r="2.5" fill="#C08820"/>
-<!-- Bag keychain -->
-<circle cx="120" cy="348" r="5" fill="none" stroke="#D4A020" stroke-width="2.5" filter="url(#glowGold)"/>
-<line x1="120" y1="346" x2="120" y2="338" stroke="#C09010" stroke-width="2"/>
-<line x1="120" y1="346" x2="120" y2="370" stroke="#B08010" stroke-width="2"/>
-<path d="M116 360 L120 370 L124 360" fill="#C09010"/>
-
-<!-- ══ LEFT ARM (animated per scene) ══ -->
-
-<!-- Base: arm slightly raised, holding tooth -->
-
-<g id="arm-left">
-  <!-- Upper arm -->
-  <path d="M80 252 C62 240 48 230 36 218" stroke="url(#furG)" stroke-width="22" fill="none" stroke-linecap="round"/>
-  <!-- Forearm  -->
-  <path d="M36 218 C28 208 24 196 30 185" stroke="url(#furG)" stroke-width="18" fill="none" stroke-linecap="round"/>
-  <!-- Hand -->
-  <ellipse cx="34" cy="178" rx="16" ry="14" fill="#C87838" transform="rotate(-15 34 178)"/>
-  <!-- Fingers (simplified) -->
-  <circle cx="24" cy="168" r="7" fill="#C07030"/>
-  <circle cx="33" cy="163" r="7.5" fill="#C87838"/>
-  <circle cx="43" cy="164" r="7" fill="#C07030"/>
-
-  <!-- ══ TOOTH (held in left hand) ══ -->
-
-  <g id="tooth-held">
-    <!-- Tooth glow -->
-    <ellipse cx="22" cy="138" rx="18" ry="18" fill="rgba(255,240,180,0.4)">
-      <animate attributeName="rx" values="18;24;18" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="ry" values="18;24;18" dur="2s" repeatCount="indefinite"/>
-    </ellipse>
-    <!-- Sparkle lines (like in photo) -->
-    <g fill="#FFD700" opacity="0.9">
-      <polygon points="5,128 8,138 2,138" style="animation:toothSpark 1.8s 0s ease-in-out infinite"/>
-      <polygon points="10,120 14,130 6,130" style="animation:toothSpark 1.8s 0.4s ease-in-out infinite"/>
-    </g>
-    <!-- Tooth body -->
-    <path d="M14 160 C10 148 8 136 9 126 C10 116 15 108 20 106 C22 105 24 105 25 105 C26 105 28 105 30 106 C35 108 40 116 41 126 C42 136 40 148 36 160 C33 168 30 172 25 173 C20 173 17 168 14 160 Z"
-          fill="url(#toothG)" filter="url(#softShadow)"/>
-    <!-- Root left -->
-    <path d="M16 160 C14 168 13 174 12 180" stroke="#E0D8C8" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <!-- Root right -->
-    <path d="M34 160 C36 168 37 174 38 180" stroke="#E0D8C8" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <!-- Tooth shine -->
-    <path d="M16 112 C17 108 20 106 22 107" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.9"/>
-    <path d="M15 118 C16 115 18 113 20 113" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
-    <!-- Tooth shine sparkle star -->
-    <text x="2" y="104" font-size="12" fill="#FFE060" style="animation:toothSpark 2.2s 0.2s ease-in-out infinite">✦</text>
-    <style>
-      @keyframes toothSpark {
-        0%,100% { opacity:0.8; transform:scale(1); }
-        50% { opacity:0.15; transform:scale(0.5); }
-      }
-    </style>
-  </g>
+<ellipse cx="160" cy="80" rx="90" ry="75" fill="rgba(255,240,200,0.18)" filter="url(#crownGl)"/>
+<!-- Crown shape -->
+<path d="M72 118 C72 78 85 46 104 28 C116 17 130 10 145 8 C150 7 155 7 160 7 C165 7 170 7 175 8 C190 10 204 17 216 28 C235 46 248 78 248 118 C248 148 235 168 160 175 C85 168 72 148 72 118Z"
+      fill="url(#crownG)" filter="url(#crownGl)"/>
+<!-- Crown cross-section (like TikTok — shows internal structure) -->
+<path d="M78 118 C78 82 90 52 108 36 C120 25 133 18 148 16 C152 15 157 15 160 15 C163 15 168 15 172 16 C187 18 200 25 212 36 C230 52 242 82 242 118"
+      fill="rgba(225,170,80,0.35)"/>
+<!-- Crown inner bone-like texture layers -->
+<path d="M88 118 C90 88 100 62 116 48 C128 38 140 33 155 31 C158 31 161 31 165 31 C180 32 192 38 204 48 C220 62 230 88 232 118"
+      fill="rgba(200,130,50,0.5)"/>
+<path d="M105 118 C107 96 114 76 128 64 C138 56 146 52 158 51 C161 51 163 51 165 51 C177 52 185 56 195 64 C209 76 216 96 218 118"
+      fill="rgba(170,100,30,0.55)"/>
+<!-- Crown inner screw connection (visible in cross-section) -->
+<ellipse cx="160" cy="115" rx="22" ry="28" fill="rgba(100,80,40,0.8)"/>
+<ellipse cx="160" cy="115" rx="16" ry="22" fill="#8A7040"/>
+<g fill="none" stroke="#5A4828" stroke-width="2" opacity="0.8">
+  <line x1="144" y1="108" x2="176" y2="108"/>
+  <line x1="142" y1="115" x2="178" y2="115"/>
+  <line x1="144" y1="122" x2="176" y2="122"/>
 </g>
+<!-- Crown shine -->
+<path d="M92 40 C96 28 108 20 118 22" stroke="rgba(255,255,255,0.8)" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M98 52 C102 42 112 36 120 38" stroke="rgba(255,255,255,0.5)" stroke-width="3" fill="none" stroke-linecap="round"/>
+<!-- Crown label -->
+<rect x="254" y="30" width="62" height="36" rx="4" fill="rgba(0,0,0,.7)" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+<text x="285" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="rgba(255,255,255,.8)">CORONA</text>
+<text x="285" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="rgba(255,255,255,.45)">CERÀMICA</text>
+<line x1="248" y1="80" x2="255" y2="48" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
 
-<!-- ══ RIGHT ARM ══ -->
+<!-- ── ABUTMENT (connector) ── -->
 
-<g id="arm-right">
-  <path d="M196 252 C215 245 228 236 235 222" stroke="url(#furG)" stroke-width="22" fill="none" stroke-linecap="round"/>
-  <path d="M235 222 C240 214 240 204 236 196" stroke="url(#furG)" stroke-width="18" fill="none" stroke-linecap="round"/>
-  <!-- Hand (closed fist on bag) -->
-  <ellipse cx="233" cy="190" rx="15" ry="13" fill="#C07030"/>
+<rect x="135" y="170" width="50" height="30" rx="6" fill="url(#tiG)" filter="url(#goldGl)"/>
+<rect x="139" y="174" width="42" height="22" rx="4" fill="#D4A040"/>
+<path d="M143 180 C143 182 177 182 177 180" stroke="#E8C060" stroke-width="1.5" fill="none"/>
+<path d="M143 186 C143 188 177 188 177 186" stroke="#E8C060" stroke-width="1.5" fill="none"/>
+
+<!-- ── IMPLANT SHAFT (titanium gold) ── -->
+
+<rect x="130" y="200" width="60" height="220" rx="30" fill="url(#tiG)" filter="url(#goldGl)"/>
+<!-- Thread grooves (warm gold) -->
+<g fill="none" stroke-linecap="round" stroke="#8A6020" stroke-width="3.5" opacity="0.7">
+  <path d="M130 222 C134 218 186 218 190 222"/><path d="M130 236 C134 232 186 232 190 236"/>
+  <path d="M130 250 C134 246 186 246 190 250"/><path d="M130 264 C134 260 186 260 190 264"/>
+  <path d="M130 278 C134 274 186 274 190 278"/><path d="M130 292 C134 288 186 288 190 292"/>
+  <path d="M130 306 C134 302 186 302 190 306"/><path d="M130 320 C134 316 186 316 190 320"/>
+  <path d="M130 334 C134 330 186 330 190 334"/><path d="M130 348 C134 344 186 344 190 348"/>
+  <path d="M130 362 C134 358 186 358 190 362"/><path d="M130 376 C134 372 186 372 190 376"/>
+  <path d="M130 390 C134 386 186 386 190 390"/>
 </g>
+<!-- Shaft shine -->
+<path d="M144 204 C144 300 144 380 144 415" stroke="rgba(255,235,150,.6)" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M152 204 C152 300 152 380 152 412" stroke="rgba(255,235,150,.25)" stroke-width="2" fill="none" stroke-linecap="round"/>
+<!-- Tip -->
+<path d="M130 420 L160 452 L190 420Z" fill="url(#tiG)"/>
+<path d="M144 420 C144 435 144 445 150 452" stroke="rgba(255,235,150,.5)" stroke-width="3" fill="none" stroke-linecap="round"/>
 
-<!-- ══ HEAD ══ -->
+<!-- ── BONE CROSS-SECTION (amber like TikTok) ── -->
 
-<circle cx="138" cy="148" r="75" fill="url(#furG)" filter="url(#softShadow)"/>
-
-<!-- Head fur texture — lighter front -->
-
-<ellipse cx="138" cy="152" rx="50" ry="55" fill="#D89050" opacity="0.35"/>
-<ellipse cx="130" cy="140" rx="30" ry="35" fill="#E0A060" opacity="0.2"/>
-
-<!-- ══ EARS ══ -->
-
-<!-- Left ear -->
-
-<circle cx="82" cy="92" r="38" fill="#C07838"/>
-<circle cx="82" cy="92" r="28" fill="url(#furG)"/>
-<circle cx="82" cy="92" r="20" fill="url(#earInG)"/>
-<ellipse cx="78" cy="96" rx="12" ry="10" fill="#F0B0C0" opacity="0.5"/>
-<!-- Ear fur tufts -->
-<path d="M68 68 Q72 58 80 62" stroke="#D08040" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
-<path d="M72 60 Q78 52 84 56" stroke="#D08040" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.4"/>
-
-<!-- Right ear -->
-
-<circle cx="194" cy="92" r="38" fill="#C07838"/>
-<circle cx="194" cy="92" r="28" fill="url(#furG)"/>
-<circle cx="194" cy="92" r="20" fill="url(#earInG)"/>
-<ellipse cx="190" cy="96" rx="12" ry="10" fill="#F0B0C0" opacity="0.5"/>
-<path d="M188 68 Q192 58 198 62" stroke="#D08040" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
-<path d="M196 60 Q200 52 206 56" stroke="#D08040" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.4"/>
-
-<!-- Head fur tufts on top -->
-
-<path d="M118 75 Q128 60 138 65" stroke="#D08848" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.45"/>
-<path d="M138 65 Q148 52 158 60" stroke="#D08848" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.45"/>
-<path d="M128 68 Q138 55 148 62" stroke="#C87838" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.3"/>
-
-<!-- ══ EYEBROWS ══ -->
-
-<g id="eyebrows">
-  <!-- Left brow (happy: slightly arched) -->
-  <path id="brow-l" d="M102 118 Q114 112 126 116" stroke="#7A4018" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-  <!-- Right brow -->
-  <path id="brow-r" d="M150 116 Q162 112 174 118" stroke="#7A4018" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<rect x="22" y="310" width="276" height="165" rx="8" fill="url(#boneG)" opacity="0.88"/>
+<!-- Bone texture layers -->
+<rect x="22" y="310" width="276" height="20" rx="0" fill="rgba(200,130,50,.6)"/>
+<ellipse cx="160" cy="358" rx="95" ry="55" fill="url(#marrowG)" opacity="0.55"/>
+<ellipse cx="160" cy="358" rx="62" ry="35" fill="rgba(240,190,80,.4)"/>
+<!-- Bone texture lines -->
+<g stroke="rgba(120,60,10,.3)" stroke-width="1.2" fill="none">
+  <path d="M40 340 C60 335 80 342 100 338"/><path d="M105 345 C130 340 155 348 175 342"/>
+  <path d="M180 338 C200 344 220 338 245 342"/>
+  <path d="M35 360 C55 355 75 362 95 357"/><path d="M100 362 C125 357 150 365 170 359"/>
+  <path d="M175 357 C195 363 218 357 242 362"/>
+  <path d="M40 380 C62 375 85 382 108 376"/><path d="M112 380 C138 375 162 383 185 377"/>
+  <path d="M188 378 C210 384 232 378 258 382"/>
 </g>
+<!-- Bone label -->
+<text x="160" y="452" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="500" fill="rgba(255,200,100,.55)" letter-spacing="3">OS · MAXIL·LAR</text>
 
-<!-- ══ EYES ══ -->
+<!-- Labels -->
 
-<!-- Left eye -->
-
-<g id="eye-l">
-  <circle cx="114" cy="138" r="17" fill="white" filter="url(#softShadow)"/>
-  <circle cx="114" cy="138" r="13" fill="url(#eyeIrisG)"/>
-  <!-- Pupil -->
-  <circle cx="115" cy="140" r="8" fill="#0D0400"/>
-  <!-- Main highlight -->
-  <circle cx="108" cy="132" r="5" fill="white" opacity="0.95"/>
-  <!-- Secondary highlight -->
-  <circle cx="116" cy="130" r="2.5" fill="white" opacity="0.6"/>
-  <!-- Eye ring (warm) -->
-  <circle cx="114" cy="138" r="17" fill="none" stroke="#C87020" stroke-width="1.5" opacity="0.3"/>
-  <!-- Lashes (top) -->
-  <path d="M100 126 L106 130 M107 122 L111 127 M116 120 L117 126 M122 123 L121 128" 
-        stroke="#4A2008" stroke-width="2" stroke-linecap="round"/>
-</g>
-
-<!-- Right eye -->
-
-<g id="eye-r">
-  <circle cx="162" cy="138" r="17" fill="white" filter="url(#softShadow)"/>
-  <circle cx="162" cy="138" r="13" fill="url(#eyeIrisG)"/>
-  <circle cx="163" cy="140" r="8" fill="#0D0400"/>
-  <circle cx="156" cy="132" r="5" fill="white" opacity="0.95"/>
-  <circle cx="164" cy="130" r="2.5" fill="white" opacity="0.6"/>
-  <circle cx="162" cy="138" r="17" fill="none" stroke="#C87020" stroke-width="1.5" opacity="0.3"/>
-  <path d="M148 126 L154 130 M155 122 L159 127 M164 120 L165 126 M170 123 L169 128"
-        stroke="#4A2008" stroke-width="2" stroke-linecap="round"/>
-</g>
-
-<!-- ══ CHEEKS ══ -->
-
-<ellipse id="cheek-l" cx="94" cy="158" rx="18" ry="13" fill="#E87888" opacity="0.30"/>
-<ellipse id="cheek-r" cx="182" cy="158" rx="18" ry="13" fill="#E87888" opacity="0.30"/>
-
-<!-- ══ NOSE ══ -->
-
-<ellipse cx="138" cy="168" rx="10" ry="8" fill="#E87080"/>
-<ellipse cx="135" cy="165" rx="4" ry="3" fill="#F090A0" opacity="0.6"/>
-
-<!-- ══ MOUTH (happy smile by default) ══ -->
-
-<g id="mouth">
-  <path id="mouth-path" d="M120 182 Q138 198 156 182" stroke="#7A3010" stroke-width="4" fill="none" stroke-linecap="round"/>
-</g>
-
-<!-- ══ WHISKERS ══ -->
-
-<g stroke="#D0A050" stroke-width="1.8" stroke-linecap="round" opacity="0.7">
-  <!-- Left whiskers -->
-  <line x1="28" y1="160" x2="104" y2="168"/>
-  <line x1="26" y1="172" x2="104" y2="173"/>
-  <line x1="30" y1="184" x2="104" y2="178"/>
-  <!-- Right whiskers -->
-  <line x1="172" y1="168" x2="248" y2="160"/>
-  <line x1="172" y1="173" x2="250" y2="172"/>
-  <line x1="172" y1="178" x2="246" y2="184"/>
-</g>
-
-<!-- ══ FEET ══ -->
-
-<ellipse cx="106" cy="372" rx="28" ry="14" fill="#B06828" filter="url(#softShadow)"/>
-<ellipse cx="170" cy="372" rx="28" ry="14" fill="#B06828" filter="url(#softShadow)"/>
-<!-- Toe details -->
-<path d="M82 368 Q88 362 95 368" stroke="#985020" stroke-width="2" fill="none"/>
-<path d="M88 365 Q95 358 103 365" stroke="#985020" stroke-width="2" fill="none"/>
-<path d="M146 365 Q153 358 161 365" stroke="#985020" stroke-width="2" fill="none"/>
-<path d="M152 368 Q160 362 167 368" stroke="#985020" stroke-width="2" fill="none"/>
-
-<!-- ══ FLOATING ANIMATION ══ -->
-
-<animateTransform attributeName="transform" type="translate"
-values="0,0; 0,-12; 0,0" dur="3.2s" repeatCount="indefinite"
-calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
-
+<rect x="4" y="148" width="58" height="34" rx="4" fill="rgba(0,0,0,.7)" stroke="rgba(255,200,50,.35)" stroke-width="1"/>
+<text x="33" y="162" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" font-weight="700" fill="#FFD700">Ti-6Al-4V</text>
+<text x="33" y="174" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="rgba(255,255,255,.45)">TITANI PUR</text>
+<line x1="62" y1="165" x2="130" y2="250" stroke="rgba(255,200,50,.3)" stroke-width="1"/>
 </svg>
 
-</div>
+<!-- ══ OSSEO ROOTS (scene 4) ══ -->
 
-<!-- ══ SCENE TEXTS ══ -->
+<svg id="el-roots" class="s-el" viewBox="0 0 440 310" style="opacity:0;width:440px;height:310px">
+<defs>
+  <filter id="rG"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <radialGradient id="boneRG" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#C89050"/><stop offset="100%" stop-color="#7A5020"/></radialGradient>
+</defs>
+<!-- Bone cross-section (same warm amber) -->
+<rect x="0" y="68" width="440" height="242" rx="10" fill="url(#boneRG)" opacity="0.75"/>
+<rect x="0" y="68" width="440" height="14" fill="rgba(200,150,60,.45)"/>
+<g stroke="rgba(100,50,10,.28)" stroke-width="1.2" fill="none">
+  <path d="M20 100 C48 95 75 102 100 96"/><path d="M105 98 C138 93 168 101 195 95"/>
+  <path d="M200 96 C230 102 260 96 290 100"/><path d="M295 98 C320 94 348 101 380 96"/>
+  <path d="M18 125 C50 120 80 127 110 121"/><path d="M115 123 C148 118 178 126 208 120"/>
+  <path d="M212 122 C242 128 272 122 302 126"/><path d="M306 120 C335 127 362 120 400 124"/>
+</g>
+<!-- Implant in bone (gold) -->
+<rect x="190" y="0" width="60" height="188" rx="30" fill="rgba(210,160,50,.7)" stroke="rgba(255,210,80,.3)" stroke-width="1"/>
+<path d="M190 188 L220 212 L250 188Z" fill="rgba(200,150,40,.7)"/>
+<!-- Growing roots (green, organic) -->
+<path d="M190 96 C165 90 132 104 112 128 C94 150 100 176 120 184" stroke="#43A047" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="140" stroke-dashoffset="140">
+  <animate attributeName="stroke-dashoffset" values="140;0;140" dur="3s" repeatCount="indefinite"/>
+</path>
+<path d="M190 122 C160 115 125 132 105 158 C86 182 93 210 116 218" stroke="#66BB6A" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="165" stroke-dashoffset="165">
+  <animate attributeName="stroke-dashoffset" values="165;0;165" dur="3.8s" begin=".4s" repeatCount="indefinite"/>
+</path>
+<path d="M250 96 C275 90 308 104 328 128 C346 150 340 176 320 184" stroke="#43A047" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="140" stroke-dashoffset="140">
+  <animate attributeName="stroke-dashoffset" values="140;0;140" dur="3s" begin=".2s" repeatCount="indefinite"/>
+</path>
+<path d="M250 122 C280 115 315 132 335 158 C354 182 347 210 324 218" stroke="#66BB6A" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="165" stroke-dashoffset="165">
+  <animate attributeName="stroke-dashoffset" values="165;0;165" dur="3.8s" begin=".6s" repeatCount="indefinite"/>
+</path>
+<!-- Deep roots -->
+<path d="M206 212 C198 240 194 262 190 285" stroke="#81C784" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="90" stroke-dashoffset="90">
+  <animate attributeName="stroke-dashoffset" values="90;0;90" dur="2.8s" begin=".9s" repeatCount="indefinite"/>
+</path>
+<path d="M234 212 C242 240 246 262 250 285" stroke="#81C784" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="90" stroke-dashoffset="90">
+  <animate attributeName="stroke-dashoffset" values="90;0;90" dur="2.8s" begin="1.1s" repeatCount="indefinite"/>
+</path>
+<!-- Root tip glows -->
+<circle cx="120" cy="184" r="6" fill="#43A047" filter="url(#rG)"><animate attributeName="opacity" values=".9;.1;.9" dur="1.6s" repeatCount="indefinite"/></circle>
+<circle cx="116" cy="218" r="5" fill="#66BB6A" filter="url(#rG)"><animate attributeName="opacity" values=".8;.1;.8" dur="2s" begin=".4s" repeatCount="indefinite"/></circle>
+<circle cx="320" cy="184" r="6" fill="#43A047" filter="url(#rG)"><animate attributeName="opacity" values=".9;.1;.9" dur="1.6s" begin=".5s" repeatCount="indefinite"/></circle>
+<circle cx="324" cy="218" r="5" fill="#66BB6A" filter="url(#rG)"><animate attributeName="opacity" values=".8;.1;.8" dur="2s" begin=".9s" repeatCount="indefinite"/></circle>
+<text x="220" y="285" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="500" fill="rgba(100,200,100,.5)" letter-spacing="3">OSSEOINTEGRACIÓ COMPLETA</text>
+</svg>
+
+<!-- ══ SMILE (scene 5) ══ -->
+
+<svg id="el-smile" class="s-el" viewBox="0 0 640 220" style="opacity:0;width:640px;height:220px">
+<defs>
+  <filter id="sG"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <radialGradient id="smileAura" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="rgba(255,230,120,.2)"/><stop offset="100%" stop-color="rgba(255,180,50,0)"/>
+  </radialGradient>
+</defs>
+<ellipse cx="320" cy="110" rx="315" ry="108" fill="url(#smileAura)"/>
+<!-- Gum arc -->
+<path d="M60 110 Q320 215 580 110" fill="rgba(240,130,120,0.22)"/>
+<!-- Teeth -->
+<g filter="url(#sG)">
+<rect x="88" y="72" width="50" height="68" rx="11" fill="white"/>
+<rect x="92" y="74" width="20" height="44" rx="6" fill="rgba(240,248,255,.8)"/>
+<rect x="142" y="62" width="58" height="78" rx="13" fill="white"/>
+<rect x="147" y="64" width="22" height="50" rx="6" fill="rgba(240,248,255,.8)"/>
+<rect x="204" y="55" width="62" height="86" rx="14" fill="white"/>
+<rect x="210" y="57" width="24" height="56" rx="7" fill="rgba(248,252,255,.92)"/>
+<!-- ★ implant tooth — subtle gold sparkle -->
+<circle cx="246" cy="75" r="4" fill="#FFD700" opacity=".65"><animate attributeName="opacity" values=".65;0;.65" dur="2.4s" repeatCount="indefinite"/></circle>
+<rect x="270" y="55" width="62" height="86" rx="14" fill="white"/>
+<rect x="276" y="57" width="24" height="56" rx="7" fill="rgba(248,252,255,.9)"/>
+<rect x="336" y="62" width="58" height="78" rx="13" fill="white"/>
+<rect x="341" y="64" width="22" height="50" rx="6" fill="rgba(240,248,255,.8)"/>
+<rect x="398" y="72" width="50" height="68" rx="11" fill="white"/>
+<rect x="403" y="74" width="20" height="44" rx="6" fill="rgba(240,248,255,.8)"/>
+<!-- Dividers -->
+<g stroke="rgba(220,235,255,.45)" stroke-width="1">
+  <line x1="142" y1="64" x2="138" y2="140"/><line x1="204" y1="57" x2="200" y2="140"/>
+  <line x1="270" y1="57" x2="266" y2="140"/><line x1="336" y1="64" x2="332" y2="140"/>
+  <line x1="398" y1="72" x2="394" y2="140"/>
+</g>
+</g>
+<!-- Sparkles -->
+<text x="52" y="82" font-size="22" fill="#FFD700" opacity=".8" style="animation:spkl 2s .1s ease-in-out infinite">✦</text>
+<text x="560" y="78" font-size="18" fill="#FFD700" opacity=".75" style="animation:spkl 2s .6s ease-in-out infinite">✦</text>
+<text x="65" y="148" font-size="14" fill="#FFD700" opacity=".6" style="animation:spkl 2s 1.1s ease-in-out infinite">✦</text>
+<text x="545" y="152" font-size="16" fill="#FFD700" opacity=".65" style="animation:spkl 2s 1.6s ease-in-out infinite">✦</text>
+<style>@keyframes spkl{0%,100%{opacity:0;transform:scale(0)rotate(0)}50%{opacity:.9;transform:scale(1.2)rotate(180deg)}}</style>
+</svg>
+
+<!-- ══ RATITO ══ -->
+
+<div id="ratito"><svg id="ratito-svg" viewBox="0 0 280 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;overflow:visible">
+<defs>
+  <radialGradient id="furG" cx="45%" cy="35%" r="60%"><stop offset="0%" stop-color="#E0A060"/><stop offset="55%" stop-color="#C07838"/><stop offset="100%" stop-color="#8A5018"/></radialGradient>
+  <radialGradient id="bellyG" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#F0D8A0"/><stop offset="100%" stop-color="#D8B870"/></radialGradient>
+  <radialGradient id="earInG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFB8C8"/><stop offset="100%" stop-color="#E88898"/></radialGradient>
+  <radialGradient id="eyeG" cx="35%" cy="30%" r="65%"><stop offset="0%" stop-color="#8B5020"/><stop offset="60%" stop-color="#4A2008"/><stop offset="100%" stop-color="#1A0800"/></radialGradient>
+  <radialGradient id="bagG" cx="30%" cy="25%" r="70%"><stop offset="0%" stop-color="#6A3818"/><stop offset="100%" stop-color="#2A1008"/></radialGradient>
+  <linearGradient id="toothHeldG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#D8E8F8"/></linearGradient>
+  <filter id="softSh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="2" dy="4" stdDeviation="6" flood-color="#00000038"/></filter>
+  <filter id="goldGlow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<ellipse cx="140" cy="390" rx="65" ry="9" fill="rgba(0,0,0,0.22)"/>
+<!-- TAIL -->
+<path d="M185 288 Q235 268 248 232 Q260 200 238 188 Q220 178 208 190" stroke="#B06828" stroke-width="10" fill="none" stroke-linecap="round"/>
+<path d="M185 288 Q235 268 248 232 Q260 200 238 188 Q220 178 208 190" stroke="#D08848" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.5"/>
+<!-- BODY -->
+<ellipse cx="138" cy="292" rx="72" ry="80" fill="url(#furG)" filter="url(#softSh)"/>
+<ellipse cx="118" cy="268" rx="35" ry="45" fill="rgba(80,30,0,0.10)"/>
+<ellipse cx="138" cy="300" rx="44" ry="55" fill="url(#bellyG)"/>
+<!-- BAG -->
+<path d="M110 245 C100 260 98 278 105 293 C110 303 120 308 130 313" stroke="#3A1808" stroke-width="9" fill="none" stroke-linecap="round"/>
+<path d="M110 245 C100 260 98 278 105 293 C110 303 120 308 130 313" stroke="#6A3018" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.55"/>
+<rect x="108" y="302" width="56" height="46" rx="6" fill="url(#bagG)" filter="url(#softSh)"/>
+<rect x="112" y="306" width="48" height="38" rx="4" fill="#3A1808"/>
+<path d="M108 302 L164 302 L164 322 Q164 328 158 328 L114 328 Q108 328 108 322 Z" fill="#5A2810"/>
+<path d="M112 324 L160 324" stroke="#8A5828" stroke-width="1" stroke-dasharray="4 3" opacity="0.55"/>
+<ellipse cx="136" cy="327" rx="8" ry="5" fill="#D4A020" filter="url(#goldGlow)"/>
+<ellipse cx="136" cy="327" rx="5" ry="3" fill="#F0C840"/>
+<circle cx="116" cy="310" r="2.5" fill="#C08820"/><circle cx="156" cy="310" r="2.5" fill="#C08820"/>
+<circle cx="120" cy="350" r="5" fill="none" stroke="#D4A020" stroke-width="2.5" filter="url(#goldGlow)"/>
+<line x1="120" y1="348" x2="120" y2="340" stroke="#C09010" stroke-width="2"/>
+<line x1="120" y1="348" x2="120" y2="372" stroke="#B08010" stroke-width="2"/>
+<path d="M116 362 L120 372 L124 362" fill="#C09010"/>
+<!-- LEFT ARM + TOOTH -->
+<path d="M80 255 C62 242 48 232 36 220" stroke="#C07838" stroke-width="22" fill="none" stroke-linecap="round"/>
+<path d="M36 220 C28 210 24 198 30 187" stroke="#C07838" stroke-width="18" fill="none" stroke-linecap="round"/>
+<ellipse cx="34" cy="180" rx="16" ry="14" fill="#C87838" transform="rotate(-15 34 180)"/>
+<circle cx="24" cy="170" r="7" fill="#C07030"/><circle cx="33" cy="165" r="7.5" fill="#C87838"/><circle cx="43" cy="166" r="7" fill="#C07030"/>
+<!-- Held tooth -->
+<g id="tooth-held">
+  <ellipse cx="22" cy="140" rx="18" ry="18" fill="rgba(255,240,180,0.38)">
+    <animate attributeName="rx" values="18;26;18" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="18;26;18" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  <g fill="#FFD700" opacity="0.85">
+    <polygon points="5,130 8,140 2,140" style="animation:tSp 1.8s 0s ease-in-out infinite"/>
+    <polygon points="10,122 14,132 6,132" style="animation:tSp 1.8s 0.4s ease-in-out infinite"/>
+  </g>
+  <path d="M14 162 C10 150 8 138 9 128 C10 118 15 110 20 108 C22 107 24 107 25 107 C26 107 28 107 30 108 C35 110 40 118 41 128 C42 138 40 150 36 162 C33 170 30 174 25 175 C20 175 17 170 14 162Z" fill="url(#toothHeldG)" filter="url(#softSh)"/>
+  <path d="M16 162 C14 170 13 176 12 182" stroke="#E0D8C8" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M34 162 C36 170 37 176 38 182" stroke="#E0D8C8" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M16 114 C17 110 20 108 22 109" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.88"/>
+  <text x="2" y="106" font-size="12" fill="#FFE060" style="animation:tSp 2.2s 0.2s ease-in-out infinite">✦</text>
+  <style>@keyframes tSp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.12;transform:scale(.4)}}</style>
+</g>
+<!-- RIGHT ARM -->
+<path d="M196 255 C215 248 228 238 235 224" stroke="#C07838" stroke-width="22" fill="none" stroke-linecap="round"/>
+<path d="M235 224 C240 216 240 206 236 198" stroke="#C07838" stroke-width="18" fill="none" stroke-linecap="round"/>
+<ellipse cx="233" cy="192" rx="15" ry="13" fill="#C07030"/>
+<!-- HEAD -->
+<circle cx="138" cy="150" r="75" fill="url(#furG)" filter="url(#softSh)"/>
+<ellipse cx="138" cy="154" rx="50" ry="55" fill="#D89050" opacity="0.32"/>
+<!-- EARS -->
+<circle cx="82" cy="94" r="38" fill="#C07838"/><circle cx="82" cy="94" r="28" fill="url(#furG)"/><circle cx="82" cy="94" r="20" fill="url(#earInG)"/>
+<ellipse cx="78" cy="98" rx="12" ry="10" fill="#F0B0C0" opacity="0.48"/>
+<circle cx="194" cy="94" r="38" fill="#C07838"/><circle cx="194" cy="94" r="28" fill="url(#furG)"/><circle cx="194" cy="94" r="20" fill="url(#earInG)"/>
+<ellipse cx="190" cy="98" rx="12" ry="10" fill="#F0B0C0" opacity="0.48"/>
+<!-- HEAD FUR TUFTS -->
+<path d="M118 77 Q128 62 138 67" stroke="#D08848" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.42"/>
+<path d="M138 67 Q148 54 158 62" stroke="#D08848" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.42"/>
+<!-- EYEBROWS -->
+<path id="brow-l" d="M102 120 Q114 114 126 118" stroke="#7A4018" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<path id="brow-r" d="M150 118 Q162 114 174 120" stroke="#7A4018" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<!-- EYES -->
+<circle cx="114" cy="140" r="17" fill="white" filter="url(#softSh)"/>
+<circle cx="114" cy="140" r="13" fill="url(#eyeG)"/>
+<circle cx="115" cy="142" r="8" fill="#0D0400"/>
+<circle cx="108" cy="134" r="5" fill="white" opacity="0.92"/>
+<circle cx="116" cy="132" r="2.5" fill="white" opacity="0.55"/>
+<path d="M100 128 L106 132 M107 124 L111 129 M116 122 L117 128 M122 125 L121 130" stroke="#4A2008" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="162" cy="140" r="17" fill="white" filter="url(#softSh)"/>
+<circle cx="162" cy="140" r="13" fill="url(#eyeG)"/>
+<circle cx="163" cy="142" r="8" fill="#0D0400"/>
+<circle cx="156" cy="134" r="5" fill="white" opacity="0.92"/>
+<circle cx="164" cy="132" r="2.5" fill="white" opacity="0.55"/>
+<path d="M148 128 L154 132 M155 124 L159 129 M164 122 L165 128 M170 125 L169 130" stroke="#4A2008" stroke-width="1.8" stroke-linecap="round"/>
+<!-- CHEEKS -->
+<ellipse id="cheek-l" cx="94" cy="160" rx="18" ry="13" fill="#E87888" opacity="0.28"/>
+<ellipse id="cheek-r" cx="182" cy="160" rx="18" ry="13" fill="#E87888" opacity="0.28"/>
+<!-- NOSE -->
+<ellipse cx="138" cy="170" rx="10" ry="8" fill="#E87080"/>
+<ellipse cx="135" cy="167" rx="4" ry="3" fill="#F090A0" opacity="0.55"/>
+<!-- MOUTH (happy default) -->
+<path id="mouth-path" d="M120 184 Q138 200 156 184" stroke="#7A3010" stroke-width="4" fill="none" stroke-linecap="round"/>
+<!-- WHISKERS -->
+<g stroke="#D0A050" stroke-width="1.8" stroke-linecap="round" opacity="0.65">
+  <line x1="28" y1="162" x2="104" y2="170"/><line x1="26" y1="174" x2="104" y2="175"/><line x1="30" y1="186" x2="104" y2="180"/>
+  <line x1="172" y1="170" x2="248" y2="162"/><line x1="172" y1="175" x2="250" y2="174"/><line x1="172" y1="180" x2="246" y2="186"/>
+</g>
+<!-- FEET -->
+<ellipse cx="106" cy="374" rx="28" ry="14" fill="#B06828" filter="url(#softSh)"/>
+<ellipse cx="170" cy="374" rx="28" ry="14" fill="#B06828" filter="url(#softSh)"/>
+<!-- FLOAT ANIMATION -->
+<animateTransform attributeName="transform" type="translate" values="0,0; 0,-12; 0,0" dur="3.2s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+</svg></div>
+
+<!-- ══════════════════ TEXTS ══════════════════ -->
+
+<!-- S0: OPENING -->
 
 <div id="txt0" class="txt" style="text-align:center;opacity:0">
-  <span class="sc-label" id="t0a" style="color:rgba(255,215,0,.52);opacity:0;transform:translateY(10px);transition:opacity 1.2s .3s,transform 1.4s .3s">Una historia de màgia · Dentista Hospital · Vilanova</span>
-  <h1 id="t0b" style="font-family:'Playfair Display',serif;font-weight:900;line-height:1.0;color:white;text-shadow:0 0 70px rgba(255,215,0,.22);opacity:0;transform:translateY(16px);transition:opacity 1.3s .75s,transform 1.5s .75s;letter-spacing:-.02em;font-size:clamp(2.6rem,7vw,5.8rem)">El Ratito<br><em style="color:#FFD700;font-style:italic">Pérez</em></h1>
-  <p id="t0c" style="font-family:'Playfair Display',serif;font-size:clamp(.85rem,2vw,1.35rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.45);margin-top:.9rem;opacity:0;transform:translateY(10px);transition:opacity 1.1s 1.3s,transform 1.3s 1.3s">i la màgia dels implants dentals</p>
-  <div id="t0d" style="width:45px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.5),transparent);margin:1.2rem auto;opacity:0;transition:opacity 1s 1.8s"></div>
-  <p id="t0e" style="font-family:Inter,sans-serif;font-size:clamp(.62rem,1.4vw,.8rem);font-weight:300;color:rgba(255,255,255,.3);letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity .9s 2.2s">Fes scroll · Entra a la història</p>
+  <span id="t0a" style="display:block;font-family:Inter,sans-serif;font-size:clamp(.6rem,1.2vw,.78rem);font-weight:600;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,215,0,.52);margin-bottom:1.2rem;opacity:0;transform:translateY(10px);transition:opacity 1.2s .3s,transform 1.4s .3s">Una historia de màgia · Dentista Hospital · Vilanova i la Geltrú</span>
+  <h1 id="t0b" style="font-family:'Playfair Display',serif;font-weight:900;line-height:1.0;color:white;text-shadow:0 0 80px rgba(255,215,0,.2);opacity:0;transform:translateY(16px);transition:opacity 1.3s .75s,transform 1.5s .75s;letter-spacing:-.02em;font-size:clamp(2.8rem,7.5vw,6.5rem)">El Ratito<br><em style="color:#FFD700;font-style:italic">Pérez</em></h1>
+  <p id="t0c" style="font-family:'Playfair Display',serif;font-size:clamp(.88rem,2vw,1.4rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.44);margin-top:1rem;opacity:0;transform:translateY(10px);transition:opacity 1.1s 1.3s,transform 1.3s 1.3s">t'explica la història dels implants dentals</p>
+  <div id="t0d" style="width:45px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.5),transparent);margin:1.3rem auto;opacity:0;transition:opacity 1s 1.8s"></div>
+  <p id="t0e" style="font-family:Inter,sans-serif;font-size:clamp(.62rem,1.4vw,.8rem);font-weight:300;color:rgba(255,255,255,.28);letter-spacing:.22em;text-transform:uppercase;opacity:0;transition:opacity .9s 2.2s">Fes scroll · Entra a la història</p>
 </div>
+
+<!-- S1: THE GAP — relatable, no fear -->
 
 <div id="txt1" class="txt" style="opacity:0">
-  <span class="sc-label" style="color:rgba(255,80,80,.62)">Capítol I · El Problema</span>
-  <h2 class="sc-h2" style="font-size:clamp(1.6rem,3.8vw,2.8rem)">Hi havia una<br>vegada una<br><em style="color:#FF6060">dent trista</em></h2>
-  <p class="sc-p" style="font-size:clamp(.8rem,1.5vw,.96rem)">Feia mal. Estava espatllada.<br>Cada somriure era una amenaça.<br><em style="color:rgba(255,255,255,.25)">Potser la reconeixeràs.</em></p>
+  <span class="sc-label" style="color:rgba(200,160,80,.65)">Capítol I · El Problema</span>
+  <h2 class="sc-h2" style="font-size:clamp(1.7rem,3.8vw,2.8rem)">Una dent que falta.<br>Una vida que<br><em style="color:#F0B840">canvia</em>.</h2>
+  <p class="sc-p" style="font-size:clamp(.82rem,1.5vw,.96rem)">
+    Menjar els teus plats preferits.<br>
+    Somriure sense pensar-hi.<br>
+    Parlar sense preocupar-te.<br>
+    <em style="color:rgba(255,215,80,.45)">Existeix una solució definitiva.</em>
+  </p>
 </div>
+
+<!-- S2: DIAGNOSIS — discovery, hope -->
 
 <div id="txt2" class="txt" style="opacity:0">
-  <span class="sc-label" style="color:rgba(0,200,255,.62)">Capítol II · El Diagnòstic</span>
-  <h2 class="sc-h2" style="font-size:clamp(1.6rem,3.8vw,2.8rem)">La <em style="color:#00C8FF">llum</em><br>de la<br>tecnologia</h2>
-  <p class="sc-p" style="font-size:clamp(.8rem,1.5vw,.96rem)">Un escàner TAC en 3D veu<br>absolutament tot.<br><em style="color:rgba(255,255,255,.26)">Res s'escapa. Ni un detall.</em></p>
-  <div style="margin-top:1.4rem;padding:.8rem 1rem;border-left:1.5px solid rgba(0,200,255,.32);background:rgba(0,200,255,.04)">
-    <p style="font-family:Inter,sans-serif;font-size:clamp(.72rem,1.3vw,.82rem);color:rgba(0,200,255,.72);line-height:1.85">📡 TAC 3D · Resolució 0.1mm<br>🦴 Anàlisi densitat òssia<br>📐 Planificació digital</p>
+  <span class="sc-label" style="color:rgba(0,200,255,.65)">Capítol II · El Diagnòstic</span>
+  <h2 class="sc-h2" style="font-size:clamp(1.7rem,3.8vw,2.8rem)">Veiem exactament<br>el que el teu<br><em style="color:#00C8FF">os necessita</em></h2>
+  <p class="sc-p" style="font-size:clamp(.82rem,1.5vw,.96rem)">
+    Un escàner TAC 3D en minuts.<br>
+    Planificació digital completa.<br>
+    <em style="color:rgba(0,200,255,.48)">Sabem el resultat final<br>abans de començar.</em>
+  </p>
+  <div style="margin-top:1.5rem;padding:.85rem 1.1rem;border-left:1.5px solid rgba(0,200,255,.32);background:rgba(0,200,255,.04)">
+    <p style="font-family:Inter,sans-serif;font-size:clamp(.72rem,1.3vw,.82rem);color:rgba(0,200,255,.72);line-height:1.85">
+      📡 TAC 3D · resolució 0.1mm<br>
+      🦴 Análisi densitat òssia completa<br>
+      📐 Implant virtual previ
+    </p>
   </div>
 </div>
+
+<!-- S3: THE IMPLANT — educational, awe-inspiring -->
 
 <div id="txt3" class="txt" style="opacity:0">
-  <span class="sc-label" style="color:rgba(255,215,0,.62)">Capítol III · La Solució</span>
-  <h2 class="sc-h2" style="font-size:clamp(1.6rem,3.8vw,2.8rem)">El <em style="color:#FFD700">titani</em><br>com<br>la natura</h2>
-  <p class="sc-p" style="font-size:clamp(.8rem,1.5vw,.96rem)">El material més fort i biocompatible.<br><em style="color:rgba(255,215,0,.52)">El teu cos l'accepta com si fos seu.</em></p>
-  <div style="margin-top:1.4rem;display:flex;gap:1.5rem;flex-wrap:wrap">
-    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:#FFD700">98%</p><p style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.32)">Èxit clínic</p></div>
-    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:#FFD700">30+</p><p style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.32)">Anys de vida</p></div>
-    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:#FFD700">2K+</p><p style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.32)">Implants</p></div>
+  <span class="sc-label" style="color:rgba(255,215,0,.65)">Capítol III · La Peça Mestre</span>
+  <h2 class="sc-h2" style="font-size:clamp(1.7rem,3.8vw,2.8rem)">L'implant de<br><em style="color:#FFD700">titani pur</em>.<br>La natura made in lab.</h2>
+  <p class="sc-p" style="font-size:clamp(.82rem,1.5vw,.96rem)">
+    El mateix material que els<br>avions i les naus espacials.<br>
+    <em style="color:rgba(255,215,0,.52)">Zero reaccions. Zero rebuigs.<br>El teu cos el reconeix com a propi.</em>
+  </p>
+  <div style="margin-top:1.5rem;display:flex;gap:1.8rem;flex-wrap:wrap">
+    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3.2vw,2.2rem);font-weight:900;color:#FFD700;line-height:1">98%</p><p style="font-family:Inter,sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:.2rem">Èxit clínic</p></div>
+    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3.2vw,2.2rem);font-weight:900;color:#FFD700;line-height:1">30+</p><p style="font-family:Inter,sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:.2rem">Anys durada</p></div>
+    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3.2vw,2.2rem);font-weight:900;color:#FFD700;line-height:1">1 dia</p><p style="font-family:Inter,sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.32);margin-top:.2rem">Intervenció</p></div>
   </div>
 </div>
 
+<!-- S4: OSSEOINTEGRATION — the miracle -->
+
 <div id="txt4" class="txt" style="opacity:0">
-  <span class="sc-label" style="color:rgba(100,200,100,.62)">Capítol IV · La Integració</span>
-  <h2 class="sc-h2" style="font-size:clamp(1.6rem,3.8vw,2.8rem)">El teu os<br><em style="color:#66BB6A">l'abraça</em></h2>
-  <p class="sc-p" style="font-size:clamp(.8rem,1.5vw,.96rem)">Setmana a setmana, el teu<br>propi cos creix al voltant del titani.<br><em style="color:rgba(100,200,100,.48)">La natura fa la seva màgia.</em></p>
+  <span class="sc-label" style="color:rgba(100,200,100,.65)">Capítol IV · El Miracle Natural</span>
+  <h2 class="sc-h2" style="font-size:clamp(1.7rem,3.8vw,2.8rem)">El teu os creix<br>al voltant<br><em style="color:#66BB6A">del titani</em></h2>
+  <p class="sc-p" style="font-size:clamp(.82rem,1.5vw,.96rem)">
+    En 6–8 setmanes, les cèl·lules<br>
+    del teu os s'integren amb l'implant.<br>
+    No hi ha ciment. No hi ha cola.<br>
+    <em style="color:rgba(100,200,100,.5)">Biologia pura. Màgia real.</em>
+  </p>
+  <div style="margin-top:1.5rem;padding:.85rem 1.1rem;border-left:1.5px solid rgba(100,200,100,.3);background:rgba(100,200,100,.04)">
+    <p style="font-family:Inter,sans-serif;font-size:clamp(.72rem,1.3vw,.82rem);color:rgba(100,200,100,.72);line-height:1.85">
+      🌱 6-8 setmanes d'osseointegració<br>
+      💪 Força equivalent a la dent natural<br>
+      🔒 Fixació permanent, per sempre
+    </p>
+  </div>
 </div>
+
+<!-- S5: THE SMILE — pure joy -->
 
 <div id="txt5" class="txt" style="text-align:center;opacity:0">
-  <span class="sc-label" style="color:rgba(255,220,100,.62)">Capítol V · La Transformació</span>
-  <h2 class="sc-h2" style="font-size:clamp(2rem,5.5vw,4.2rem);font-weight:900;line-height:1.05">El teu somriure<br><em style="color:#FFD700">perfecte</em></h2>
-  <p style="font-family:'Playfair Display',serif;font-size:clamp(.82rem,1.9vw,1.25rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.38)">Ningú sabrà que no és la teva dent original.</p>
+  <span class="sc-label" style="color:rgba(255,225,100,.65)">Capítol V · La Transformació</span>
+  <h2 class="sc-h2" style="font-size:clamp(2rem,5.5vw,4.2rem);font-weight:900;line-height:1.05">
+    El teu somriure<br><em style="color:#FFD700">tornat a néixer</em>
+  </h2>
+  <p style="font-family:'Playfair Display',serif;font-size:clamp(.85rem,2vw,1.3rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.4);margin-top:.8rem">
+    La corona de ceràmica es fusiona<br>amb el teu somriure existent.<br>
+    <em style="color:rgba(255,215,80,.55)">Ningú sabrà que no és la teva dent original.</em>
+  </p>
 </div>
 
-<div id="txt6" class="txt" style="text-align:center;opacity:0">
-  <span class="sc-label" style="color:rgba(255,215,0,.52)">El teu capítol comença ara</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:900;line-height:.98;color:white;margin-bottom:.5rem;font-size:clamp(2.2rem,6vw,5rem)">La teva<br><em style="color:#FFD700">història</em><br>t'espera</h2>
-  <p style="font-family:'Playfair Display',serif;font-size:clamp(.8rem,1.7vw,1.1rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.35);margin-bottom:2rem">Primera visita gratuïta · Sense compromís</p>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:.85rem">
-    <a href="tel:935664366" class="btn-cta">✦ &nbsp;Reserva la teva cita&nbsp; ✦</a>
+<!-- S6: LIFE AFTER — emotional payoff -->
+
+<div id="txt6" class="txt" style="opacity:0">
+  <span class="sc-label" style="color:rgba(255,180,80,.65)">Capítol VI · La Nova Vida</span>
+  <h2 class="sc-h2" style="font-size:clamp(1.7rem,3.8vw,2.8rem)">Menja el que vols.<br>Riu sense por.<br><em style="color:#FFA040">Torna a ser tu.</em></h2>
+  <p class="sc-p" style="font-size:clamp(.82rem,1.5vw,.96rem)">
+    Sense dietes. Sense preocupacions.<br>
+    Sense pensar en les dents.<br>
+    <em style="color:rgba(255,160,60,.5)">Simplemente, viure.</em>
+  </p>
+  <div style="margin-top:1.5rem;display:flex;flex-direction:column;gap:.6rem">
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <span style="font-size:1.1rem">✓</span>
+      <p style="font-family:Inter,sans-serif;font-size:clamp(.78rem,1.4vw,.9rem);color:rgba(255,255,255,.55)">Força i comoditat com una dent natural</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <span style="font-size:1.1rem">✓</span>
+      <p style="font-family:Inter,sans-serif;font-size:clamp(.78rem,1.4vw,.9rem);color:rgba(255,255,255,.55)">Sense manteniment especial</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:.6rem">
+      <span style="font-size:1.1rem">✓</span>
+      <p style="font-family:Inter,sans-serif;font-size:clamp(.78rem,1.4vw,.9rem);color:rgba(255,255,255,.55)">Resultats que duren tota la vida</p>
+    </div>
+  </div>
+</div>
+
+<!-- S7: CTA with OFFER -->
+
+<div id="txt7" class="txt" style="text-align:center;opacity:0">
+  <span class="sc-label" style="color:rgba(255,215,0,.52)">La teva nova vida comença avui</span>
+  <h2 style="font-family:'Playfair Display',serif;font-weight:900;line-height:.98;color:white;font-size:clamp(2rem,5.5vw,4.2rem);margin-bottom:.4rem">
+    El primer pas<br>és <em style="color:#FFD700">gratuït</em>
+  </h2>
+  <p style="font-family:'Playfair Display',serif;font-size:clamp(.82rem,1.6vw,1.08rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.38);margin-bottom:1.5rem">
+    Demana la teva cita avui i descobreix<br>si ets candidat ideal per a implants
+  </p>
+
+  <!-- OFFER CARD -->
+
+  <div class="offer-card">
+    <span class="offer-tag">✦ Oferta especial</span>
+    <div style="display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap;justify-content:center">
+      <span class="offer-price">Visita gratuïta</span>
+    </div>
+    <p class="offer-detail">
+      📋 Diagnòstic visual complet gratuït<br>
+      📡 TAC 3D inclòs en el pressupost<br>
+      💬 Pressupost detallat sense compromís<br>
+      💳 Finançament fins 36 mesos sense interessos
+    </p>
+  </div>
+
+  <div style="margin-top:1.5rem;display:flex;flex-direction:column;align-items:center;gap:.85rem">
+    <a href="tel:935664366" class="btn-cta">📞 &nbsp;Reserva ara · és gratuït</a>
     <p class="btn-phone"><a href="tel:935664366">93 566 43 66</a></p>
-    <p style="font-family:Inter,sans-serif;font-size:clamp(.6rem,.9vw,.72rem);color:rgba(255,255,255,.26);letter-spacing:.12em;margin-top:.3rem">Plaça de la Moixiganga 6 · Vilanova i la Geltrú<br>Dilluns–Divendres · 8:00–20:30</p>
+    <p style="font-family:Inter,sans-serif;font-size:clamp(.58rem,.85vw,.7rem);color:rgba(255,255,255,.24);letter-spacing:.12em;margin-top:.2rem">
+      Plaça de la Moixiganga 6 · Vilanova i la Geltrú · L-V 8:00–20:30
+    </p>
+    <!-- Trust badges -->
+    <div class="badges" style="justify-content:center">
+      <span class="badge"><span class="badge-icon">🛡️</span>+15 anys d'experiència</span>
+      <span class="badge"><span class="badge-icon">⭐</span>+2.000 implants</span>
+      <span class="badge"><span class="badge-icon">✓</span>Sense llistes d'espera</span>
+    </div>
     <div style="margin-top:.6rem;display:flex;align-items:center;gap:.7rem">
-      <div style="height:1px;width:30px;background:rgba(255,215,0,.22)"></div>
-      <span style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,215,0,.32)">dentistahospital.com</span>
-      <div style="height:1px;width:30px;background:rgba(255,215,0,.22)"></div>
+      <div style="height:1px;width:28px;background:rgba(255,215,0,.2)"></div>
+      <span style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,215,0,.3)">dentistahospital.com</span>
+      <div style="height:1px;width:28px;background:rgba(255,215,0,.2)"></div>
     </div>
   </div>
 </div>
@@ -647,358 +723,319 @@ calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
 </div><!-- /canvas -->
 
 <script>
-/* ═══════════════════════════════════════
-   EL RATITO PÉREZ · v3 · SVG Character
-   ═══════════════════════════════════════ */
-
-const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-const isMob = () => window.innerWidth < 768;
+/* ═══════════════════════════════════════════
+   EL RATITO PÉREZ v4 · 8 SCENES
+   ═══════════════════════════════════════════ */
+const IS_TOUCH = ('ontouchstart' in window)||navigator.maxTouchPoints>0;
+const isMob = ()=>window.innerWidth<768;
 
 // ── Stars ──
-(function() {
-  const svg = document.getElementById('stars');
-  const ns = 'http://www.w3.org/2000/svg';
-  const n = IS_TOUCH ? 70 : 180;
-  for (let i = 0; i < n; i++) {
-    const c = document.createElementNS(ns, 'circle');
-    c.setAttribute('cx', (Math.random()*1920).toFixed(0));
-    c.setAttribute('cy', (Math.random()*1080).toFixed(0));
-    c.setAttribute('r',  (Math.random()*1.5+0.3).toFixed(2));
+(function(){
+  const svg=document.getElementById('stars'),ns='http://www.w3.org/2000/svg';
+  const n=IS_TOUCH?70:180;
+  for(let i=0;i<n;i++){
+    const c=document.createElementNS(ns,'circle');
+    c.setAttribute('cx',(Math.random()*1920).toFixed(0));
+    c.setAttribute('cy',(Math.random()*1080).toFixed(0));
+    c.setAttribute('r',(Math.random()*1.5+0.3).toFixed(2));
     c.setAttribute('fill','white');
     c.setAttribute('opacity',(Math.random()*0.4+0.1).toFixed(2));
-    const dur = (2.5+Math.random()*5).toFixed(1);
-    const del = (Math.random()*5).toFixed(1);
-    const lo  = (Math.random()*0.1+0.04).toFixed(2);
-    const hi  = (Math.random()*0.45+0.2).toFixed(2);
-    const an = document.createElementNS(ns,'animate');
-    an.setAttribute('attributeName','opacity');
-    an.setAttribute('values',lo+';'+hi+';'+lo);
-    an.setAttribute('dur',dur+'s');
-    an.setAttribute('begin',del+'s');
-    an.setAttribute('repeatCount','indefinite');
-    c.appendChild(an);
-    svg.appendChild(c);
+    const dur=(2.5+Math.random()*5).toFixed(1),del=(Math.random()*5).toFixed(1);
+    const lo=(Math.random()*0.1+0.04).toFixed(2),hi=(Math.random()*0.45+0.2).toFixed(2);
+    const an=document.createElementNS(ns,'animate');
+    an.setAttribute('attributeName','opacity');an.setAttribute('values',lo+';'+hi+';'+lo);
+    an.setAttribute('dur',dur+'s');an.setAttribute('begin',del+'s');an.setAttribute('repeatCount','indefinite');
+    c.appendChild(an);svg.appendChild(c);
   }
 })();
 
 // ── Cursor ──
-if (!IS_TOUCH) {
-  const cEl = document.getElementById('cursor');
-  const cRing = document.getElementById('cursor-ring');
+if(!IS_TOUCH){
+  const cEl=document.getElementById('cursor'),cR=document.getElementById('cursor-ring');
   let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cEl.style.left=mx+'px'; cEl.style.top=my+'px'; });
-  document.addEventListener('mousedown', () => { cRing.style.transform='translate(-50%,-50%) scale(.62)'; cRing.style.borderColor='rgba(255,215,0,.85)'; });
-  document.addEventListener('mouseup', () => { cRing.style.transform='translate(-50%,-50%) scale(1)'; cRing.style.borderColor='rgba(255,255,255,.45)'; });
-  (function lag(){ rx+=(mx-rx)*0.1; ry+=(my-ry)*0.1; cRing.style.left=rx+'px'; cRing.style.top=ry+'px'; requestAnimationFrame(lag); })();
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cEl.style.left=mx+'px';cEl.style.top=my+'px'});
+  document.addEventListener('mousedown',()=>{cR.style.transform='translate(-50%,-50%) scale(.62)';cR.style.borderColor='rgba(255,215,0,.85)'});
+  document.addEventListener('mouseup',()=>{cR.style.transform='translate(-50%,-50%) scale(1)';cR.style.borderColor='rgba(255,255,255,.45)'});
+  (function lag(){rx+=(mx-rx)*0.1;ry+=(my-ry)*0.1;cR.style.left=rx+'px';cR.style.top=ry+'px';requestAnimationFrame(lag)})();
 }
 
 // ── Utils ──
-const lerp  = (a,b,t) => a+(b-a)*t;
-const clamp = (v,lo,hi) => Math.min(hi,Math.max(lo,v));
-const eio   = t => t<.5 ? 2*t*t : -1+(4-2*t)*t;
-const eout  = t => 1-Math.pow(1-t,3);
-const eout4 = t => 1-Math.pow(1-t,4);
-
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+const eio=t=>t<.5?2*t*t:-1+(4-2*t)*t;
+const eout=t=>1-Math.pow(1-t,3);
+const eout4=t=>1-Math.pow(1-t,4);
 function sOp(p,s,fi,fo,e){
-  if(p<=s||p>=e) return 0;
-  if(p<fi) return eout((p-s)/Math.max(fi-s,1e-6));
-  if(p>fo) return eout(1-(p-fo)/Math.max(e-fo,1e-6));
+  if(p<=s||p>=e)return 0;
+  if(p<fi)return eout((p-s)/Math.max(fi-s,1e-6));
+  if(p>fo)return eout(1-(p-fo)/Math.max(e-fo,1e-6));
   return 1;
 }
 
-// ── Config ──
-const SCENES = [
-  {s:.00,pk:.06,e:.17},
-  {s:.13,pk:.20,e:.30},
-  {s:.27,pk:.35,e:.46},
-  {s:.43,pk:.50,e:.61},
-  {s:.58,pk:.65,e:.75},
-  {s:.71,pk:.78,e:.88},
-  {s:.84,pk:.91,e:1.0},
+// ── 8 Scenes ──
+const SC=[
+  {s:.00,pk:.055,e:.15},
+  {s:.12,pk:.18, e:.28},
+  {s:.25,pk:.32, e:.42},
+  {s:.39,pk:.46, e:.56},
+  {s:.53,pk:.60, e:.70},
+  {s:.67,pk:.74, e:.82},
+  {s:.79,pk:.85, e:.93},
+  {s:.90,pk:.95, e:1.0},
 ];
 
-const BG = [
-  [[5,2,15],  [9,4,22]],
-  [[27,5,5],  [38,9,9]],
-  [[3,13,36], [5,18,48]],
-  [[6,4,18],  [10,6,26]],
-  [[3,15,5],  [5,22,8]],
-  [[19,11,3], [27,15,4]],
-  [[10,4,2],  [16,7,3]],
+const BG=[
+  [[5,2,14],  [9,4,22]],
+  [[22,14,4], [34,20,6]],
+  [[3,12,36], [5,17,48]],
+  [[10,7,2],  [18,12,3]],
+  [[3,14,5],  [5,20,8]],
+  [[18,10,2], [28,14,3]],
+  [[20,8,3],  [30,12,5]],
+  [[8,4,2],   [14,7,3]],
 ];
 
-// Ratito emotional states per scene
-const RATITO_EMOTIONS = ['happy','worried','curious','amazed','joyful','joyful','happy'];
+const EMOTIONS=['happy','curious','curious','amazed','joyful','joyful','joyful','happy'];
 
-// Ratito position per scene: {xFrac, scale, rot, brightness}
-const RATITO_D = [
-  {x:.63,sc:.72,rot:0, br:1.00},
-  {x:.12,sc:.60,rot:-4,br:0.72},
-  {x:.63,sc:.60,rot:2, br:0.86},
-  {x:.63,sc:.67,rot:0, br:1.08},
-  {x:.12,sc:.57,rot:-2,br:0.92},
-  {x:.50,sc:.68,rot:0, br:1.18},
-  {x:.60,sc:.68,rot:4, br:1.02},
+const RD=[
+  {x:.64,sc:.70,rot:0, br:1.0},
+  {x:.14,sc:.60,rot:-3,br:.78},
+  {x:.64,sc:.60,rot:2, br:.88},
+  {x:.64,sc:.67,rot:0, br:1.1},
+  {x:.14,sc:.58,rot:-2,br:.92},
+  {x:.50,sc:.68,rot:0, br:1.2},
+  {x:.16,sc:.62,rot:-1,br:1.0},
+  {x:.62,sc:.68,rot:4, br:1.02},
 ];
-const RATITO_M = [
-  {x:.50,sc:.68,rot:0, br:1.00},
-  {x:.50,sc:.52,rot:-3,br:0.74},
-  {x:.50,sc:.52,rot:2, br:0.88},
+const RM=[
+  {x:.50,sc:.68,rot:0, br:1.0},
+  {x:.50,sc:.52,rot:-2,br:.78},
+  {x:.50,sc:.52,rot:2, br:.88},
   {x:.50,sc:.58,rot:0, br:1.05},
-  {x:.50,sc:.50,rot:-2,br:0.92},
+  {x:.50,sc:.50,rot:-2,br:.92},
   {x:.50,sc:.62,rot:0, br:1.18},
-  {x:.50,sc:.62,rot:4, br:1.02},
+  {x:.50,sc:.55,rot:-1,br:1.0},
+  {x:.50,sc:.62,rot:3, br:1.02},
 ];
 
-const TAGS = [
+const TAGS=[
   'Obertura · El Ratito Pérez',
   'Capítol I · El Problema',
   'Capítol II · El Diagnòstic',
-  'Capítol III · El Titani',
-  "Capítol IV · L'Integració",
+  'Capítol III · La Peça Mestre',
+  "Capítol IV · L'Osseointegració",
   'Capítol V · La Transformació',
-  'Epíleg · La Teva Historia',
+  'Capítol VI · La Nova Vida',
+  'La Teva Historia Comença Ara',
 ];
 
-// ── DOM refs ──
-const $ = id => document.getElementById(id);
-const elBg     = $('bg');
-const elPrg    = $('progress');
-const elRays   = $('light-rays');
-const elStars  = $('stars');
-const elRatito = $('ratito');
-const elRSvg   = $('ratito-svg');
-const elHint   = $('hint');
-const elTag    = $('ch-tag');
-const elTooth  = $('el-tooth');
-const elScan   = $('el-scan');
-const elImpl   = $('el-implant');
-const elRoots  = $('el-roots');
-const elSmile  = $('el-smile');
-const pips     = document.querySelectorAll('.pip');
-const txts     = Array.from({length:7}, (_,i) => $('txt'+i));
+const $=id=>document.getElementById(id);
+const elBg=$('bg'),elPrg=$('progress'),elRays=$('light-rays'),elStars=$('stars');
+const elRatito=$('ratito'),elRSvg=$('ratito-svg');
+const elHint=$('hint'),elTag=$('ch-tag');
+const elTooth=$('el-tooth'),elScan=$('el-scan'),elImpl=$('el-implant');
+const elRoots=$('el-roots'),elSmile=$('el-smile');
+const pips=document.querySelectorAll('.pip');
+const txts=Array.from({length:8},(_,i)=>$('txt'+i));
 
-let W = window.innerWidth, H = window.innerHeight;
-window.addEventListener('resize', () => { W=window.innerWidth; H=window.innerHeight; positionTexts(); });
+let W=window.innerWidth,H=window.innerHeight;
+window.addEventListener('resize',()=>{W=window.innerWidth;H=window.innerHeight;positionTexts()});
 
-// ── Text layout ──
 function positionTexts(){
-  const mob = isMob();
-  const barH = mob ? 36 : 48;
-  txts.forEach((t,i) => {
-    if(!t) return;
+  const mob=isMob(),bH=mob?36:48;
+  txts.forEach((t,i)=>{
+    if(!t)return;
     if(mob){
-      t.style.left='0'; t.style.right='0'; t.style.bottom='auto';
-      t.style.width='100%'; t.style.padding='0 1.4rem';
-      t.style.transform='none';
-      t.style.top = (barH+14)+'px';
-      t.style.textAlign = (i===0||i===5||i===6) ? 'center' : 'left';
+      t.style.left='0';t.style.right='0';t.style.bottom='auto';
+      t.style.width='100%';t.style.padding='0 1.4rem';
+      t.style.transform='none';t.style.top=(bH+14)+'px';
+      t.style.textAlign=(i===0||i===5||i===7)?'center':'left';
     } else {
-      t.style.padding='0 1.5rem'; t.style.width=''; t.style.right=''; t.style.bottom='auto';
-      t.style.textAlign = '';
-      const cfg = [
-        {l:'50%',  t:'50%', tr:'translate(-50%,-62%)', ta:'center', w:'min(680px,85vw)'},
-        {l:'52%',  t:'50%', tr:'translateY(-52%)',      ta:'left',   w:'38%'},
-        {l:'4%',   t:'50%', tr:'translateY(-55%)',      ta:'left',   w:'38%'},
-        {l:'4%',   t:'50%', tr:'translateY(-55%)',      ta:'left',   w:'36%'},
-        {l:'52%',  t:'50%', tr:'translateY(-52%)',      ta:'left',   w:'38%'},
-        {l:'50%',  t:'50%', tr:'translate(-50%,-70%)',  ta:'center', w:'min(580px,85vw)'},
-        {l:'50%',  t:'50%', tr:'translate(-50%,-52%)',  ta:'center', w:'min(640px,90vw)'},
-      ][i] || {};
-      t.style.left=cfg.l; t.style.top=cfg.t; t.style.transform=cfg.tr;
-      t.style.textAlign=cfg.ta; t.style.width=cfg.w||'';
+      t.style.padding='0 1.5rem';t.style.width='';t.style.right='';t.style.bottom='auto';t.style.textAlign='';
+      const cfg=[
+        {l:'50%',t:'50%',tr:'translate(-50%,-62%)',ta:'center',w:'min(700px,85vw)'},
+        {l:'52%',t:'50%',tr:'translateY(-52%)',     ta:'left',  w:'36%'},
+        {l:'4%', t:'50%',tr:'translateY(-55%)',     ta:'left',  w:'38%'},
+        {l:'4%', t:'50%',tr:'translateY(-55%)',     ta:'left',  w:'36%'},
+        {l:'52%',t:'50%',tr:'translateY(-52%)',     ta:'left',  w:'38%'},
+        {l:'50%',t:'50%',tr:'translate(-50%,-70%)', ta:'center',w:'min(560px,85vw)'},
+        {l:'52%',t:'50%',tr:'translateY(-52%)',     ta:'left',  w:'36%'},
+        {l:'50%',t:'50%',tr:'translate(-50%,-52%)', ta:'center',w:'min(680px,90vw)'},
+      ][i]||{};
+      t.style.left=cfg.l;t.style.top=cfg.t;t.style.transform=cfg.tr;
+      t.style.textAlign=cfg.ta||'';t.style.width=cfg.w||'';
     }
   });
 }
 positionTexts();
 
-// ── Ratito emotion ──
-let lastEmotion = '';
+let lastEmotion='';
 function setEmotion(e){
-  if(e===lastEmotion) return;
-  if(elRSvg){
-    elRSvg.classList.remove('happy','worried','curious','amazed','joyful');
-    elRSvg.classList.add(e);
-  }
-  lastEmotion=e;
+  if(e===lastEmotion||!elRSvg)return;
+  elRSvg.classList.remove('happy','worried','curious','amazed','joyful');
+  elRSvg.classList.add(e);lastEmotion=e;
 }
 
-// ── Render ──
-let dirty = true;
+let dirty=true;
 function render(){
   requestAnimationFrame(render);
-  if(!dirty) return;
-  dirty = false;
+  if(!dirty)return;dirty=false;
+  const sy=window.pageYOffset||window.scrollY;
+  const ms=Math.max(1,document.body.scrollHeight-H);
+  const p=clamp(sy/ms,0,1);
 
-  const sy = window.pageYOffset || window.scrollY;
-  const ms = Math.max(1, document.body.scrollHeight - H);
-  const p  = clamp(sy/ms, 0, 1);
+  elPrg.style.transform='scaleX('+p.toFixed(4)+')';
 
-  // Progress
-  elPrg.style.transform = 'scaleX('+p.toFixed(4)+')';
+  let sc=0;for(let i=0;i<SC.length;i++){if(p>=SC[i].s)sc=i;}
+  const sc2=Math.min(sc+1,SC.length-1);
+  const tR=Math.max(SC[sc2].s-SC[sc].s,1e-6);
+  const blend=sc2===sc?1:clamp((p-SC[sc].s)/tR,0,1);
+  const eb=eio(blend);
 
-  // Scene index
-  let sc = 0;
-  for(let i=0;i<SCENES.length;i++){ if(p>=SCENES[i].s) sc=i; }
-  const sc2   = Math.min(sc+1, SCENES.length-1);
-  const tR    = Math.max(SCENES[sc2].s - SCENES[sc].s, 1e-6);
-  const blend = sc2===sc ? 1 : clamp((p-SCENES[sc].s)/tR, 0, 1);
-  const eb    = eio(blend);
-
-  // Background
-  const c1=BG[sc], c2=BG[sc2];
-  const ra=Math.round(lerp(c1[0][0],c2[0][0],eb)), ga=Math.round(lerp(c1[0][1],c2[0][1],eb)), ba=Math.round(lerp(c1[0][2],c2[0][2],eb));
-  const rb=Math.round(lerp(c1[1][0],c2[1][0],eb)*1.9), gb=Math.round(lerp(c1[1][1],c2[1][1],eb)*1.9), bb=Math.round(lerp(c1[1][2],c2[1][2],eb)*1.9);
+  // BG
+  const c1=BG[sc],c2=BG[sc2];
+  const ra=Math.round(lerp(c1[0][0],c2[0][0],eb)),ga=Math.round(lerp(c1[0][1],c2[0][1],eb)),ba=Math.round(lerp(c1[0][2],c2[0][2],eb));
+  const rb=Math.round(lerp(c1[1][0],c2[1][0],eb)*1.9),gb=Math.round(lerp(c1[1][1],c2[1][1],eb)*1.9),bb=Math.round(lerp(c1[1][2],c2[1][2],eb)*1.9);
   elBg.style.background='radial-gradient(ellipse 160% 65% at 50% -5%,rgb('+rb+','+gb+','+bb+') 0%,rgb('+ra+','+ga+','+ba+') 50%,rgb('+Math.max(0,ra-3)+','+Math.max(0,ga-3)+','+Math.max(0,ba-3)+') 100%)';
 
   // Stars
-  const stOp=sc<=1?lerp(.88,.42,blend):sc<=3?lerp(.42,.26,blend):sc===4?lerp(.22,.08,blend):.05;
+  const stOp=sc<=1?lerp(.85,.45,blend):sc===2||sc===3?lerp(.42,.25,blend):sc<=5?lerp(.2,.08,blend):.05;
   elStars.style.opacity=stOp.toFixed(3);
 
-  // Light rays
-  const rOp=sc===5?eout(blend*.9):sc===6?lerp(.85,.55,blend):0;
+  // Rays (glow on scenes 3,5,7)
+  const rOp=sc===3?lerp(0,.85,blend):sc===5?lerp(.65,.4,blend):sc===7?lerp(.7,.5,blend):sc===6?lerp(.3,.6,blend):0;
   elRays.style.opacity=rOp.toFixed(3);
 
   // Tag + PIPs
-  if(elTag) elTag.textContent = TAGS[sc]||'';
-  pips.forEach((pip,i)=>{ pip.classList.remove('active','past'); if(i===sc) pip.classList.add('active'); else if(i<sc) pip.classList.add('past'); });
+  if(elTag)elTag.textContent=TAGS[sc]||'';
+  pips.forEach((p2,i)=>{p2.classList.remove('active','past');if(i===sc)p2.classList.add('active');else if(i<sc)p2.classList.add('past')});
 
-  // Hint
-  const hOp=p<.04?1:Math.max(0,1-(p/.04-1)*5);
-  elHint.style.opacity=hOp.toFixed(3);
+  elHint.style.opacity=(p<.04?1:Math.max(0,1-(p/.04-1)*5)).toFixed(3);
 
   // Texts
-  const mob=isMob(); const barH=mob?36:48;
+  const mob=isMob(),bH=mob?36:48;
   txts.forEach((t,i)=>{
-    if(!t) return;
-    const s=SCENES[i]||SCENES[SCENES.length-1];
-    const fi=lerp(s.s,s.pk,.5); const fo=lerp(s.pk,s.e,.45);
+    if(!t)return;
+    const s=SC[i]||SC[SC.length-1];
+    const fi=lerp(s.s,s.pk,.5),fo=lerp(s.pk,s.e,.45);
     const op=sOp(p,s.s,fi,fo,s.e);
     t.style.opacity=op.toFixed(4);
     const lift=(1-op)*8;
-    if(mob){ t.style.top=(barH+14+lift)+'px'; }
-    else {
-      const cfg=[
+    if(mob){t.style.top=(bH+14+lift)+'px';}
+    else{
+      const trs=[
         'translate(-50%,'+((-62)+lift)+'%)',
         'translateY('+((-52)+lift)+'%)',
         'translateY('+((-55)+lift)+'%)',
         'translateY('+((-55)+lift)+'%)',
         'translateY('+((-52)+lift)+'%)',
         'translate(-50%,'+((-70)+lift)+'%)',
+        'translateY('+((-52)+lift)+'%)',
         'translate(-50%,'+((-52)+lift)+'%)',
-      ][i];
-      if(cfg) t.style.transform=cfg;
+      ];
+      if(trs[i])t.style.transform=trs[i];
     }
   });
 
-  // Ratito emotion
-  setEmotion(RATITO_EMOTIONS[sc]||'happy');
+  setEmotion(EMOTIONS[sc]||'happy');
 
-  // Ratito position
-  const st = mob ? RATITO_M : RATITO_D;
-  const r1=st[sc], r2=st[sc2];
-  const rX=lerp(r1.x,r2.x,eb), rSc=lerp(r1.sc,r2.sc,eb);
-  const rRt=lerp(r1.rot,r2.rot,eb), rBr=lerp(r1.br,r2.br,eb);
-  const imgW = mob ? Math.min(W*.68,360)*rSc : Math.min(W*.40,480)*rSc;
-  const entrance = eout4(clamp(p/.10,0,1));
-  const botOff = mob ? -140*(1-entrance) : -200*(1-entrance);
-  elRatito.style.width = imgW.toFixed(0)+'px';
-  elRatito.style.height = (imgW*1.43).toFixed(0)+'px'; // maintain SVG aspect
-  elRatito.style.bottom = botOff.toFixed(1)+'px';
+  // Ratito
+  const st=mob?RM:RD,r1=st[sc],r2=st[sc2];
+  const rX=lerp(r1.x,r2.x,eb),rSc=lerp(r1.sc,r2.sc,eb);
+  const rRt=lerp(r1.rot,r2.rot,eb),rBr=lerp(r1.br,r2.br,eb);
+  const imgW=mob?Math.min(W*.68,360)*rSc:Math.min(W*.40,480)*rSc;
+  const entrance=eout4(clamp(p/.10,0,1));
+  const botOff=mob?-140*(1-entrance):-200*(1-entrance);
+  elRatito.style.width=imgW.toFixed(0)+'px';
+  elRatito.style.height=(imgW*1.43).toFixed(0)+'px';
+  elRatito.style.bottom=botOff.toFixed(1)+'px';
   if(mob){
-    const shift = lerp(r1.x-.5,r2.x-.5,eb)*W*.1;
-    elRatito.style.left = clamp(W/2-imgW/2+shift, 0, W-imgW).toFixed(0)+'px';
-  } else {
-    elRatito.style.left = clamp(W*rX-imgW/2, 0, W-imgW).toFixed(0)+'px';
+    const shift=lerp(r1.x-.5,r2.x-.5,eb)*W*.1;
+    elRatito.style.left=clamp(W/2-imgW/2+shift,0,W-imgW).toFixed(0)+'px';
+  }else{
+    elRatito.style.left=clamp(W*rX-imgW/2,0,W-imgW).toFixed(0)+'px';
   }
   elRatito.style.transform='rotate('+rRt.toFixed(2)+'deg)';
-  elRatito.style.filter='brightness('+rBr.toFixed(3)+') drop-shadow(0 25px 70px rgba(0,0,0,.65))';
+  elRatito.style.filter='brightness('+rBr.toFixed(3)+') drop-shadow(0 25px 75px rgba(0,0,0,.65))';
 
-  // Scene SVGs
-  const scl = mob ? Math.min(W/780,0.82) : 1;
+  const scl=mob?Math.min(W/780,.82):1;
 
-  // Tooth — scene 1
-  { const s=SCENES[1]; const op=sOp(p,s.s,lerp(s.s,s.pk,.5),lerp(s.pk,s.e,.4),s.e);
-    elTooth.style.opacity=op.toFixed(4);
-    if(mob){ const w=340*scl*.88,h=420*scl*.88; elTooth.style.width=w+'px';elTooth.style.height=h+'px';elTooth.style.left=(W*.5-w*.3).toFixed(0)+'px';elTooth.style.top=(H*.3+(1-op)*20).toFixed(0)+'px'; }
-    else { elTooth.style.width='340px';elTooth.style.height='420px';elTooth.style.left=(W*.55-170).toFixed(0)+'px';elTooth.style.top=(H*.5-210+(1-op)*28).toFixed(0)+'px'; }
-    elTooth.style.transform='scale('+(0.82+op*.18).toFixed(3)+') rotate('+((1-op)*-5).toFixed(1)+'deg)';
-  }
-  // Scan — scene 2
-  { const s=SCENES[2]; const op=sOp(p,s.s,lerp(s.s,s.pk,.5),lerp(s.pk,s.e,.4),s.e);
-    elScan.style.opacity=op.toFixed(4);
-    if(mob){ const w=Math.min(W*.9,420),h=w*.8; elScan.style.width=w+'px';elScan.style.height=h+'px';elScan.style.left=(W*.5-w/2).toFixed(0)+'px';elScan.style.top=(H*.3+(1-op)*18).toFixed(0)+'px'; }
-    else { elScan.style.width='500px';elScan.style.height='400px';elScan.style.left=(W*.5-250).toFixed(0)+'px';elScan.style.top=(H*.5-200+(1-op)*22).toFixed(0)+'px'; }
-    elScan.style.transform='scale('+(0.84+op*.16).toFixed(3)+')';
-  }
-  // Implant — scene 3
-  { const s=SCENES[3]; const op=sOp(p,s.s,lerp(s.s,s.pk,.5),lerp(s.pk,s.e,.4),s.e);
-    const drop=eout(clamp((p-s.s-.02)/.08,0,1));
-    elImpl.style.opacity=op.toFixed(4);
-    if(mob){ const w=Math.min(W*.36,180),h=w*2.3; elImpl.style.width=w+'px';elImpl.style.height=h+'px';elImpl.style.left=(W*.5-w/2).toFixed(0)+'px';elImpl.style.top=(H*.26-(1-drop)*100+(1-op)*10).toFixed(0)+'px'; }
-    else { elImpl.style.width='200px';elImpl.style.height='460px';elImpl.style.left=(W*.56-100).toFixed(0)+'px';elImpl.style.top=(H*.5-230-(1-drop)*130+(1-op)*12).toFixed(0)+'px'; }
-    elImpl.style.filter='drop-shadow(0 0 '+(op*26).toFixed(0)+'px rgba(255,215,0,'+(op*.52).toFixed(3)+'))';
-  }
-  // Roots — scene 4
-  { const s=SCENES[4]; const op=sOp(p,s.s,lerp(s.s,s.pk,.55),lerp(s.pk,s.e,.4),s.e);
-    elRoots.style.opacity=op.toFixed(4);
-    if(mob){ const w=Math.min(W*.92,380),h=w*.7; elRoots.style.width=w+'px';elRoots.style.height=h+'px';elRoots.style.left=(W*.5-w/2).toFixed(0)+'px';elRoots.style.top=(H*.5-h*.4+(1-op)*16).toFixed(0)+'px'; }
-    else { elRoots.style.width='400px';elRoots.style.height='280px';elRoots.style.left=(W*.5-200).toFixed(0)+'px';elRoots.style.top=(H*.52+(1-op)*18).toFixed(0)+'px'; }
-    elRoots.style.filter='drop-shadow(0 0 '+(op*20).toFixed(0)+'px rgba(76,175,80,'+(op*.4).toFixed(3)+'))';
-  }
-  // Smile — scene 5
-  { const s=SCENES[5]; const op=sOp(p,s.s,lerp(s.s,s.pk,.4),lerp(s.pk,s.e,.35),s.e);
-    elSmile.style.opacity=op.toFixed(4);
-    if(mob){ const w=Math.min(W*.92,500),h=w*.33; elSmile.style.width=w+'px';elSmile.style.height=h+'px';elSmile.style.left=(W*.5-w/2).toFixed(0)+'px';elSmile.style.top=(H*.46+(1-op)*24).toFixed(0)+'px'; }
-    else { elSmile.style.width='600px';elSmile.style.height='200px';elSmile.style.left=(W*.5-300).toFixed(0)+'px';elSmile.style.top=(H*.62+(1-op)*26).toFixed(0)+'px'; }
-    elSmile.style.transform='scale('+(0.82+op*.18).toFixed(3)+')';
-    elSmile.style.filter='drop-shadow(0 0 '+(op*32).toFixed(0)+'px rgba(255,215,0,'+(op*.48).toFixed(3)+'))';
-  }
+  // TOOTH — scene 1
+  {const s=SC[1];const op=sOp(p,s.s,lerp(s.s,s.pk,.5),lerp(s.pk,s.e,.4),s.e);
+  elTooth.style.opacity=op.toFixed(4);
+  if(mob){const w=300*scl*.9,h=380*scl*.9;elTooth.style.width=w+'px';elTooth.style.height=h+'px';elTooth.style.left=(W*.5-w*.25).toFixed(0)+'px';elTooth.style.top=(H*.3+(1-op)*22).toFixed(0)+'px';}
+  else{elTooth.style.width='300px';elTooth.style.height='380px';elTooth.style.left=(W*.56-150).toFixed(0)+'px';elTooth.style.top=(H*.5-190+(1-op)*28).toFixed(0)+'px';}
+  elTooth.style.transform='scale('+(0.82+op*.18).toFixed(3)+') rotate('+((1-op)*-4).toFixed(1)+'deg)';}
+
+  // SCAN — scene 2
+  {const s=SC[2];const op=sOp(p,s.s,lerp(s.s,s.pk,.5),lerp(s.pk,s.e,.4),s.e);
+  elScan.style.opacity=op.toFixed(4);
+  if(mob){const w=Math.min(W*.9,420),h=w*.8;elScan.style.width=w+'px';elScan.style.height=h+'px';elScan.style.left=(W*.5-w/2).toFixed(0)+'px';elScan.style.top=(H*.3+(1-op)*18).toFixed(0)+'px';}
+  else{elScan.style.width='500px';elScan.style.height='400px';elScan.style.left=(W*.5-250).toFixed(0)+'px';elScan.style.top=(H*.5-200+(1-op)*22).toFixed(0)+'px';}
+  elScan.style.transform='scale('+(0.84+op*.16).toFixed(3)+')';}
+
+  // IMPLANT — scene 3 (golden drop)
+  {const s=SC[3];const op=sOp(p,s.s,lerp(s.s,s.pk,.5),lerp(s.pk,s.e,.4),s.e);
+  const drop=eout(clamp((p-s.s-.02)/.09,0,1));
+  elImpl.style.opacity=op.toFixed(4);
+  if(mob){const w=Math.min(W*.5,220),h=w*1.625;elImpl.style.width=w+'px';elImpl.style.height=h+'px';elImpl.style.left=(W*.5-w/2).toFixed(0)+'px';elImpl.style.top=(H*.22-(1-drop)*110+(1-op)*10).toFixed(0)+'px';}
+  else{elImpl.style.width='320px';elImpl.style.height='520px';elImpl.style.left=(W*.56-160).toFixed(0)+'px';elImpl.style.top=(H*.5-260-(1-drop)*140+(1-op)*12).toFixed(0)+'px';}
+  elImpl.style.filter='drop-shadow(0 0 '+(op*35).toFixed(0)+'px rgba(255,185,50,'+(op*.55).toFixed(3)+')');}
+
+  // ROOTS — scene 4
+  {const s=SC[4];const op=sOp(p,s.s,lerp(s.s,s.pk,.55),lerp(s.pk,s.e,.4),s.e);
+  elRoots.style.opacity=op.toFixed(4);
+  if(mob){const w=Math.min(W*.92,400),h=w*.7;elRoots.style.width=w+'px';elRoots.style.height=h+'px';elRoots.style.left=(W*.5-w/2).toFixed(0)+'px';elRoots.style.top=(H*.48-h*.4+(1-op)*16).toFixed(0)+'px';}
+  else{elRoots.style.width='440px';elRoots.style.height='310px';elRoots.style.left=(W*.5-220).toFixed(0)+'px';elRoots.style.top=(H*.52+(1-op)*18).toFixed(0)+'px';}
+  elRoots.style.filter='drop-shadow(0 0 '+(op*22).toFixed(0)+'px rgba(76,175,80,'+(op*.42).toFixed(3)+')');}
+
+  // SMILE — scene 5
+  {const s=SC[5];const op=sOp(p,s.s,lerp(s.s,s.pk,.4),lerp(s.pk,s.e,.35),s.e);
+  elSmile.style.opacity=op.toFixed(4);
+  if(mob){const w=Math.min(W*.95,540),h=w*.34;elSmile.style.width=w+'px';elSmile.style.height=h+'px';elSmile.style.left=(W*.5-w/2).toFixed(0)+'px';elSmile.style.top=(H*.46+(1-op)*26).toFixed(0)+'px';}
+  else{elSmile.style.width='640px';elSmile.style.height='220px';elSmile.style.left=(W*.5-320).toFixed(0)+'px';elSmile.style.top=(H*.62+(1-op)*28).toFixed(0)+'px';}
+  elSmile.style.transform='scale('+(0.82+op*.18).toFixed(3)+')';
+  elSmile.style.filter='drop-shadow(0 0 '+(op*35).toFixed(0)+'px rgba(255,215,0,'+(op*.5).toFixed(3)+')');}
 }
 
-// ── Events ──
-window.addEventListener('scroll', ()=>{ dirty=true; }, {passive:true});
+window.addEventListener('scroll',()=>{dirty=true},{passive:true});
 
 pips.forEach((pip,i)=>{
-  const go=()=>{ const ms=Math.max(1,document.body.scrollHeight-H); window.scrollTo({top:SCENES[i].pk*ms,behavior:'smooth'}); };
-  pip.addEventListener('click', go);
-  if(IS_TOUCH) pip.addEventListener('touchend', e=>{ e.preventDefault(); go(); });
+  const go=()=>{const ms=Math.max(1,document.body.scrollHeight-H);window.scrollTo({top:SC[i].pk*ms,behavior:'smooth'})};
+  pip.addEventListener('click',go);
+  if(IS_TOUCH)pip.addEventListener('touchend',e=>{e.preventDefault();go()});
 });
 
-document.addEventListener('keydown', e=>{
-  if(!['ArrowUp','ArrowDown',' '].includes(e.key)) return;
+document.addEventListener('keydown',e=>{
+  if(!['ArrowUp','ArrowDown',' '].includes(e.key))return;
   e.preventDefault();
   const ms=Math.max(1,document.body.scrollHeight-H);
-  const scrollP=clamp((window.pageYOffset||window.scrollY)/ms,0,1);
-  let sc=0; for(let i=0;i<SCENES.length;i++){ if(scrollP>=SCENES[i].s) sc=i; }
-  const next=e.key==='ArrowUp'?Math.max(0,sc-1):Math.min(SCENES.length-1,sc+1);
-  window.scrollTo({top:SCENES[next].pk*ms,behavior:'smooth'});
+  const sp=clamp((window.pageYOffset||window.scrollY)/ms,0,1);
+  let sc=0;for(let i=0;i<SC.length;i++){if(sp>=SC[i].s)sc=i;}
+  const next=e.key==='ArrowUp'?Math.max(0,sc-1):Math.min(SC.length-1,sc+1);
+  window.scrollTo({top:SC[next].pk*ms,behavior:'smooth'});
 });
 
 if(IS_TOUCH){
   let ty0=0;
-  document.addEventListener('touchstart', e=>{ ty0=e.touches[0].clientY; },{passive:true});
-  document.addEventListener('touchend', e=>{
+  document.addEventListener('touchstart',e=>{ty0=e.touches[0].clientY},{passive:true});
+  document.addEventListener('touchend',e=>{
     const dy=ty0-e.changedTouches[0].clientY;
-    if(Math.abs(dy)<30) return;
+    if(Math.abs(dy)<30)return;
     const ms=Math.max(1,document.body.scrollHeight-H);
-    const scrollP=clamp((window.pageYOffset||window.scrollY)/ms,0,1);
-    let sc=0; for(let i=0;i<SCENES.length;i++){ if(scrollP>=SCENES[i].s) sc=i; }
-    const next=dy>0?Math.min(SCENES.length-1,sc+1):Math.max(0,sc-1);
-    window.scrollTo({top:SCENES[next].pk*ms,behavior:'smooth'});
+    const sp=clamp((window.pageYOffset||window.scrollY)/ms,0,1);
+    let sc=0;for(let i=0;i<SC.length;i++){if(sp>=SC[i].s)sc=i;}
+    const next=dy>0?Math.min(SC.length-1,sc+1):Math.max(0,sc-1);
+    window.scrollTo({top:SC[next].pk*ms,behavior:'smooth'});
   },{passive:true});
 }
 
-// ── Launch ──
-dirty=true;
-render();
-
-// Scene 0 text entrance
-window.addEventListener('load', ()=>{
+dirty=true;render();
+window.addEventListener('load',()=>{
   setTimeout(()=>{
     ['t0a','t0b','t0c','t0d','t0e'].forEach(id=>{
       const el=document.getElementById(id);
-      if(el){ el.style.opacity='1'; el.style.transform='translateY(0)'; }
+      if(el){el.style.opacity='1';el.style.transform='translateY(0)';}
     });
   },200);
 });
