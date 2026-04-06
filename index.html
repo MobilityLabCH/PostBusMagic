@@ -1,984 +1,275 @@
 <!DOCTYPE html>
-
 <html lang="ca">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0a0514">
-<title>El Ratito Pérez · Implants · Dentista Hospital Vilanova</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-/* ═══════════════════════════════════════
-   RESET — NO overflow:hidden on html (kills iOS scroll!)
-   ═══════════════════════════════════════ */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent }
-html { scroll-behavior: auto } /* NO overflow here — iOS killer */
-body {
-  height: 1100vh;
-  background: #0a0514; /* initial color, JS will update */
-  font-family: Inter, sans-serif;
-  overflow-x: clip; /* clip not hidden — doesn't block scroll */
-}
-@media(pointer:fine){ body { cursor: none } }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0514">
+    <title>El Ratito Pérez · Implants · Dentista Hospital Vilanova</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════
+           RESET & CORE
+           ═══════════════════════════════════════ */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent }
+        html { scroll-behavior: auto; background: #0a0514; }
+        body {
+            height: 1100vh;
+            color: white;
+            font-family: Inter, sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        @media(pointer:fine){ body { cursor: none } }
 
-/* ═══ FIXED CANVAS ═══ */
-#canvas { position: fixed; inset: 0; overflow: hidden }
-#bg { position: absolute; inset: 0; transition: background 0.6s ease }
-#stars { position: absolute; inset: 0; pointer-events: none }
-#light-rays { position: absolute; inset: 0; pointer-events: none; opacity: 0 }
+        /* ═══ CANVAS ELEMENTS ═══ */
+        #canvas { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+        #bg { position: absolute; inset: 0; transition: background 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+        #stars, #light-rays { position: absolute; inset: 0; pointer-events: none; }
+        
+        /* ═══ PROGRESS & NAVIGATION ═══ */
+        #progress {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 4px; z-index: 1000;
+            background: linear-gradient(90deg, #8B6000, #FFD700, #FFA500);
+            transform-origin: left center; transform: scaleX(0);
+            box-shadow: 0 -2px 15px rgba(255,215,0,0.3);
+        }
+        #ch-nav {
+            position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
+            z-index: 1000; display: flex; flex-direction: column; gap: 12px;
+            pointer-events: all;
+        }
+        .pip {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .pip.active { background: #FFD700; transform: scale(1.8); box-shadow: 0 0 15px rgba(255,215,0,0.6); }
+        
+        /* ═══ CHARACTER (PIXAR STYLE) ═══ */
+        #rat-wrap {
+            position: absolute; bottom: 0; pointer-events: none;
+            will-change: transform, left;
+            z-index: 50;
+        }
+        #rat-float {
+            animation: floatAnim 3.5s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(1deg); }
+        }
+        #pixar-rat { width: 100%; height: auto; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.5)); }
 
-/* ═══ PROGRESS ═══ */
-#progress {
-position: fixed; bottom: 0; left: 0; right: 0; height: 3px; z-index: 300;
-background: linear-gradient(90deg, #8B6000, #FFD700, #FFA500);
-transform-origin: left center; transform: scaleX(0);
-box-shadow: 0 0 10px rgba(255,215,0,.5);
-}
+        /* ═══ TEXTS ═══ */
+        .txt { 
+            position: absolute; pointer-events: none; opacity: 0; 
+            z-index: 100; transition: opacity 0.6s ease;
+            width: 90%; max-width: 600px;
+        }
+        .txt h1, .txt h2 {
+            font-family: 'Playfair Display', serif;
+            line-height: 1.1; margin-bottom: 1rem;
+        }
+        .txt em { color: #FFD700; font-style: italic; }
 
-/* ═══ PIPS ═══ */
-#ch-nav {
-position: fixed; right: .85rem; top: 50%; transform: translateY(-50%);
-z-index: 250; display: flex; flex-direction: column; gap: 7px;
-}
-.pip {
-width: 5px; height: 5px; border-radius: 50%;
-background: rgba(255,255,255,.18); cursor: pointer;
-transition: background .4s, transform .4s cubic-bezier(.34,1.56,.64,1), box-shadow .4s;
-}
-.pip.active { background: rgba(255,215,0,.9); transform: scale(2); box-shadow: 0 0 7px rgba(255,215,0,.55) }
-.pip.past   { background: rgba(255,255,255,.38) }
+        /* ═══ ELEMENTS SCENE ═══ */
+        .s-el { position: absolute; pointer-events: none; opacity: 0; z-index: 40; }
 
-/* ═══ CHAPTER LABEL ═══ */
-#ch-tag {
-position: fixed; left: 1.4rem; top: 50%; z-index: 250;
-writing-mode: vertical-lr; transform: translateY(-50%) rotate(180deg);
-font-size: .52rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase;
-color: rgba(255,255,255,.18); pointer-events: none;
-}
-@media(max-width:768px){ #ch-tag { display: none } }
+        /* ═══ CINEMATIC FX ═══ */
+        #vignette { position: fixed; inset: 0; z-index: 200; pointer-events: none; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 100%); }
+        #grain { position: fixed; inset: 0; z-index: 210; opacity: 0.03; pointer-events: none; background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.85"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E'); }
+        
+        /* ═══ CURSOR ═══ */
+        #cursor { position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: exclusion; }
+        #cursor-dot { width: 8px; height: 8px; background: white; border-radius: 50%; position: absolute; transform: translate(-50%,-50%); }
 
-/* ═══ SCROLL HINT ═══ */
-#hint {
-position: fixed; bottom: 3.5rem; left: 50%;
-transform: translateX(-50%);
-z-index: 250; display: flex; flex-direction: column; align-items: center; gap: 6px;
-color: rgba(255,255,255,.4); font-size: .62rem; letter-spacing: .2em; text-transform: uppercase;
-animation: hF 2s ease-in-out infinite; transition: opacity .6s ease;
-}
-#hint .hl {
-width: 1px; height: 28px;
-background: linear-gradient(to bottom, transparent, rgba(255,255,255,.45));
-animation: hP 2s ease-in-out infinite;
-}
-@keyframes hF { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(5px)} }
-@keyframes hP { 0%,100%{opacity:.2} 50%{opacity:.75} }
+        /* ═══ CTA CARD ═══ */
+        .offer-card {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px);
+            pointer-events: all; margin-top: 2rem;
+        }
+        .btn-cta {
+            display: inline-block; padding: 1rem 2.5rem; background: #FFD700;
+            color: #0a0514; text-decoration: none; font-weight: 800;
+            border-radius: 50px; text-transform: uppercase; letter-spacing: 1px;
+            transition: transform 0.3s ease;
+        }
+        .btn-cta:hover { transform: scale(1.05); }
 
-/* ═══ CINEMATIC BARS ═══ */
-#bar-top, #bar-bot {
-position: fixed; left: 0; right: 0; background: #000; z-index: 200; pointer-events: none;
-height: 44px;
-}
-#bar-top { top: 0 }
-#bar-bot { bottom: 0 }
-@media(max-width:480px){ #bar-top, #bar-bot { height: 32px } }
-
-/* ═══ VIGNETTE ═══ */
-#vignette {
-position: fixed; inset: 0; pointer-events: none; z-index: 100;
-background: radial-gradient(ellipse 86% 86% at 50% 50%, transparent 32%, rgba(0,0,0,.7) 100%);
-}
-@media(max-width:768px){
-#vignette { background: radial-gradient(ellipse 115% 95% at 50% 50%, transparent 22%, rgba(0,0,0,.55) 100%) }
-}
-
-/* ═══ GRAIN (desktop only) ═══ */
-#grain {
-position: fixed; inset: 0; pointer-events: none; z-index: 150; opacity: .02;
-background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 200 200’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=’.85’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’/%3E%3C/svg%3E”);
-animation: gA .5s steps(1) infinite;
-}
-@media(max-width:768px){ #grain { display: none } }
-@keyframes gA { 0%{background-position:0 0} 25%{background-position:-40px 20px} 50%{background-position:20px -40px} 75%{background-position:-20px 40px} 100%{background-position:40px -20px} }
-
-/* ═══ CURSOR ═══ */
-#cursor { position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: exclusion }
-#cursor-dot { width: 8px; height: 8px; background: white; border-radius: 50%; position: absolute; transform: translate(-50%,-50%) }
-#cursor-ring {
-width: 34px; height: 34px; border: 1.5px solid rgba(255,255,255,.4);
-border-radius: 50%; position: absolute; transform: translate(-50%,-50%);
-transition: transform .35s cubic-bezier(.22,1,.36,1), border-color .2s;
-}
-@media(pointer:coarse){ #cursor { display: none } }
-
-/* ═══ RATITO — CSS float animation (not SVG, not JS) ═══ */
-#rat-wrap {
-position: absolute; bottom: 0; pointer-events: none;
-/* JS sets: left, width, height — but NOT transform (CSS owns that) */
-}
-#rat-float {
-/* CSS float — completely separate from JS positioning */
-animation: floatUp 3.2s ease-in-out infinite;
-}
-#rat-float svg { display: block; width: 100%; height: auto; overflow: visible }
-@keyframes floatUp {
-0%,100% { transform: translateY(0) }
-50%      { transform: translateY(-14px) }
-}
-/* JS applies scene rotation via data-rot attribute + CSS var trick */
-#rat-float { transform-origin: bottom center }
-
-/* ═══ SCENE ELEMENTS ═══ */
-.s-el { position: absolute; pointer-events: none }
-
-/* ═══ TEXTS ═══ */
-.txt { position: absolute; pointer-events: none }
-
-/* Mobile text layout */
-@media(max-width:767px){
-.txt {
-left: 0 !important; right: 0 !important; bottom: auto !important;
-width: 100% !important; padding: 0 1.3rem !important;
-}
-}
-
-/* ═══ CTA ═══ */
-.offer-card {
-background: linear-gradient(135deg, rgba(255,215,0,.07), rgba(255,140,0,.04));
-border: 1px solid rgba(255,215,0,.22); border-radius: 8px;
-padding: 1rem 1.3rem; margin-top: 1rem; pointer-events: all;
-}
-.offer-tag {
-display: inline-block; background: linear-gradient(135deg,#A07800,#FFD700);
-color: #0A0400; font-size: .58rem; font-weight: 700;
-letter-spacing: .2em; text-transform: uppercase;
-padding: .28rem .7rem; border-radius: 2px; margin-bottom: .65rem;
-}
-.offer-price {
-font-family: “Playfair Display”,serif; font-size: clamp(1.5rem,3.5vw,2.4rem);
-font-weight: 900; color: #FFD700; line-height: 1;
-}
-.offer-detail {
-font-family: Inter,sans-serif; font-size: clamp(.7rem,1.2vw,.78rem);
-color: rgba(255,255,255,.5); margin-top: .4rem; line-height: 1.7;
-}
-.btn-cta {
-display: inline-flex; align-items: center; gap: .5rem;
-padding: 1rem 2rem; background: linear-gradient(135deg,#9A6500,#FFD700,#E8A000);
-color: #160800; font-family: Inter,sans-serif; font-size: clamp(.82rem,1.5vw,.9rem);
-font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-text-decoration: none; border-radius: 2px; border: none; cursor: pointer;
-box-shadow: 0 6px 28px rgba(255,160,0,.42); pointer-events: all;
-transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s;
-}
-.btn-cta:hover, .btn-cta:active { transform: scale(1.06) translateY(-2px); box-shadow: 0 14px 46px rgba(255,160,0,.62) }
-.btn-phone { font-size: clamp(1.2rem,3vw,1.5rem); font-weight: 300; color: rgba(255,255,255,.82); letter-spacing: .05em; pointer-events: all }
-.btn-phone a { color: inherit; text-decoration: none }
-.badges { display: flex; gap: .9rem; flex-wrap: wrap; margin-top: .85rem }
-.badge { display: flex; align-items: center; gap: .35rem; font-family: Inter,sans-serif; font-size: clamp(.6rem,1vw,.68rem); color: rgba(255,255,255,.4) }
-</style>
-
+        @media(max-width: 768px) {
+            .txt { left: 5% !important; text-align: center !important; width: 90% !important; }
+            #ch-nav { display: none; }
+        }
+    </style>
 </head>
 <body>
 
-<div id="cursor"><div id="cursor-dot"></div><div id="cursor-ring"></div></div>
+<div id="cursor"><div id="cursor-dot"></div></div>
 <div id="progress"></div>
-<div id="grain"></div>
 <div id="vignette"></div>
-<div id="bar-top"></div><div id="bar-bot"></div>
-<div id="ch-tag">Dentista Hospital · Vilanova i la Geltrú</div>
+<div id="grain"></div>
 
 <div id="ch-nav">
-  <div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div>
-  <div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div>
+    <div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div>
+    <div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div>
 </div>
-<div id="hint"><span>Comença la història</span><div class="hl"></div></div>
 
 <div id="canvas">
-<div id="bg"></div>
-<svg id="stars" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"></svg>
+    <div id="bg"></div>
+    <svg id="stars" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"></svg>
+    <svg id="light-rays" viewBox="0 0 1920 1080" style="opacity:0">
+        <defs><radialGradient id="rayG"><stop offset="0%" stop-color="#FFD700" stop-opacity=".2"/><stop offset="100%" stop-opacity="0"/></radialGradient></defs>
+        <rect width="100%" height="100%" fill="url(#rayG)"/>
+    </svg>
 
-<svg id="light-rays" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
-<defs><radialGradient id="rG" cx="50%" cy="8%" r="72%"><stop offset="0%" stop-color="#FFB830" stop-opacity=".2"/><stop offset="100%" stop-color="#FF8C00" stop-opacity="0"/></radialGradient></defs>
-<rect width="1920" height="1080" fill="url(#rG)"/>
-<g transform="translate(960,100)" opacity=".5">
-<line x1="0" y1="0" x2="-580" y2="980" stroke="rgba(255,185,50,.055)" stroke-width="130"/>
-<line x1="0" y1="0" x2="-280" y2="980" stroke="rgba(255,185,50,.045)" stroke-width="155"/>
-<line x1="0" y1="0" x2="0"    y2="980" stroke="rgba(255,185,50,.055)" stroke-width="140"/>
-<line x1="0" y1="0" x2="280"  y2="980" stroke="rgba(255,185,50,.045)" stroke-width="150"/>
-<line x1="0" y1="0" x2="580"  y2="980" stroke="rgba(255,185,50,.055)" stroke-width="120"/>
-</g>
-</svg>
-
-<!-- TOOTH -->
-
-<svg id="el-tooth" class="s-el" viewBox="0 0 300 380" style="opacity:0;width:300px;height:380px">
-<defs>
-<radialGradient id="tBG" cx="40%" cy="30%" r="65%"><stop offset="0%" stop-color="#DDCFA0"/><stop offset="100%" stop-color="#9A7A50"/></radialGradient>
-<filter id="sGl"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<ellipse cx="150" cy="165" rx="128" ry="138" fill="rgba(120,100,80,0.14)"><animate attributeName="rx" values="128;146;128" dur="3s" repeatCount="indefinite"/></ellipse>
-<path d="M88 265 C78 295 78 325 76 352" stroke="#B89862" stroke-width="12" fill="none" stroke-linecap="round"/>
-<path d="M150 270 C148 305 148 335 148 355" stroke="#B89862" stroke-width="12" fill="none" stroke-linecap="round"/>
-<path d="M212 265 C222 295 222 325 224 352" stroke="#B89862" stroke-width="12" fill="none" stroke-linecap="round"/>
-<path d="M40 242 C24 212 18 168 20 126 C22 70 46 24 78 10 C95 3 114 0 130 1 C137 0 144 0 150 0 C156 0 163 0 170 1 C186 0 205 3 222 10 C254 24 278 70 280 126 C282 168 276 212 260 242 C242 270 205 284 150 284 C95 284 58 270 40 242Z" fill="url(#tBG)" filter="url(#sGl)"/>
-<ellipse cx="180" cy="78" rx="35" ry="27" fill="#4A2E0E" opacity="0.7"/>
-<ellipse cx="178" cy="76" rx="22" ry="17" fill="#301A06" opacity="0.86"/>
-<path d="M108 28 L100 62 L112 80 L102 118" stroke="#6A4828" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.52"/>
-<g fill="#503810" opacity="0.6">
-  <path d="M100 148 Q106 143 112 148 Q110 156 106 158 Q102 156 100 148Z"/>
-  <path d="M170 148 Q176 143 182 148 Q180 156 176 158 Q172 156 170 148Z"/>
-</g>
-<path d="M118 198 Q150 188 182 198" stroke="#6A3818" stroke-width="4.5" fill="none" stroke-linecap="round" opacity="0.58"/>
-<text x="150" y="-15" text-anchor="middle" font-family="Inter,sans-serif" font-size="32" fill="rgba(200,160,80,0.42)" font-weight="300">?</text>
-</svg>
-
-<!-- SCAN -->
-
-<svg id="el-scan" class="s-el" viewBox="0 0 500 400" style="opacity:0;width:500px;height:400px">
-<defs>
-<linearGradient id="scanLG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#00C8FF" stop-opacity="0"/><stop offset="50%" stop-color="#00C8FF"/><stop offset="100%" stop-color="#00C8FF" stop-opacity="0"/></linearGradient>
-<filter id="tGf"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<g stroke="rgba(0,200,255,.1)" stroke-width="1">
-<line x1="0" y1="40" x2="500" y2="40"/><line x1="0" y1="80" x2="500" y2="80"/><line x1="0" y1="120" x2="500" y2="120"/><line x1="0" y1="160" x2="500" y2="160"/><line x1="0" y1="200" x2="500" y2="200"/><line x1="0" y1="240" x2="500" y2="240"/><line x1="0" y1="280" x2="500" y2="280"/><line x1="0" y1="320" x2="500" y2="320"/><line x1="0" y1="360" x2="500" y2="360"/>
-<line x1="50" y1="0" x2="50" y2="400"/><line x1="100" y1="0" x2="100" y2="400"/><line x1="150" y1="0" x2="150" y2="400"/><line x1="200" y1="0" x2="200" y2="400"/><line x1="250" y1="0" x2="250" y2="400"/><line x1="300" y1="0" x2="300" y2="400"/><line x1="350" y1="0" x2="350" y2="400"/><line x1="400" y1="0" x2="400" y2="400"/><line x1="450" y1="0" x2="450" y2="400"/>
-</g>
-<path d="M80 350 C60 310 48 260 50 210 C52 145 75 92 118 60 C142 44 175 36 205 35 C235 36 268 44 292 60 C335 92 358 145 360 210 C362 260 350 310 330 350 C308 385 268 400 205 400 C142 400 102 385 80 350Z" fill="rgba(0,184,255,0.04)" stroke="rgba(0,200,255,.32)" stroke-width="1.5" stroke-dasharray="8 6" filter="url(#tGf)"/>
-<rect x="0" y="-4" width="500" height="3" fill="url(#scanLG)"><animate attributeName="y" values="-4;404" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.04;0.96;1" dur="2.4s" repeatCount="indefinite"/></rect>
-<circle cx="205" cy="220" r="28" fill="none" stroke="#FF6B35" stroke-width="2" filter="url(#tGf)"><animate attributeName="r" values="28;38;28" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;.3;.9" dur="2s" repeatCount="indefinite"/></circle>
-<circle cx="205" cy="220" r="7" fill="#FF6B35"><animate attributeName="opacity" values=".9;.2;.9" dur="1s" repeatCount="indefinite"/></circle>
-<line x1="173" y1="220" x2="193" y2="220" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
-<line x1="217" y1="220" x2="237" y2="220" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
-<line x1="205" y1="188" x2="205" y2="208" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
-<line x1="205" y1="232" x2="205" y2="252" stroke="#FF6B35" stroke-width="1.5" opacity=".8"/>
-<line x1="231" y1="208" x2="292" y2="172" stroke="rgba(255,107,53,.42)" stroke-width="1"/>
-<rect x="293" y="154" width="140" height="40" rx="4" fill="rgba(0,0,0,.75)" stroke="rgba(255,107,53,.35)" stroke-width="1"/>
-<text x="363" y="170" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#FF6B35" letter-spacing="1.5">ZONA PERFECTA</text>
-<text x="363" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="rgba(255,255,255,.5)">CANDIDAT IDEAL ✓</text>
-<g stroke="rgba(0,200,255,.48)" stroke-width="1.5" fill="none"><path d="M12 12 L12 34 M12 12 L34 12"/><path d="M488 12 L488 34 M488 12 L466 12"/><path d="M12 388 L12 366 M12 388 L34 388"/><path d="M488 388 L488 366 M488 388 L466 388"/></g>
-</svg>
-
-<!-- GOLDEN IMPLANT -->
-
-<svg id="el-implant" class="s-el" viewBox="0 0 300 500" style="opacity:0;width:300px;height:500px">
-<defs>
-<linearGradient id="tiG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7A6030"/><stop offset="22%" stop-color="#C8A048"/><stop offset="46%" stop-color="#F0D080"/><stop offset="68%" stop-color="#E0B850"/><stop offset="100%" stop-color="#8A6828"/></linearGradient>
-<radialGradient id="crG" cx="35%" cy="25%" r="70%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="60%" stop-color="#F0F8FF"/><stop offset="100%" stop-color="#D8E8F0"/></radialGradient>
-<radialGradient id="bnG" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#E8A040"/><stop offset="45%" stop-color="#C07820"/><stop offset="100%" stop-color="#7A4008"/></radialGradient>
-<filter id="gGl"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<filter id="cGl"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<ellipse cx="150" cy="250" rx="105" ry="220" fill="none" stroke="rgba(255,185,50,.13)" stroke-width="55" filter="url(#gGl)"/>
-<ellipse cx="150" cy="78" rx="88" ry="72" fill="rgba(255,240,200,0.15)" filter="url(#cGl)"/>
-<path d="M64 114 C64 76 76 44 96 27 C108 16 122 9 137 7 C141 7 145 6 150 6 C155 6 159 7 163 7 C178 9 192 16 204 27 C224 44 236 76 236 114 C236 144 224 164 150 170 C76 164 64 144 64 114Z" fill="url(#crG)" filter="url(#cGl)"/>
-<path d="M70 114 C72 78 83 50 101 34 C113 23 126 17 141 15 C144 15 147 15 150 14 C153 15 156 15 159 15 C174 16 187 23 199 34 C217 50 228 78 230 114" fill="rgba(225,170,80,0.3)"/>
-<path d="M86 114 C88 84 98 60 114 46 C124 37 136 32 148 31 C150 31 152 31 154 31 C166 32 178 37 188 46 C204 60 214 84 216 114" fill="rgba(200,130,50,0.46)"/>
-<path d="M102 114 C104 92 111 74 124 62 C133 54 141 50 150 49 C159 50 167 54 176 62 C189 74 196 92 198 114" fill="rgba(170,100,30,0.5)"/>
-<ellipse cx="150" cy="112" rx="20" ry="26" fill="rgba(100,80,40,0.76)"/>
-<ellipse cx="150" cy="112" rx="14" ry="20" fill="#8A7040"/>
-<g fill="none" stroke="#5A4828" stroke-width="2" opacity="0.72"><line x1="136" y1="106" x2="164" y2="106"/><line x1="134" y1="112" x2="166" y2="112"/><line x1="136" y1="118" x2="164" y2="118"/></g>
-<path d="M82 38 C86 26 98 18 108 20" stroke="rgba(255,255,255,0.75)" stroke-width="5" fill="none" stroke-linecap="round"/>
-<rect x="240" y="28" width="58" height="34" rx="4" fill="rgba(0,0,0,.7)" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-<text x="269" y="43" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="600" fill="rgba(255,255,255,.75)">CORONA</text>
-<text x="269" y="55" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="rgba(255,255,255,.4)">CERÀMICA</text>
-<line x1="236" y1="78" x2="240" y2="45" stroke="rgba(255,255,255,.18)" stroke-width="1"/>
-<rect x="126" y="165" width="48" height="28" rx="6" fill="url(#tiG)" filter="url(#gGl)"/>
-<rect x="122" y="193" width="56" height="210" rx="28" fill="url(#tiG)" filter="url(#gGl)"/>
-<g fill="none" stroke-linecap="round" stroke="#8A6020" stroke-width="3.5" opacity="0.66">
-<path d="M122 212 C126 208 174 208 178 212"/><path d="M122 224 C126 220 174 220 178 224"/><path d="M122 236 C126 232 174 232 178 236"/><path d="M122 248 C126 244 174 244 178 248"/><path d="M122 260 C126 256 174 256 178 260"/><path d="M122 272 C126 268 174 268 178 272"/><path d="M122 284 C126 280 174 280 178 284"/><path d="M122 296 C126 292 174 292 178 296"/><path d="M122 308 C126 304 174 304 178 308"/><path d="M122 320 C126 316 174 316 178 320"/><path d="M122 332 C126 328 174 328 178 332"/><path d="M122 344 C126 340 174 340 178 344"/><path d="M122 356 C126 352 174 352 178 356"/><path d="M122 368 C126 364 174 364 178 368"/><path d="M122 380 C126 376 174 376 178 380"/>
-</g>
-<path d="M122 403 L150 432 L178 403Z" fill="url(#tiG)"/>
-<path d="M135 196 C135 290 135 370 135 408" stroke="rgba(255,235,150,.55)" stroke-width="4" fill="none" stroke-linecap="round"/>
-<rect x="14" y="302" width="272" height="160" rx="8" fill="url(#bnG)" opacity="0.84"/>
-<rect x="14" y="302" width="272" height="18" fill="rgba(200,130,50,.52)"/>
-<g stroke="rgba(120,60,10,.26)" stroke-width="1.1" fill="none">
-<path d="M30 330 C58 325 85 332 110 326"/><path d="M115 328 C148 323 178 331 205 325"/><path d="M210 326 C238 332 260 326 284 330"/>
-<path d="M28 355 C55 350 82 357 108 351"/><path d="M112 353 C142 348 172 356 198 350"/><path d="M202 352 C228 358 255 352 282 356"/>
-</g>
-<text x="150" y="440" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="500" fill="rgba(255,200,100,.48)" letter-spacing="3">OS · MAXIL·LAR</text>
-<rect x="2" y="146" width="56" height="32" rx="4" fill="rgba(0,0,0,.7)" stroke="rgba(255,200,50,.35)" stroke-width="1"/>
-<text x="30" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" font-weight="700" fill="#FFD700">Ti-6Al-4V</text>
-<text x="30" y="171" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="rgba(255,255,255,.4)">TITANI PUR</text>
-</svg>
-
-<!-- ROOTS -->
-
-<svg id="el-roots" class="s-el" viewBox="0 0 440 300" style="opacity:0;width:440px;height:300px">
-<defs><filter id="rGf"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<radialGradient id="bRG" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#C89050"/><stop offset="100%" stop-color="#7A5020"/></radialGradient></defs>
-<rect x="0" y="65" width="440" height="235" rx="10" fill="url(#bRG)" opacity="0.7"/>
-<rect x="0" y="65" width="440" height="13" fill="rgba(200,150,60,.4)"/>
-<g stroke="rgba(100,50,10,.25)" stroke-width="1.1" fill="none">
-<path d="M20 95 C48 90 75 97 100 91"/><path d="M105 93 C138 88 168 96 195 90"/><path d="M200 91 C230 97 258 91 285 95"/>
-<path d="M18 120 C50 115 80 122 110 116"/><path d="M114 118 C148 113 178 121 208 115"/>
-</g>
-<rect x="190" y="0" width="60" height="182" rx="30" fill="rgba(210,160,50,.65)" stroke="rgba(255,210,80,.26)" stroke-width="1"/>
-<path d="M190 182 L220 206 L250 182Z" fill="rgba(200,150,40,.65)"/>
-<path d="M190 92 C165 86 132 100 112 124 C94 146 100 172 120 180" stroke="#43A047" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138"><animate attributeName="stroke-dashoffset" values="138;0;138" dur="3s" repeatCount="indefinite"/></path>
-<path d="M190 118 C160 111 125 128 105 154 C86 178 93 206 116 214" stroke="#66BB6A" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="162" stroke-dashoffset="162"><animate attributeName="stroke-dashoffset" values="162;0;162" dur="3.8s" begin=".4s" repeatCount="indefinite"/></path>
-<path d="M250 92 C275 86 308 100 328 124 C346 146 340 172 320 180" stroke="#43A047" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="138" stroke-dashoffset="138"><animate attributeName="stroke-dashoffset" values="138;0;138" dur="3s" begin=".2s" repeatCount="indefinite"/></path>
-<path d="M250 118 C280 111 315 128 335 154 C354 178 347 206 324 214" stroke="#66BB6A" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="162" stroke-dashoffset="162"><animate attributeName="stroke-dashoffset" values="162;0;162" dur="3.8s" begin=".6s" repeatCount="indefinite"/></path>
-<path d="M206 206 C198 234 194 256 190 279" stroke="#81C784" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="88"><animate attributeName="stroke-dashoffset" values="88;0;88" dur="2.8s" begin=".9s" repeatCount="indefinite"/></path>
-<path d="M234 206 C242 234 246 256 250 279" stroke="#81C784" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="88"><animate attributeName="stroke-dashoffset" values="88;0;88" dur="2.8s" begin="1.1s" repeatCount="indefinite"/></path>
-<circle cx="120" cy="180" r="6" fill="#43A047" filter="url(#rGf)"><animate attributeName="opacity" values=".9;.1;.9" dur="1.6s" repeatCount="indefinite"/></circle>
-<circle cx="320" cy="180" r="6" fill="#43A047" filter="url(#rGf)"><animate attributeName="opacity" values=".9;.1;.9" dur="1.6s" begin=".5s" repeatCount="indefinite"/></circle>
-<text x="220" y="282" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="500" fill="rgba(100,200,100,.46)" letter-spacing="3">OSSEOINTEGRACIÓ</text>
-</svg>
-
-<!-- SMILE -->
-
-<svg id="el-smile" class="s-el" viewBox="0 0 640 220" style="opacity:0;width:640px;height:220px">
-<defs>
-<filter id="sGf"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-<radialGradient id="sAura" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,230,120,.18)"/><stop offset="100%" stop-color="rgba(255,180,50,0)"/></radialGradient>
-</defs>
-<ellipse cx="320" cy="110" rx="310" ry="105" fill="url(#sAura)"/>
-<path d="M60 110 Q320 215 580 110" fill="rgba(240,130,120,0.2)"/>
-<g filter="url(#sGf)">
-<rect x="88" y="72" width="50" height="68" rx="11" fill="white"/><rect x="92" y="74" width="20" height="44" rx="6" fill="rgba(240,248,255,.8)"/>
-<rect x="142" y="62" width="58" height="78" rx="13" fill="white"/><rect x="147" y="64" width="22" height="50" rx="6" fill="rgba(240,248,255,.8)"/>
-<rect x="204" y="55" width="62" height="86" rx="14" fill="white"/><rect x="210" y="57" width="24" height="56" rx="7" fill="rgba(248,252,255,.92)"/>
-<circle cx="246" cy="75" r="4" fill="#FFD700" opacity=".62"><animate attributeName="opacity" values=".62;0;.62" dur="2.4s" repeatCount="indefinite"/></circle>
-<rect x="270" y="55" width="62" height="86" rx="14" fill="white"/><rect x="276" y="57" width="24" height="56" rx="7" fill="rgba(248,252,255,.9)"/>
-<rect x="336" y="62" width="58" height="78" rx="13" fill="white"/><rect x="341" y="64" width="22" height="50" rx="6" fill="rgba(240,248,255,.8)"/>
-<rect x="398" y="72" width="50" height="68" rx="11" fill="white"/><rect x="403" y="74" width="20" height="44" rx="6" fill="rgba(240,248,255,.8)"/>
-<g stroke="rgba(220,235,255,.42)" stroke-width="1">
-<line x1="142" y1="64" x2="138" y2="140"/><line x1="204" y1="57" x2="200" y2="140"/><line x1="270" y1="57" x2="266" y2="140"/><line x1="336" y1="64" x2="332" y2="140"/><line x1="398" y1="72" x2="394" y2="140"/>
-</g>
-</g>
-<text x="52" y="82" font-size="22" fill="#FFD700" opacity=".78" style="animation:spkl 2s .1s ease-in-out infinite">✦</text>
-<text x="560" y="78" font-size="18" fill="#FFD700" opacity=".72" style="animation:spkl 2s .6s ease-in-out infinite">✦</text>
-<style>@keyframes spkl{0%,100%{opacity:0;transform:scale(0)rotate(0)}50%{opacity:.9;transform:scale(1.2)rotate(180deg)}}</style>
-</svg>
-
-<!-- RATITO -->
-
-<div id="rat-wrap">
-  <div id="rat-float"><svg viewBox="0 0 260 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;overflow:visible">
-<defs>
-  <radialGradient id="fG" cx="45%" cy="35%" r="65%"><stop offset="0%" stop-color="#D4944A"/><stop offset="60%" stop-color="#B87030"/><stop offset="100%" stop-color="#7A4810"/></radialGradient>
-  <radialGradient id="bG" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#EDD090"/><stop offset="100%" stop-color="#CBB060"/></radialGradient>
-  <radialGradient id="eG" cx="35%" cy="30%" r="65%"><stop offset="0%" stop-color="#7A4010"/><stop offset="55%" stop-color="#3A1A04"/><stop offset="100%" stop-color="#0E0400"/></radialGradient>
-  <radialGradient id="bagG" cx="30%" cy="22%" r="72%"><stop offset="0%" stop-color="#5A2E10"/><stop offset="100%" stop-color="#200800"/></radialGradient>
-  <filter id="ds"><feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="rgba(0,0,0,0.32)"/></filter>
-  <filter id="gg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>
-<ellipse cx="130" cy="314" rx="55" ry="8" fill="rgba(0,0,0,0.2)"/>
-<path d="M172 240 Q215 224 222 198 Q228 174 210 164 Q196 157 186 166" stroke="#9A5A20" stroke-width="9" fill="none" stroke-linecap="round"/>
-<path d="M172 240 Q215 224 222 198 Q228 174 210 164 Q196 157 186 166" stroke="#C8803A" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.5"/>
-<ellipse cx="128" cy="240" rx="68" ry="72" fill="url(#fG)" filter="url(#ds)"/>
-<ellipse cx="128" cy="250" rx="40" ry="50" fill="url(#bG)"/>
-<path d="M100 202 C90 217 89 234 96 247" stroke="#2A0E06" stroke-width="8" fill="none" stroke-linecap="round"/>
-<path d="M100 202 C90 217 89 234 96 247" stroke="#5A2A10" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.52"/>
-<rect x="94" y="248" width="52" height="42" rx="6" fill="url(#bagG)" filter="url(#ds)"/>
-<rect x="98" y="252" width="44" height="34" rx="4" fill="#280C04"/>
-<path d="M94 248 L146 248 L146 266 Q146 272 140 272 L100 272 Q94 272 94 266 Z" fill="#4A2008"/>
-<path d="M98 268 L142 268" stroke="#7A4018" stroke-width="1" stroke-dasharray="4 3" opacity="0.48"/>
-<ellipse cx="120" cy="272" rx="7" ry="4.5" fill="#CCA020" filter="url(#gg)"/>
-<ellipse cx="120" cy="272" rx="4.5" ry="2.8" fill="#F0C840"/>
-<circle cx="100" cy="256" r="2" fill="#B07818"/><circle cx="140" cy="256" r="2" fill="#B07818"/>
-<circle cx="102" cy="292" r="4" fill="none" stroke="#CCA020" stroke-width="2" filter="url(#gg)"/>
-<line x1="102" y1="290" x2="102" y2="284" stroke="#B09010" stroke-width="1.8"/>
-<line x1="102" y1="290" x2="102" y2="308" stroke="#A08010" stroke-width="1.8"/>
-<path d="M99 302 L102 309 L105 302" fill="#B09010"/>
-<path d="M72 204 C54 192 40 183 28 173" stroke="#C07838" stroke-width="20" fill="none" stroke-linecap="round"/>
-<path d="M28 173 C20 165 17 155 23 146" stroke="#C07838" stroke-width="16" fill="none" stroke-linecap="round"/>
-<ellipse cx="26" cy="139" rx="14" ry="12" fill="#C07030" transform="rotate(-15 26 139)"/>
-<circle cx="17" cy="130" r="6" fill="#AE6025"/><circle cx="26" cy="126" r="6.5" fill="#C07030"/><circle cx="36" cy="127" r="6" fill="#AE6025"/>
-<g>
-  <ellipse cx="15" cy="107" rx="14" ry="14" fill="rgba(255,240,180,0.3)">
-    <animate attributeName="rx" values="14;20;14" dur="2.2s" repeatCount="indefinite"/>
-    <animate attributeName="ry" values="14;20;14" dur="2.2s" repeatCount="indefinite"/>
-  </ellipse>
-  <g fill="#FFD700" opacity="0.82"><polygon points="2,98 5,106 0,106" style="animation:ts 1.8s 0s ease-in-out infinite"/><polygon points="6,90 10,98 3,98" style="animation:ts 1.8s 0.4s ease-in-out infinite"/></g>
-  <path d="M6 130 C3 120 1 109 2 101 C3 93 8 86 13 84 C15 83 17 83 18 83 C19 83 21 83 23 84 C28 86 33 93 34 101 C35 109 33 120 30 130 C27 137 24 140 18 141 C12 140 9 137 6 130Z" fill="white" filter="url(#ds)"/>
-  <path d="M8 130 C6 138 5 142 4 146" stroke="#DDD5C5" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <path d="M28 130 C30 138 31 142 32 146" stroke="#DDD5C5" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <path d="M8 90 C9 86 12 84 14 85" stroke="rgba(255,255,255,0.88)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <text x="-3" y="82" font-size="11" fill="#FFE060" style="animation:ts 2.2s 0.2s ease-in-out infinite">✦</text>
-  <style>@keyframes ts{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.4)}}</style>
-</g>
-<path d="M184 207 C200 200 212 192 218 180" stroke="#C07838" stroke-width="20" fill="none" stroke-linecap="round"/>
-<path d="M218 180 C222 172 222 164 218 158" stroke="#C07838" stroke-width="16" fill="none" stroke-linecap="round"/>
-<ellipse cx="216" cy="152" rx="13" ry="11" fill="#AE6025"/>
-<circle cx="128" cy="117" r="70" fill="url(#fG)" filter="url(#ds)"/>
-<ellipse cx="128" cy="120" rx="46" ry="50" fill="#C87838" opacity="0.26"/>
-<circle cx="72" cy="70" r="36" fill="#AA6225"/><circle cx="72" cy="70" r="26" fill="url(#fG)"/><circle cx="72" cy="70" r="19" fill="#F0A8B8"/>
-<ellipse cx="68" cy="74" rx="11" ry="9" fill="#FFB8C8" opacity="0.48"/>
-<circle cx="184" cy="70" r="36" fill="#AA6225"/><circle cx="184" cy="70" r="26" fill="url(#fG)"/><circle cx="184" cy="70" r="19" fill="#F0A8B8"/>
-<ellipse cx="180" cy="74" rx="11" ry="9" fill="#FFB8C8" opacity="0.48"/>
-<path d="M110 50 Q120 36 130 42 Q140 32 150 42" stroke="#9A5820" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.42"/>
-<path id="brow-l" d="M96 95 Q108 89 120 93" stroke="#6A3010" stroke-width="4" fill="none" stroke-linecap="round"/>
-<path id="brow-r" d="M136 93 Q148 89 160 95" stroke="#6A3010" stroke-width="4" fill="none" stroke-linecap="round"/>
-<circle cx="108" cy="112" r="18" fill="white" filter="url(#ds)"/>
-<circle cx="108" cy="112" r="14" fill="url(#eG)"/>
-<circle cx="109" cy="114" r="9" fill="#0A0300"/>
-<circle cx="102" cy="106" r="5.5" fill="white" opacity="0.9"/>
-<circle cx="110" cy="104" r="2.5" fill="white" opacity="0.52"/>
-<path d="M94 102 L100 107 M101 98 L105 104 M110 96 L111 102 M116 99 L115 105" stroke="#3A1205" stroke-width="1.6" stroke-linecap="round"/>
-<circle cx="148" cy="112" r="18" fill="white" filter="url(#ds)"/>
-<circle cx="148" cy="112" r="14" fill="url(#eG)"/>
-<circle cx="149" cy="114" r="9" fill="#0A0300"/>
-<circle cx="142" cy="106" r="5.5" fill="white" opacity="0.9"/>
-<circle cx="150" cy="104" r="2.5" fill="white" opacity="0.52"/>
-<path d="M134 102 L140 107 M141 98 L145 104 M150 96 L151 102 M156 99 L155 105" stroke="#3A1205" stroke-width="1.6" stroke-linecap="round"/>
-<ellipse id="cheek-l" cx="86" cy="128" rx="17" ry="12" fill="#E87090" opacity="0.26"/>
-<ellipse id="cheek-r" cx="170" cy="128" rx="17" ry="12" fill="#E87090" opacity="0.26"/>
-<ellipse cx="128" cy="138" rx="9" ry="7" fill="#E8707A"/>
-<ellipse cx="126" cy="135" rx="3.5" ry="2.5" fill="#F09098" opacity="0.52"/>
-<path id="mouth-path" d="M112 152 Q128 166 144 152" stroke="#6A2808" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-<g stroke="#C09848" stroke-width="1.6" stroke-linecap="round" opacity="0.6">
-  <line x1="22" y1="130" x2="96" y2="138"/><line x1="20" y1="141" x2="96" y2="141"/><line x1="24" y1="152" x2="96" y2="144"/>
-  <line x1="160" y1="138" x2="234" y2="130"/><line x1="160" y1="141" x2="236" y2="141"/><line x1="160" y1="144" x2="232" y2="152"/>
-</g>
-<ellipse cx="100" cy="304" rx="26" ry="13" fill="#A05820" filter="url(#ds)"/>
-<ellipse cx="156" cy="304" rx="26" ry="13" fill="#A05820" filter="url(#ds)"/>
-</svg></div>
-</div>
-
-<!-- ══════ TEXTS ══════ -->
-
-<div id="txt0" class="txt" style="text-align:center">
-  <span id="t0a" style="display:block;font-family:Inter,sans-serif;font-size:clamp(.6rem,1.2vw,.75rem);font-weight:600;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,215,0,.5);margin-bottom:1rem">Una historia de màgia · Dentista Hospital · Vilanova i la Geltrú</span>
-  <h1 style="font-family:'Playfair Display',serif;font-weight:900;line-height:1.0;color:white;text-shadow:0 0 80px rgba(255,215,0,.2);letter-spacing:-.02em;font-size:clamp(2.8rem,8vw,6.5rem)">El Ratito<br><em style="color:#FFD700;font-style:italic">Pérez</em></h1>
-  <p style="font-family:'Playfair Display',serif;font-size:clamp(.88rem,2vw,1.38rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.42);margin-top:.9rem">t'explica la història dels implants dentals</p>
-  <div style="width:42px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,.5),transparent);margin:1.2rem auto"></div>
-  <p style="font-family:Inter,sans-serif;font-size:clamp(.6rem,1.3vw,.78rem);font-weight:300;color:rgba(255,255,255,.28);letter-spacing:.22em;text-transform:uppercase">Fes scroll · Entra a la història</p>
-</div>
-
-<div id="txt1" class="txt" style="opacity:0">
-  <span style="display:block;font-family:Inter,sans-serif;font-size:clamp(.58rem,1.1vw,.68rem);font-weight:600;letter-spacing:.38em;text-transform:uppercase;color:rgba(200,160,80,.65);margin-bottom:.8rem">Capítol I · El Problema</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:700;line-height:1.15;color:white;margin-bottom:.9rem;font-size:clamp(1.7rem,3.8vw,2.8rem)">Una dent que falta.<br>Una vida que<br><em style="color:#F0B840">canvia</em>.</h2>
-  <p style="font-family:Inter,sans-serif;font-weight:300;line-height:1.85;color:rgba(255,255,255,.5);font-size:clamp(.82rem,1.5vw,.96rem)">Menjar els teus plats preferits.<br>Somriure sense pensar-hi.<br>Existeix una solució definitiva.</p>
-</div>
-
-<div id="txt2" class="txt" style="opacity:0">
-  <span style="display:block;font-family:Inter,sans-serif;font-size:clamp(.58rem,1.1vw,.68rem);font-weight:600;letter-spacing:.38em;text-transform:uppercase;color:rgba(0,200,255,.65);margin-bottom:.8rem">Capítol II · El Diagnòstic</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:700;line-height:1.15;color:white;margin-bottom:.9rem;font-size:clamp(1.7rem,3.8vw,2.8rem)">Veiem exactament<br>el que el teu<br><em style="color:#00C8FF">os necessita</em></h2>
-  <p style="font-family:Inter,sans-serif;font-weight:300;line-height:1.85;color:rgba(255,255,255,.5);font-size:clamp(.82rem,1.5vw,.96rem)">TAC 3D en minuts. Planificació digital.<br><em style="color:rgba(0,200,255,.48)">Sabem el resultat abans de començar.</em></p>
-  <div style="margin-top:1.2rem;padding:.8rem 1rem;border-left:1.5px solid rgba(0,200,255,.3);background:rgba(0,200,255,.04)">
-    <p style="font-family:Inter,sans-serif;font-size:clamp(.72rem,1.3vw,.82rem);color:rgba(0,200,255,.7);line-height:1.85">📡 TAC 3D · 0.1mm<br>🦴 Anàlisi densitat òssia<br>📐 Implant virtual previ</p>
-  </div>
-</div>
-
-<div id="txt3" class="txt" style="opacity:0">
-  <span style="display:block;font-family:Inter,sans-serif;font-size:clamp(.58rem,1.1vw,.68rem);font-weight:600;letter-spacing:.38em;text-transform:uppercase;color:rgba(255,215,0,.65);margin-bottom:.8rem">Capítol III · La Peça Mestre</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:700;line-height:1.15;color:white;margin-bottom:.9rem;font-size:clamp(1.7rem,3.8vw,2.8rem)">L'implant de<br><em style="color:#FFD700">titani pur</em></h2>
-  <p style="font-family:Inter,sans-serif;font-weight:300;line-height:1.85;color:rgba(255,255,255,.5);font-size:clamp(.82rem,1.5vw,.96rem)">El teu cos el reconeix com a propi.<br><em style="color:rgba(255,215,0,.52)">Zero reaccions. Per sempre.</em></p>
-  <div style="margin-top:1.2rem;display:flex;gap:1.5rem;flex-wrap:wrap">
-    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3vw,2.1rem);font-weight:900;color:#FFD700;line-height:1">98%</p><p style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:.2rem">Èxit clínic</p></div>
-    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3vw,2.1rem);font-weight:900;color:#FFD700;line-height:1">30+</p><p style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:.2rem">Anys durada</p></div>
-    <div><p style="font-family:'Playfair Display',serif;font-size:clamp(1.4rem,3vw,2.1rem);font-weight:900;color:#FFD700;line-height:1">1 dia</p><p style="font-family:Inter,sans-serif;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:.2rem">Intervenció</p></div>
-  </div>
-</div>
-
-<div id="txt4" class="txt" style="opacity:0">
-  <span style="display:block;font-family:Inter,sans-serif;font-size:clamp(.58rem,1.1vw,.68rem);font-weight:600;letter-spacing:.38em;text-transform:uppercase;color:rgba(100,200,100,.65);margin-bottom:.8rem">Capítol IV · El Miracle Natural</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:700;line-height:1.15;color:white;margin-bottom:.9rem;font-size:clamp(1.7rem,3.8vw,2.8rem)">El teu os creix<br>al voltant<br><em style="color:#66BB6A">del titani</em></h2>
-  <p style="font-family:Inter,sans-serif;font-weight:300;line-height:1.85;color:rgba(255,255,255,.5);font-size:clamp(.82rem,1.5vw,.96rem)">6–8 setmanes. Biologia pura.<br><em style="color:rgba(100,200,100,.5)">La natura fa la màgia.</em></p>
-  <div style="margin-top:1.2rem;padding:.8rem 1rem;border-left:1.5px solid rgba(100,200,100,.28);background:rgba(100,200,100,.04)">
-    <p style="font-family:Inter,sans-serif;font-size:clamp(.72rem,1.3vw,.82rem);color:rgba(100,200,100,.7);line-height:1.85">🌱 Osseointegració completa<br>💪 Força de dent natural<br>🔒 Fixació permanent</p>
-  </div>
-</div>
-
-<div id="txt5" class="txt" style="text-align:center;opacity:0">
-  <span style="display:block;font-family:Inter,sans-serif;font-size:clamp(.58rem,1.1vw,.68rem);font-weight:600;letter-spacing:.38em;text-transform:uppercase;color:rgba(255,225,100,.65);margin-bottom:.8rem">Capítol V · La Transformació</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:900;line-height:1.05;color:white;margin-bottom:.9rem;font-size:clamp(2rem,5.5vw,4.2rem)">El teu somriure<br><em style="color:#FFD700">tornat a néixer</em></h2>
-  <p style="font-family:'Playfair Display',serif;font-size:clamp(.85rem,2vw,1.28rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.38)">Ningú sabrà que no és la teva dent original.</p>
-</div>
-
-<div id="txt6" class="txt" style="opacity:0">
-  <span style="display:block;font-family:Inter,sans-serif;font-size:clamp(.58rem,1.1vw,.68rem);font-weight:600;letter-spacing:.38em;text-transform:uppercase;color:rgba(255,180,80,.65);margin-bottom:.8rem">Capítol VI · La Nova Vida</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:700;line-height:1.15;color:white;margin-bottom:.9rem;font-size:clamp(1.7rem,3.8vw,2.8rem)">Menja el que vols.<br>Riu sense por.<br><em style="color:#FFA040">Torna a ser tu.</em></h2>
-  <div style="margin-top:1.2rem;display:flex;flex-direction:column;gap:.5rem">
-    <div style="display:flex;align-items:center;gap:.55rem"><span style="color:#FFD700">✓</span><p style="font-family:Inter,sans-serif;font-size:clamp(.78rem,1.4vw,.9rem);color:rgba(255,255,255,.55)">Força com una dent natural</p></div>
-    <div style="display:flex;align-items:center;gap:.55rem"><span style="color:#FFD700">✓</span><p style="font-family:Inter,sans-serif;font-size:clamp(.78rem,1.4vw,.9rem);color:rgba(255,255,255,.55)">Sense manteniment especial</p></div>
-    <div style="display:flex;align-items:center;gap:.55rem"><span style="color:#FFD700">✓</span><p style="font-family:Inter,sans-serif;font-size:clamp(.78rem,1.4vw,.9rem);color:rgba(255,255,255,.55)">Resultats que duren tota la vida</p></div>
-  </div>
-</div>
-
-<div id="txt7" class="txt" style="text-align:center;opacity:0">
-  <span style="display:block;font-family:Inter,sans-serif;font-size:clamp(.58rem,1.1vw,.68rem);font-weight:600;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,215,0,.5);margin-bottom:1rem">La teva nova vida comença avui</span>
-  <h2 style="font-family:'Playfair Display',serif;font-weight:900;line-height:.98;color:white;font-size:clamp(2rem,5.5vw,4rem);margin-bottom:.4rem">El primer pas<br>és <em style="color:#FFD700">gratuït</em></h2>
-  <p style="font-family:'Playfair Display',serif;font-size:clamp(.82rem,1.6vw,1.05rem);font-weight:400;font-style:italic;color:rgba(255,255,255,.36);margin-bottom:1.3rem">Descobreix si ets candidat ideal per a implants</p>
-  <div class="offer-card">
-    <span class="offer-tag">✦ Oferta especial</span>
-    <div><span class="offer-price">Visita gratuïta</span></div>
-    <p class="offer-detail">📋 Diagnòstic visual inclòs<br>📡 Pressupost amb TAC 3D sense compromís<br>💳 Finançament 36 mesos sense interessos</p>
-  </div>
-  <div style="margin-top:1.3rem;display:flex;flex-direction:column;align-items:center;gap:.8rem">
-    <a href="tel:935664366" class="btn-cta">📞 &nbsp;Reserva ara · és gratuït</a>
-    <p class="btn-phone"><a href="tel:935664366">93 566 43 66</a></p>
-    <p style="font-family:Inter,sans-serif;font-size:clamp(.56rem,.82vw,.68rem);color:rgba(255,255,255,.22);letter-spacing:.1em;margin-top:.2rem">Plaça de la Moixiganga 6 · Vilanova i la Geltrú · L-V 8:00–20:30</p>
-    <div class="badges" style="justify-content:center">
-      <span class="badge"><span>🛡️</span>+15 anys</span>
-      <span class="badge"><span>⭐</span>+2.000 implants</span>
-      <span class="badge"><span>✓</span>Sense llistes</span>
+    <div id="rat-wrap">
+        <div id="rat-float">
+            <svg id="pixar-rat" viewBox="0 0 260 320" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="furGrad" cx="50%" cy="40%" r="60%">
+                        <stop offset="0%" stop-color="#E5A663" />
+                        <stop offset="100%" stop-color="#7A4810" />
+                    </radialGradient>
+                    <filter id="eyeGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <path d="M130,60 Q210,60 210,180 Q210,290 130,290 Q50,290 50,180 Q50,60 130,60" fill="url(#furGrad)" />
+                <path d="M130,140 Q170,140 170,220 Q170,280 130,280 Q90,280 90,220 Q90,140 130,140" fill="#EDD090" opacity="0.6" />
+                <circle cx="95" cy="120" r="18" fill="white" />
+                <circle cx="165" cy="120" r="18" fill="white" />
+                <circle id="pupil-l" cx="100" cy="122" r="9" fill="#2A1506" />
+                <circle id="pupil-r" cx="160" cy="122" r="9" fill="#2A1506" />
+                <circle cx="92" cy="115" r="4" fill="white" filter="url(#eyeGlow)" />
+                <ellipse cx="130" cy="150" rx="8" ry="5" fill="#E87090" />
+                <circle cx="60" cy="70" r="25" fill="#7A4810" />
+                <circle cx="200" cy="70" r="25" fill="#7A4810" />
+                <circle cx="60" cy="70" r="15" fill="#F0A8B8" />
+                <circle cx="200" cy="70" r="15" fill="#F0A8B8" />
+            </svg>
+        </div>
     </div>
-  </div>
+
+    <svg id="el-tooth" class="s-el" viewBox="0 0 100 100" style="width:200px"><path d="M50,10 Q80,10 80,50 Q80,90 50,90 Q20,90 20,50 Q20,10 50,10" fill="#DDCFA0"/></svg>
+    <svg id="el-implant" class="s-el" viewBox="0 0 100 200" style="width:100px"><rect x="40" y="20" width="20" height="160" fill="#FFD700" rx="10"/></svg>
 </div>
 
-</div><!-- /canvas -->
+<div id="txt0" class="txt" style="top:30%; left:50%; transform:translateX(-50%); text-align:center; opacity:1">
+    <span style="letter-spacing:4px; font-size:12px; color:#FFD700">UNA HISTÒRIA DE MÀGIA</span>
+    <h1 style="font-size: clamp(3rem, 8vw, 6rem)">El Ratito <em>Pérez</em></h1>
+    <p>T'explica la història dels implants dentals</p>
+</div>
+
+<div id="txt1" class="txt" style="top:40%; left:10%">
+    <h2>Una dent que falta.<br>Una vida que <em>canvia</em>.</h2>
+    <p>Menjar els teus plats preferits i somriure sense por és possible.</p>
+</div>
+
+<div id="txt2" class="txt" style="top:40%; left:55%">
+    <h2>Tecnologia <em>3D Scan</em></h2>
+    <p>Veiem exactament el que el teu os necessita amb precisió mil·limètrica.</p>
+</div>
+
+<div id="txt7" class="txt" style="top:20%; left:50%; transform:translateX(-50%); text-align:center">
+    <h2>Torna a <em>somriure</em></h2>
+    <div class="offer-card">
+        <h3>Primera Visita Gratuïta</h3>
+        <p>Inclou TAC 3D i pla de tractament personalitzat.</p>
+        <br>
+        <a href="tel:935664366" class="btn-cta">Truca ara</a>
+    </div>
+</div>
 
 <script>
-/* ═════════════════════════════════════════════════════
-   EL RATITO v6  —  ALL SCROLL BUGS FIXED
-   
-   FIX 1: html has NO overflow:hidden (was killing iOS scroll)
-   FIX 2: No dirty flag — rAF polls scrollY every frame directly
-   FIX 3: Ratito visible immediately, no entrance animation delay
-   FIX 4: No swipe handler hijacking (removed — natural scroll works)
-   FIX 5: txt0 visible from the start (no sOp gating)
-   FIX 6: Rotation applied to #rat-float, not #rat-wrap (CSS float safe)
-   ═════════════════════════════════════════════════════ */
+    const lerp = (a, b, n) => (1 - n) * a + n * b;
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-const isMob    = () => window.innerWidth < 768;
-
-// ── Stars ──
-(function() {
-  const svg = document.getElementById('stars');
-  const ns  = 'http://www.w3.org/2000/svg';
-  const n   = IS_TOUCH ? 65 : 170;
-  for (let i = 0; i < n; i++) {
-    const c = document.createElementNS(ns, 'circle');
-    c.setAttribute('cx',  (Math.random() * 1920).toFixed(0));
-    c.setAttribute('cy',  (Math.random() * 1080).toFixed(0));
-    c.setAttribute('r',   (Math.random() * 1.5 + 0.3).toFixed(2));
-    c.setAttribute('fill', 'white');
-    c.setAttribute('opacity', (Math.random() * 0.4 + 0.1).toFixed(2));
-    const dur = (2.5 + Math.random() * 5).toFixed(1);
-    const del = (Math.random() * 5).toFixed(1);
-    const lo  = (Math.random() * 0.1  + 0.04).toFixed(2);
-    const hi  = (Math.random() * 0.45 + 0.2 ).toFixed(2);
-    const an  = document.createElementNS(ns, 'animate');
-    an.setAttribute('attributeName', 'opacity');
-    an.setAttribute('values',  lo + ';' + hi + ';' + lo);
-    an.setAttribute('dur',     dur + 's');
-    an.setAttribute('begin',   del + 's');
-    an.setAttribute('repeatCount', 'indefinite');
-    c.appendChild(an);
-    svg.appendChild(c);
-  }
-})();
-
-// ── Cursor (desktop only) ──
-if (!IS_TOUCH) {
-  const cEl = document.getElementById('cursor');
-  const cR  = document.getElementById('cursor-ring');
-  let mx = 0, my = 0, rx = 0, ry = 0;
-  document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
-    cEl.style.left = mx + 'px'; cEl.style.top = my + 'px';
-  });
-  document.addEventListener('mousedown', () => {
-    cR.style.transform = 'translate(-50%,-50%) scale(.6)';
-    cR.style.borderColor = 'rgba(255,215,0,.85)';
-  });
-  document.addEventListener('mouseup', () => {
-    cR.style.transform = 'translate(-50%,-50%) scale(1)';
-    cR.style.borderColor = 'rgba(255,255,255,.4)';
-  });
-  (function lag() {
-    rx += (mx - rx) * 0.1; ry += (my - ry) * 0.1;
-    cR.style.left = rx + 'px'; cR.style.top = ry + 'px';
-    requestAnimationFrame(lag);
-  })();
-}
-
-// ── Math ──
-const lerp  = (a, b, t) => a + (b - a) * t;
-const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-const eio   = t => t < .5 ? 2*t*t : -1 + (4 - 2*t) * t;
-const eout  = t => 1 - Math.pow(1 - t, 3);
-
-// Opacity window: 0 → 1 as p goes [s→fi], stays 1 in [fi→fo], 1 → 0 in [fo→e]
-function sOp(p, s, fi, fo, e) {
-  if (p <= s || p >= e) return 0;
-  if (p < fi) return eout((p - s) / Math.max(fi - s, 1e-6));
-  if (p > fo) return eout(1 - (p - fo) / Math.max(e - fo, 1e-6));
-  return 1;
-}
-
-// ── Scenes ──
-// 8 scenes, starts at 0 → 1 normalized scroll
-const SC = [
-  { s: 0.00, pk: 0.06, e: 0.15 },  // 0 Opening
-  { s: 0.12, pk: 0.18, e: 0.28 },  // 1 Problem
-  { s: 0.25, pk: 0.32, e: 0.42 },  // 2 Scan
-  { s: 0.39, pk: 0.46, e: 0.56 },  // 3 Implant
-  { s: 0.53, pk: 0.60, e: 0.70 },  // 4 Osseo
-  { s: 0.67, pk: 0.74, e: 0.82 },  // 5 Smile
-  { s: 0.79, pk: 0.85, e: 0.93 },  // 6 New life
-  { s: 0.90, pk: 0.95, e: 1.00 },  // 7 CTA
-];
-
-// Background colors [dark-center, bright-top] per scene
-const BG = [
-  [[5,  2, 14], [9,  4, 22]],   // 0 indigo night
-  [[22,14,  4], [34,20,  6]],   // 1 warm brown
-  [[3, 12, 36], [5, 17, 48]],   // 2 deep navy
-  [[12, 8,  2], [20,14,  3]],   // 3 amber dark
-  [[3, 14,  5], [5, 20,  8]],   // 4 forest night
-  [[18,10,  2], [28,14,  3]],   // 5 warm gold
-  [[20, 8,  3], [30,12,  5]],   // 6 copper
-  [[8,  4,  2], [14, 7,  3]],   // 7 dark warm
-];
-
-// Ratito per scene: x=centerFraction, sc=scaleMultiplier, rot=deg, br=brightness
-const RD = [  // Desktop
-  { x: .65, sc: .72, rot:  0, br: 1.00 },
-  { x: .15, sc: .60, rot: -3, br: .78  },
-  { x: .65, sc: .60, rot:  2, br: .88  },
-  { x: .65, sc: .67, rot:  0, br: 1.10 },
-  { x: .15, sc: .58, rot: -2, br: .92  },
-  { x: .50, sc: .68, rot:  0, br: 1.20 },
-  { x: .18, sc: .62, rot: -1, br: 1.00 },
-  { x: .62, sc: .68, rot:  4, br: 1.02 },
-];
-const RM = [  // Mobile
-  { x: .50, sc: .62, rot:  0, br: 1.00 },
-  { x: .50, sc: .50, rot: -2, br: .78  },
-  { x: .50, sc: .50, rot:  2, br: .88  },
-  { x: .50, sc: .54, rot:  0, br: 1.05 },
-  { x: .50, sc: .48, rot: -2, br: .92  },
-  { x: .50, sc: .58, rot:  0, br: 1.18 },
-  { x: .50, sc: .52, rot: -1, br: 1.00 },
-  { x: .50, sc: .56, rot:  3, br: 1.02 },
-];
-
-const TAGS = [
-  'Obertura · El Ratito Pérez',
-  'Capítol I · El Problema',
-  'Capítol II · El Diagnòstic',
-  'Capítol III · La Peça Mestre',
-  "Capítol IV · L'Osseointegració",
-  'Capítol V · La Transformació',
-  'Capítol VI · La Nova Vida',
-  'La Teva Historia Comença Ara',
-];
-
-// ── DOM ──
-const $    = id => document.getElementById(id);
-const elBg = $('bg'), elPrg = $('progress');
-const elRays = $('light-rays'), elStars = $('stars');
-const elRatWrap  = $('rat-wrap');   // position only
-const elRatFloat = $('rat-float');  // rotation only (CSS handles float)
-const elHint = $('hint'), elTag = $('ch-tag');
-const elTooth = $('el-tooth'), elScan  = $('el-scan');
-const elImpl  = $('el-implant'), elRoots = $('el-roots'), elSmile = $('el-smile');
-const pips = document.querySelectorAll('.pip');
-const txts = Array.from({ length: 8 }, (_, i) => $('txt' + i));
-
-let W = window.innerWidth, H = window.innerHeight;
-window.addEventListener('resize', () => {
-  W = window.innerWidth; H = window.innerHeight; positionTexts();
-});
-
-// ── Text layout ──
-function positionTexts() {
-  const mob = isMob(), bH = mob ? 32 : 44;
-  txts.forEach((t, i) => {
-    if (!t) return;
-    if (mob) {
-      // Mobile: always at top, full width (CSS media handles left/right/width/padding)
-      t.style.top       = (bH + 10) + 'px';
-      t.style.transform = 'none';
-      t.style.textAlign = (i === 0 || i === 5 || i === 7) ? 'center' : 'left';
-    } else {
-      // Desktop: scene-specific positions
-      const cfg = [
-        { l:'50%', t:'50%', tr:'translate(-50%,-62%)', ta:'center', w:'min(700px,84vw)' },
-        { l:'52%', t:'50%', tr:'translateY(-52%)',     ta:'left',   w:'34%'              },
-        { l:'4%',  t:'50%', tr:'translateY(-55%)',     ta:'left',   w:'36%'              },
-        { l:'4%',  t:'50%', tr:'translateY(-55%)',     ta:'left',   w:'34%'              },
-        { l:'52%', t:'50%', tr:'translateY(-52%)',     ta:'left',   w:'36%'              },
-        { l:'50%', t:'50%', tr:'translate(-50%,-70%)', ta:'center', w:'min(540px,84vw)'  },
-        { l:'52%', t:'50%', tr:'translateY(-52%)',     ta:'left',   w:'34%'              },
-        { l:'50%', t:'50%', tr:'translate(-50%,-52%)', ta:'center', w:'min(660px,90vw)'  },
-      ][i] || {};
-      t.style.left      = cfg.l  || '';
-      t.style.top       = cfg.t  || '';
-      t.style.transform = cfg.tr || '';
-      t.style.textAlign = cfg.ta || '';
-      t.style.width     = cfg.w  || '';
-      t.style.padding   = '0 1.5rem';
+    // Initialisation des étoiles
+    const starsSvg = document.getElementById('stars');
+    for(let i=0; i<150; i++) {
+        const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        c.setAttribute("cx", Math.random() * 1920);
+        c.setAttribute("cy", Math.random() * 1080);
+        c.setAttribute("r", Math.random() * 1.5);
+        c.setAttribute("fill", "white");
+        c.setAttribute("opacity", Math.random());
+        starsSvg.appendChild(c);
     }
-  });
-}
-positionTexts();
 
-// ── BG helper ──
-function applyBg(sc, sc2, eb) {
-  const c1 = BG[Math.min(sc, BG.length-1)];
-  const c2 = BG[Math.min(sc2, BG.length-1)];
-  const ra = Math.round(lerp(c1[0][0], c2[0][0], eb));
-  const ga = Math.round(lerp(c1[0][1], c2[0][1], eb));
-  const ba = Math.round(lerp(c1[0][2], c2[0][2], eb));
-  const rb = Math.round(lerp(c1[1][0], c2[1][0], eb) * 1.9);
-  const gb = Math.round(lerp(c1[1][1], c2[1][1], eb) * 1.9);
-  const bb = Math.round(lerp(c1[1][2], c2[1][2], eb) * 1.9);
-  elBg.style.background =
-    'radial-gradient(ellipse 160% 65% at 50% -5%,' +
-    'rgb(' + rb + ',' + gb + ',' + bb + ') 0%,' +
-    'rgb(' + ra + ',' + ga + ',' + ba + ') 50%,' +
-    'rgb(' + Math.max(0,ra-3) + ',' + Math.max(0,ga-3) + ',' + Math.max(0,ba-3) + ') 100%)';
-}
+    // Gestion du Scroll & Animations
+    let currentScroll = 0;
+    let targetScroll = 0;
+    let scrollVelocity = 0;
 
-// Set background IMMEDIATELY on load (no scroll needed)
-applyBg(0, 0, 0);
+    window.addEventListener('scroll', () => {
+        targetScroll = window.scrollY;
+    });
 
-// ── Main render — polls scrollY every rAF, no dirty flag ──
-let lastSY = -1;
+    function animate() {
+        scrollVelocity = targetScroll - currentScroll;
+        currentScroll = lerp(currentScroll, targetScroll, 0.1);
+        
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        const p = clamp(currentScroll / maxScroll, 0, 1);
 
-function render() {
-  requestAnimationFrame(render);
+        // Progress bar
+        document.getElementById('progress').style.transform = `scaleX(${p})`;
 
-  const sy = window.pageYOffset || window.scrollY || 0;
-  if (sy === lastSY) return; // nothing changed, skip
-  lastSY = sy;
+        // Pixar Squash and Stretch
+        const stretch = 1 + Math.abs(scrollVelocity) * 0.001;
+        const squash = 1 / stretch;
+        
+        // Ratito Position & Animation
+        const ratWrap = document.getElementById('rat-wrap');
+        const ratX = lerp(70, 20, p * 1.2); // Déplacement horizontal
+        ratWrap.style.left = `${ratX}%`;
+        ratWrap.style.width = `${lerp(300, 200, p)}px`;
+        ratWrap.style.transform = `scale(${squash}, ${stretch}) rotate(${scrollVelocity * 0.05}deg)`;
 
-  const ms = Math.max(1, document.body.scrollHeight - H);
-  const p  = clamp(sy / ms, 0, 1);
+        // Background Color Morphing
+        const hue = 260 + p * 100;
+        document.getElementById('bg').style.background = `radial-gradient(circle at 50% 50%, hsl(${hue}, 50%, 15%) 0%, #0a0514 100%)`;
 
-  // Progress bar
-  elPrg.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+        // Text & Element Visibility Logic
+        updateScenes(p);
 
-  // Current scene
-  let sc = 0;
-  for (let i = 0; i < SC.length; i++) { if (p >= SC[i].s) sc = i; }
-  const sc2   = Math.min(sc + 1, SC.length - 1);
-  const tR    = Math.max(SC[sc2].s - SC[sc].s, 1e-6);
-  const blend = sc2 === sc ? 1 : clamp((p - SC[sc].s) / tR, 0, 1);
-  const eb    = eio(blend);
-
-  // Background
-  applyBg(sc, sc2, eb);
-
-  // Stars
-  const stOp = sc <= 1 ? lerp(.85, .45, blend)
-              : sc <= 3 ? lerp(.42, .24, blend)
-              : sc <= 5 ? lerp(.18, .06, blend) : .04;
-  elStars.style.opacity = stOp.toFixed(3);
-
-  // Light rays
-  const rOp = sc === 3 ? lerp(0, .82, blend)
-            : sc === 5 ? lerp(.6, .38, blend)
-            : sc === 6 ? lerp(.28, .58, blend)
-            : sc === 7 ? lerp(.68, .48, blend) : 0;
-  elRays.style.opacity = rOp.toFixed(3);
-
-  // Chapter tag
-  if (elTag) elTag.textContent = TAGS[sc] || '';
-
-  // PIPs
-  pips.forEach((pip, i) => {
-    pip.classList.remove('active', 'past');
-    if (i === sc) pip.classList.add('active');
-    else if (i < sc) pip.classList.add('past');
-  });
-
-  // Scroll hint
-  const hOp = p < .04 ? 1 : Math.max(0, 1 - (p / .04 - 1) * 5);
-  elHint.style.opacity = hOp.toFixed(3);
-
-  // ── Texts ──
-  const mob = isMob(), bH = mob ? 32 : 44;
-  txts.forEach((t, i) => {
-    if (!t) return;
-    // txt0 is always visible (opening scene, managed by CSS transitions on load)
-    if (i === 0) { t.style.opacity = '1'; return; }
-
-    const s  = SC[i] || SC[SC.length - 1];
-    const fi = lerp(s.s, s.pk, 0.5);
-    const fo = lerp(s.pk, s.e, 0.45);
-    const op = sOp(p, s.s, fi, fo, s.e);
-    t.style.opacity = op.toFixed(4);
-
-    const lift = (1 - op) * 8;
-    if (mob) {
-      t.style.top = (bH + 10 + lift) + 'px';
-    } else {
-      // Adjust vertical lift without losing the base transform
-      const bases = [
-        null, // 0 handled above
-        'translateY(' + ((-52) + lift) + '%)',
-        'translateY(' + ((-55) + lift) + '%)',
-        'translateY(' + ((-55) + lift) + '%)',
-        'translateY(' + ((-52) + lift) + '%)',
-        'translate(-50%,' + ((-70) + lift) + '%)',
-        'translateY(' + ((-52) + lift) + '%)',
-        'translate(-50%,' + ((-52) + lift) + '%)',
-      ];
-      if (bases[i]) t.style.transform = bases[i];
+        requestAnimationFrame(animate);
     }
-  });
 
-  // ── Ratito position (JS controls position only, not float animation) ──
-  const states = mob ? RM : RD;
-  const r1 = states[sc], r2 = states[sc2];
-  const rX  = lerp(r1.x,  r2.x,  eb);
-  const rSc = lerp(r1.sc, r2.sc, eb);
-  const rRt = lerp(r1.rot, r2.rot, eb);
-  const rBr = lerp(r1.br,  r2.br,  eb);
+    function updateScenes(p) {
+        const scenes = [
+            { id: 'txt0', s: 0, e: 0.1 },
+            { id: 'txt1', s: 0.15, e: 0.3 },
+            { id: 'txt2', s: 0.35, e: 0.5 },
+            { id: 'txt7', s: 0.85, e: 1.0 },
+            { id: 'el-tooth', s: 0.1, e: 0.4 },
+            { id: 'el-implant', s: 0.4, e: 0.7 }
+        ];
 
-  // Size (no entrance animation — visible immediately)
-  const maxW = mob ? Math.min(W * 0.52, 260) : Math.min(W * 0.40, 460);
-  const imgW = maxW * rSc;
-  const imgH = imgW * (320 / 260); // SVG aspect ratio
+        scenes.forEach(sc => {
+            const el = document.getElementById(sc.id);
+            if(!el) return;
+            const opacity = p >= sc.s && p <= sc.e ? 1 : 0;
+            el.style.opacity = opacity;
+            el.style.transform = `translateY(${(1-opacity) * 20}px) ${el.id.includes('txt') && el.id !== 'txt0' && el.id !== 'txt7' ? '' : 'translateX(-50%)'}`;
+        });
 
-  elRatWrap.style.width  = imgW.toFixed(0) + 'px';
-  elRatWrap.style.height = imgH.toFixed(0) + 'px';
-  elRatWrap.style.bottom = '0'; // always at bottom edge
-
-  if (mob) {
-    // Centered, slight horizontal nudge per scene
-    const nudge = lerp(r1.x - .5, r2.x - .5, eb) * W * 0.07;
-    elRatWrap.style.left = clamp(W / 2 - imgW / 2 + nudge, 0, W - imgW).toFixed(0) + 'px';
-  } else {
-    elRatWrap.style.left = clamp(W * rX - imgW / 2, 0, W - imgW).toFixed(0) + 'px';
-  }
-
-  // Rotation on float div (CSS float animation is on #rat-float via keyframe,
-  // this only adds scene rotation on top — we use a wrapper trick)
-  // We set rotation via CSS custom property to avoid fighting the keyframe
-  elRatFloat.style.setProperty('--rot', rRt.toFixed(2) + 'deg');
-  elRatFloat.style.transform = 'rotate(var(--rot))'; // this will compose with the keyframe
-  // Wait — that won't compose with the keyframe on the same element.
-  // Better: put rotation on rat-wrap instead (JS owns rat-wrap, CSS float owns rat-float)
-  elRatWrap.style.transform = 'rotate(' + rRt.toFixed(2) + 'deg)';
-  // Reset rat-float transform so only CSS keyframe controls it
-  elRatFloat.style.transform = '';
-
-  // Brightness on SVG
-  const svgEl = elRatFloat.querySelector('svg');
-  if (svgEl) svgEl.style.filter = 'brightness(' + rBr.toFixed(3) + ') drop-shadow(0 25px 70px rgba(0,0,0,.6))';
-
-  // ── Scene SVGs ──
-  const scl = mob ? Math.min(W / 780, 0.78) : 1;
-
-  // TOOTH — scene 1
-  { const s = SC[1];
-    const op = sOp(p, s.s, lerp(s.s,s.pk,.5), lerp(s.pk,s.e,.4), s.e);
-    elTooth.style.opacity = op.toFixed(4);
-    if (mob) {
-      const w = 260 * scl * .9, h = 330 * scl * .9;
-      elTooth.style.width  = w + 'px'; elTooth.style.height = h + 'px';
-      elTooth.style.left   = (W * .5 - w * .18).toFixed(0) + 'px';
-      elTooth.style.top    = (H * .32 + (1 - op) * 20).toFixed(0) + 'px';
-    } else {
-      elTooth.style.width  = '300px'; elTooth.style.height = '380px';
-      elTooth.style.left   = (W * .57 - 150).toFixed(0) + 'px';
-      elTooth.style.top    = (H * .5 - 190 + (1 - op) * 28).toFixed(0) + 'px';
+        // Pips active state
+        const pips = document.querySelectorAll('.pip');
+        const activeIdx = Math.floor(p * pips.length);
+        pips.forEach((pip, i) => pip.classList.toggle('active', i === activeIdx));
     }
-    elTooth.style.transform = 'scale(' + (0.82 + op * .18).toFixed(3) + ') rotate(' + ((1-op)*-4).toFixed(1) + 'deg)';
-  }
 
-  // SCAN — scene 2
-  { const s = SC[2];
-    const op = sOp(p, s.s, lerp(s.s,s.pk,.5), lerp(s.pk,s.e,.4), s.e);
-    elScan.style.opacity = op.toFixed(4);
-    if (mob) {
-      const w = Math.min(W * .9, 400), h = w * .8;
-      elScan.style.width  = w + 'px'; elScan.style.height = h + 'px';
-      elScan.style.left   = (W * .5 - w / 2).toFixed(0) + 'px';
-      elScan.style.top    = (H * .32 + (1 - op) * 18).toFixed(0) + 'px';
-    } else {
-      elScan.style.width  = '500px'; elScan.style.height = '400px';
-      elScan.style.left   = (W * .5 - 250).toFixed(0) + 'px';
-      elScan.style.top    = (H * .5 - 200 + (1 - op) * 22).toFixed(0) + 'px';
-    }
-    elScan.style.transform = 'scale(' + (0.84 + op * .16).toFixed(3) + ')';
-  }
+    // Cursor Follower
+    document.addEventListener('mousemove', (e) => {
+        const dot = document.getElementById('cursor-dot');
+        dot.style.left = e.clientX + 'px';
+        dot.style.top = e.clientY + 'px';
+    });
 
-  // IMPLANT — scene 3
-  { const s = SC[3];
-    const op   = sOp(p, s.s, lerp(s.s,s.pk,.5), lerp(s.pk,s.e,.4), s.e);
-    const drop = eout(clamp((p - s.s - .02) / .09, 0, 1));
-    elImpl.style.opacity = op.toFixed(4);
-    if (mob) {
-      const w = Math.min(W * .46, 200), h = w * 1.67;
-      elImpl.style.width  = w + 'px'; elImpl.style.height = h + 'px';
-      elImpl.style.left   = (W * .5 - w / 2).toFixed(0) + 'px';
-      elImpl.style.top    = (H * .22 - (1 - drop) * 110 + (1 - op) * 10).toFixed(0) + 'px';
-    } else {
-      elImpl.style.width  = '300px'; elImpl.style.height = '500px';
-      elImpl.style.left   = (W * .57 - 150).toFixed(0) + 'px';
-      elImpl.style.top    = (H * .5 - 250 - (1-drop) * 140 + (1-op) * 12).toFixed(0) + 'px';
-    }
-    elImpl.style.filter = 'drop-shadow(0 0 ' + (op*35).toFixed(0) + 'px rgba(255,185,50,' + (op*.55).toFixed(3) + '))';
-    elImpl.style.transform = '';
-  }
-
-  // ROOTS — scene 4
-  { const s = SC[4];
-    const op = sOp(p, s.s, lerp(s.s,s.pk,.55), lerp(s.pk,s.e,.4), s.e);
-    elRoots.style.opacity = op.toFixed(4);
-    if (mob) {
-      const w = Math.min(W * .9, 380), h = w * .68;
-      elRoots.style.width  = w + 'px'; elRoots.style.height = h + 'px';
-      elRoots.style.left   = (W * .5 - w / 2).toFixed(0) + 'px';
-      elRoots.style.top    = (H * .44 - h * .35 + (1 - op) * 16).toFixed(0) + 'px';
-    } else {
-      elRoots.style.width  = '440px'; elRoots.style.height = '300px';
-      elRoots.style.left   = (W * .5 - 220).toFixed(0) + 'px';
-      elRoots.style.top    = (H * .52 + (1 - op) * 18).toFixed(0) + 'px';
-    }
-    elRoots.style.filter = 'drop-shadow(0 0 ' + (op*22).toFixed(0) + 'px rgba(76,175,80,' + (op*.42).toFixed(3) + '))';
-    elRoots.style.transform = '';
-  }
-
-  // SMILE — scene 5
-  { const s = SC[5];
-    const op = sOp(p, s.s, lerp(s.s,s.pk,.4), lerp(s.pk,s.e,.35), s.e);
-    elSmile.style.opacity = op.toFixed(4);
-    if (mob) {
-      const w = Math.min(W * .95, 520), h = w * .34;
-      elSmile.style.width  = w + 'px'; elSmile.style.height = h + 'px';
-      elSmile.style.left   = (W * .5 - w / 2).toFixed(0) + 'px';
-      elSmile.style.top    = (H * .44 + (1 - op) * 26).toFixed(0) + 'px';
-    } else {
-      elSmile.style.width  = '640px'; elSmile.style.height = '220px';
-      elSmile.style.left   = (W * .5 - 320).toFixed(0) + 'px';
-      elSmile.style.top    = (H * .62 + (1 - op) * 28).toFixed(0) + 'px';
-    }
-    elSmile.style.transform = 'scale(' + (0.82 + op * .18).toFixed(3) + ')';
-    elSmile.style.filter    = 'drop-shadow(0 0 ' + (op*35).toFixed(0) + 'px rgba(255,215,0,' + (op*.5).toFixed(3) + '))';
-  }
-}
-
-// ── Start render loop ──
-render();
-
-// ── Pip navigation ──
-pips.forEach((pip, i) => {
-  const go = () => {
-    const ms = Math.max(1, document.body.scrollHeight - H);
-    window.scrollTo({ top: SC[i].pk * ms, behavior: 'smooth' });
-  };
-  pip.addEventListener('click', go);
-  if (IS_TOUCH) pip.addEventListener('touchend', e => { e.preventDefault(); go(); });
-});
-
-// ── Keyboard navigation ──
-document.addEventListener('keydown', e => {
-  if (!['ArrowUp', 'ArrowDown', ' '].includes(e.key)) return;
-  e.preventDefault();
-  const ms  = Math.max(1, document.body.scrollHeight - H);
-  const sp  = clamp((window.pageYOffset || window.scrollY) / ms, 0, 1);
-  let sc = 0;
-  for (let i = 0; i < SC.length; i++) { if (sp >= SC[i].s) sc = i; }
-  const next = e.key === 'ArrowUp' ? Math.max(0, sc-1) : Math.min(SC.length-1, sc+1);
-  window.scrollTo({ top: SC[next].pk * ms, behavior: 'smooth' });
-});
-
-// ── Scene 0 text entrance animation ──
-window.addEventListener('load', () => {
-  const t0 = $('txt0');
-  if (t0) positionTexts(); // ensure positioned before showing
-});
-
+    animate();
 </script>
 
 </body>
