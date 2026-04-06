@@ -9,31 +9,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         /* ═══════════════════════════════════════
-           RESET & CORE
+           RESET & CORE — NO overflow:hidden here!
            ═══════════════════════════════════════ */
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent }
         html { scroll-behavior: auto; background: #0a0514; }
         body {
-            height: 1100vh;
+            height: 1100vh; /* Garde la hauteur pour le scroll */
             color: white;
             font-family: Inter, sans-serif;
-            overflow-x: hidden;
+            overflow-x: hidden; /* Empêche le scroll horizontal */
             -webkit-font-smoothing: antialiased;
         }
         @media(pointer:fine){ body { cursor: none } }
 
-        /* ═══ CANVAS ELEMENTS ═══ */
+        /* ═══ FIXED CANVAS ═══ */
         #canvas { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
         #bg { position: absolute; inset: 0; transition: background 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
-        #stars, #light-rays { position: absolute; inset: 0; pointer-events: none; }
+        #stars { position: absolute; inset: 0; pointer-events: none; }
+        #light-rays { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1s ease; }
         
-        /* ═══ PROGRESS & NAVIGATION ═══ */
+        /* ═══ PROGRESS ═══ */
         #progress {
             position: fixed; bottom: 0; left: 0; right: 0; height: 4px; z-index: 1000;
             background: linear-gradient(90deg, #8B6000, #FFD700, #FFA500);
             transform-origin: left center; transform: scaleX(0);
             box-shadow: 0 -2px 15px rgba(255,215,0,0.3);
         }
+
+        /* ═══ PIPS ═══ */
         #ch-nav {
             position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%);
             z-index: 1000; display: flex; flex-direction: column; gap: 12px;
@@ -45,63 +48,93 @@
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .pip.active { background: #FFD700; transform: scale(1.8); box-shadow: 0 0 15px rgba(255,215,0,0.6); }
-        
-        /* ═══ CHARACTER (PIXAR STYLE) ═══ */
+        .pip.past   { background: rgba(255,215,0,0.25) }
+
+        /* ═══ SCROLL HINT ═══ */
+        #hint {
+            position: fixed; bottom: 3rem; left: 50%;
+            transform: translateX(-50%);
+            z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+            animation: hintFloat 2.5s ease-in-out infinite; transition: opacity 0.6s ease;
+        }
+        #hint .line { width: 1px; height: 35px; background: linear-gradient(to bottom, transparent, #FFD700, transparent); }
+        @keyframes hintFloat { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+
+        /* ═══ RATITO (NOUVEAU - STYLE PIXAR) ═══ */
         #rat-wrap {
             position: absolute; bottom: 0; pointer-events: none;
-            will-change: transform, left;
+            will-change: transform, left, top;
             z-index: 50;
+            /* Le JS contrôle left/width/top */
         }
+        
         #rat-float {
-            animation: floatAnim 3.5s ease-in-out infinite;
+            /* Animation d'oscillation douce */
+            animation: ratBreathe 3.5s ease-in-out infinite;
             transform-origin: bottom center;
         }
-        @keyframes floatAnim {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(1deg); }
-        }
-        #pixar-rat { width: 100%; height: auto; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.5)); }
 
-        /* ═══ TEXTS ═══ */
+        @keyframes ratBreathe {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(1deg); }
+        }
+
+        #pixar-rat { width: 100%; height: auto; filter: drop-shadow(0 15px 35px rgba(0,0,0,0.5)); }
+
+        /* ═══ SCENE ELEMENTS ═══ */
+        .s-el { position: absolute; pointer-events: none; opacity: 0; will-change: transform, opacity; z-index: 40; }
+
+        /* ═══ TEXTS — CORRECTION VISIBILITÉ MOBILE ═══ */
         .txt { 
             position: absolute; pointer-events: none; opacity: 0; 
-            z-index: 100; transition: opacity 0.6s ease;
+            z-index: 100; transition: opacity 0.6s ease, transform 0.6s ease;
             width: 90%; max-width: 600px;
         }
-        .txt h1, .txt h2 {
-            font-family: 'Playfair Display', serif;
-            line-height: 1.1; margin-bottom: 1rem;
+        
+        .txt h1 {
+            font-family: 'Playfair Display', serif; font-weight: 900; line-height: 1;
+            color: white; text-shadow: 0 5px 25px rgba(0,0,0,0.4);
+            letter-spacing: -0.02em; font-size: clamp(2.8rem, 8vw, 6.5rem); margin-bottom: 1rem;
+        }
+        .txt h2 {
+            font-family: 'Playfair Display', serif; font-weight: 700; line-height: 1.15;
+            color: white; margin-bottom: 1rem; font-size: clamp(2rem, 4.5vw, 3.2rem);
+        }
+        .txt p {
+            font-family: Inter, sans-serif; font-weight: 300; line-height: 1.8;
+            color: rgba(255,255,255,0.6); font-size: clamp(0.9rem, 1.6vw, 1.1rem);
         }
         .txt em { color: #FFD700; font-style: italic; }
 
-        /* ═══ ELEMENTS SCENE ═══ */
-        .s-el { position: absolute; pointer-events: none; opacity: 0; z-index: 40; }
-
-        /* ═══ CINEMATIC FX ═══ */
-        #vignette { position: fixed; inset: 0; z-index: 200; pointer-events: none; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 100%); }
-        #grain { position: fixed; inset: 0; z-index: 210; opacity: 0.03; pointer-events: none; background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.85"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E'); }
-        
-        /* ═══ CURSOR ═══ */
-        #cursor { position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: exclusion; }
-        #cursor-dot { width: 8px; height: 8px; background: white; border-radius: 50%; position: absolute; transform: translate(-50%,-50%); }
-
-        /* ═══ CTA CARD ═══ */
+        /* ═══ Badge & Cards ═══ */
+        .badges { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem }
+        .badge { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.5) }
         .offer-card {
             background: rgba(255, 215, 0, 0.05);
             border: 1px solid rgba(255, 215, 0, 0.2);
-            padding: 2rem; border-radius: 15px; backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem; border-radius: 12px; backdrop-filter: blur(10px);
             pointer-events: all; margin-top: 2rem;
         }
         .btn-cta {
-            display: inline-block; padding: 1rem 2.5rem; background: #FFD700;
-            color: #0a0514; text-decoration: none; font-weight: 800;
-            border-radius: 50px; text-transform: uppercase; letter-spacing: 1px;
-            transition: transform 0.3s ease;
+            display: inline-block; padding: 1.2rem 3rem; background: #FFD700;
+            color: #0a0514; text-decoration: none; font-family: Inter, sans-serif;
+            font-weight: 700; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.1em;
+            transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 30px rgba(255,215,0,0.3);
         }
-        .btn-cta:hover { transform: scale(1.05); }
+        .btn-cta:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(255,215,0,0.5); }
+
+        /* ═══ FX ═══ */
+        #vignette { position: fixed; inset: 0; z-index: 200; pointer-events: none; background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.6) 100%); }
+        #grain { position: fixed; inset: 0; z-index: 210; opacity: 0.02; pointer-events: none; background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.85"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E'); }
+        
+        /* ═══ CURSOR (Desktop) ═══ */
+        #cursor { position: fixed; pointer-events: none; z-index: 9999; mix-blend-mode: exclusion; }
+        #cursor-dot { width: 8px; height: 8px; background: white; border-radius: 50%; position: absolute; transform: translate(-50%,-50%); }
 
         @media(max-width: 768px) {
-            .txt { left: 5% !important; text-align: center !important; width: 90% !important; }
+            #hint { bottom: 6rem; }
+            .txt { left: 5% !important; text-align: center !important; }
             #ch-nav { display: none; }
         }
     </style>
@@ -118,11 +151,13 @@
     <div class="pip"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div>
 </div>
 
+<div id="hint"><span class="txt-h">Scrolleja</span><div class="line"></div></div>
+
 <div id="canvas">
     <div id="bg"></div>
     <svg id="stars" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"></svg>
     <svg id="light-rays" viewBox="0 0 1920 1080" style="opacity:0">
-        <defs><radialGradient id="rayG"><stop offset="0%" stop-color="#FFD700" stop-opacity=".2"/><stop offset="100%" stop-opacity="0"/></radialGradient></defs>
+        <defs><radialGradient id="rayG" cx="50%" cy="0%" r="70%"><stop offset="0%" stop-color="#FFD700" stop-opacity=".15"/><stop offset="100%" stop-color="#FF8C00" stop-opacity="0"/></radialGradient></defs>
         <rect width="100%" height="100%" fill="url(#rayG)"/>
     </svg>
 
@@ -131,34 +166,40 @@
             <svg id="pixar-rat" viewBox="0 0 260 320" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <radialGradient id="furGrad" cx="50%" cy="40%" r="60%">
-                        <stop offset="0%" stop-color="#E5A663" />
-                        <stop offset="100%" stop-color="#7A4810" />
-                    </radialGradient>
-                    <filter id="eyeGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                        <stop offset="0%" stop-color="#E5A663" /> <stop offset="70%" stop-color="#B87030" /> <stop offset="100%" stop-color="#7A4810" /> </radialGradient>
+                    <filter id="eyeGlow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                 </defs>
-                <path d="M130,60 Q210,60 210,180 Q210,290 130,290 Q50,290 50,180 Q50,60 130,60" fill="url(#furGrad)" />
-                <path d="M130,140 Q170,140 170,220 Q170,280 130,280 Q90,280 90,220 Q90,140 130,140" fill="#EDD090" opacity="0.6" />
-                <circle cx="95" cy="120" r="18" fill="white" />
-                <circle cx="165" cy="120" r="18" fill="white" />
-                <circle id="pupil-l" cx="100" cy="122" r="9" fill="#2A1506" />
-                <circle id="pupil-r" cx="160" cy="122" r="9" fill="#2A1506" />
-                <circle cx="92" cy="115" r="4" fill="white" filter="url(#eyeGlow)" />
-                <ellipse cx="130" cy="150" rx="8" ry="5" fill="#E87090" />
-                <circle cx="60" cy="70" r="25" fill="#7A4810" />
-                <circle cx="200" cy="70" r="25" fill="#7A4810" />
-                <circle cx="60" cy="70" r="15" fill="#F0A8B8" />
-                <circle cx="200" cy="70" r="15" fill="#F0A8B8" />
+                <ellipse cx="130" cy="180" rx="80" ry="110" fill="url(#furGrad)" />
+                <ellipse cx="130" cy="200" rx="45" ry="70" fill="#EDD090" opacity="0.5" />
+                <circle cx="95" cy="120" r="22" fill="white" />
+                <circle cx="165" cy="120" r="22" fill="white" />
+                <circle cx="100" cy="122" r="11" fill="#2A1506" /> <circle cx="160" cy="122" r="11" fill="#2A1506" />
+                <circle cx="92" cy="115" r="5" fill="white" filter="url(#eyeGlow)" /> <circle cx="157" cy="115" r="5" fill="white" filter="url(#eyeGlow)" />
+                <circle cx="165" cy="120" r="24" fill="none" stroke="#FFD700" stroke-width="2.5" />
+                <circle cx="165" cy="120" r="20" fill="rgba(0, 200, 255, 0.05)" stroke="white" stroke-width="0.5" />
+                <circle cx="60" cy="70" r="30" fill="#7A4810" />
+                <circle cx="200" cy="70" r="30" fill="#7A4810" />
+                <circle cx="60" cy="70" r="18" fill="#F0A8B8" />
+                <circle cx="200" cy="70" r="18" fill="#F0A8B8" />
+                <ellipse cx="130" cy="155" rx="10" ry="6" fill="#E87090" />
             </svg>
         </div>
     </div>
 
-    <svg id="el-tooth" class="s-el" viewBox="0 0 100 100" style="width:200px"><path d="M50,10 Q80,10 80,50 Q80,90 50,90 Q20,90 20,50 Q20,10 50,10" fill="#DDCFA0"/></svg>
-    <svg id="el-implant" class="s-el" viewBox="0 0 100 200" style="width:100px"><rect x="40" y="20" width="20" height="160" fill="#FFD700" rx="10"/></svg>
+    <svg id="el-tooth" class="s-el" viewBox="0 0 100 120" style="width:200px">
+        <defs><radialGradient id="toothGrad"><stop offset="0%" stop-color="#FFF8E7"/><stop offset="100%" stop-color="#DDCFA0"/></radialGradient></defs>
+        <path d="M50,10 Q90,10 90,60 Q90,110 50,110 Q10,110 10,60 Q10,10 50,10" fill="url(#toothGrad)" fill-opacity="0.9" filter="drop-shadow(0 10px 20px rgba(0,0,0,0.3))"/>
+    </svg>
+    <svg id="el-implant" class="s-el" viewBox="0 0 100 250" style="width:120px">
+        <defs><linearGradient id="metalGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#C0C0C0"/><stop offset="50%" stop-color="#FFF"/><stop offset="100%" stop-color="#A9A9A9"/></linearGradient></defs>
+        <rect x="40" y="20" width="20" height="180" fill="url(#metalGrad)" rx="10" filter="drop-shadow(0 10px 15px rgba(0,0,0,0.4))"/>
+        <circle cx="50" cy="190" r="35" fill="none" stroke="#FFD700" stroke-width="2" stroke-dasharray="8 5"/>
+    </svg>
 </div>
 
-<div id="txt0" class="txt" style="top:30%; left:50%; transform:translateX(-50%); text-align:center; opacity:1">
-    <span style="letter-spacing:4px; font-size:12px; color:#FFD700">UNA HISTÒRIA DE MÀGIA</span>
-    <h1 style="font-size: clamp(3rem, 8vw, 6rem)">El Ratito <em>Pérez</em></h1>
+<div id="txt0" class="txt" style="top:25%; left:50%; transform:translateX(-50%); text-align:center; opacity:1">
+    <span style="letter-spacing:0.4em; font-size:12px; color:rgba(255,215,0,0.7)">UNA HISTÒRIA DE MÀGIA</span>
+    <h1 style="font-size: clamp(3.2rem, 9vw, 7rem)">El Ratito <em>Pérez</em></h1>
     <p>T'explica la història dels implants dentals</p>
 </div>
 
@@ -169,47 +210,52 @@
 
 <div id="txt2" class="txt" style="top:40%; left:55%">
     <h2>Tecnologia <em>3D Scan</em></h2>
-    <p>Veiem exactament el que el teu os necessita amb precisió mil·limètrica.</p>
+    <p>Veiem exactament le que le teu os necessita amb precisió mil·limètrica.</p>
 </div>
 
 <div id="txt7" class="txt" style="top:20%; left:50%; transform:translateX(-50%); text-align:center">
     <h2>Torna a <em>somriure</em></h2>
     <div class="offer-card">
         <h3>Primera Visita Gratuïta</h3>
-        <p>Inclou TAC 3D i pla de tractament personalitzat.</p>
+        <p>📋 Diagnòstic complet inclòs<br>📡 Pressupost amb TAC 3D sense compromís</p>
         <br>
         <a href="tel:935664366" class="btn-cta">Truca ara</a>
     </div>
 </div>
 
 <script>
+    // --- LERPING (Fluidité) ---
     const lerp = (a, b, n) => (1 - n) * a + n * b;
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
     // Initialisation des étoiles
     const starsSvg = document.getElementById('stars');
-    for(let i=0; i<150; i++) {
+    for(let i=0; i<180; i++) {
         const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         c.setAttribute("cx", Math.random() * 1920);
         c.setAttribute("cy", Math.random() * 1080);
-        c.setAttribute("r", Math.random() * 1.5);
+        c.setAttribute("r", Math.random() * 1.8);
         c.setAttribute("fill", "white");
-        c.setAttribute("opacity", Math.random());
+        c.setAttribute("opacity", Math.random() * 0.8);
         starsSvg.appendChild(c);
     }
 
-    // Gestion du Scroll & Animations
+    // --- VARIABLES DE SCROLL (Amélioré Mobile) ---
     let currentScroll = 0;
     let targetScroll = 0;
     let scrollVelocity = 0;
+    const mob = window.innerWidth <= 768;
 
     window.addEventListener('scroll', () => {
         targetScroll = window.scrollY;
     });
 
     function animate() {
-        scrollVelocity = targetScroll - currentScroll;
-        currentScroll = lerp(currentScroll, targetScroll, 0.1);
+        requestAnimationFrame(animate);
+        
+        // Calcul de la vélocité et lissage (Lerp)
+        scrollVelocity = lerp(scrollVelocity, targetScroll - currentScroll, 0.1);
+        currentScroll = lerp(currentScroll, targetScroll, mob ? 0.08 : 0.1); // Plus doux sur mobile
         
         const maxScroll = document.body.scrollHeight - window.innerHeight;
         const p = clamp(currentScroll / maxScroll, 0, 1);
@@ -217,58 +263,82 @@
         // Progress bar
         document.getElementById('progress').style.transform = `scaleX(${p})`;
 
-        // Pixar Squash and Stretch
-        const stretch = 1 + Math.abs(scrollVelocity) * 0.001;
-        const squash = 1 / stretch;
+        // --- INERTIE DU PERSONNAGE (Squash and Stretch) ---
+        // S'étire légèrement en scrollant vite
+        const stretchFactor = clamp(1 + Math.abs(scrollVelocity) * 0.0008, 1, 1.25);
+        const squashFactor = 1 / stretchFactor;
         
-        // Ratito Position & Animation
+        // --- POSITION RATITO (Mobile Optimisé) ---
         const ratWrap = document.getElementById('rat-wrap');
-        const ratX = lerp(70, 20, p * 1.2); // Déplacement horizontal
+        const ratX = mob ? 50 : lerp(75, 25, p); // Centre sur mobile, gauche-droite sur Desktop
+        const ratY = clamp((p - 0.95) * 500, 0, 500); // S'en va à la fin
         ratWrap.style.left = `${ratX}%`;
-        ratWrap.style.width = `${lerp(300, 200, p)}px`;
-        ratWrap.style.transform = `scale(${squash}, ${stretch}) rotate(${scrollVelocity * 0.05}deg)`;
+        ratWrap.style.top = `${ratY}px`;
+        // Ajuste la taille du rat selon le scroll
+        ratWrap.style.width = mob ? `${clamp(lerp(250, 200, p*2), 200, 250)}px` : `${clamp(lerp(350, 280, p*2), 280, 350)}px`;
+        // Applique l'étirement cinématique (Inertie)
+        ratWrap.style.transform = `translateX(-50%) scale(${mob ? 1 : squashFactor}, ${stretchFactor}) rotate(${mob ? 0 : scrollVelocity * 0.04}deg)`;
 
-        // Background Color Morphing
-        const hue = 260 + p * 100;
-        document.getElementById('bg').style.background = `radial-gradient(circle at 50% 50%, hsl(${hue}, 50%, 15%) 0%, #0a0514 100%)`;
+        // --- BG Color Morphing (Ambré) ---
+        const hue = lerp(260, 20, p * 1.5); // Passe du violet à l'ambre
+        document.getElementById('bg').style.background = `radial-gradient(circle at center, hsl(${hue}, 70%, 15%) 0%, hsl(${hue}, 100%, 3%) 100%)`;
 
-        // Text & Element Visibility Logic
+        // --- FX Scènes ---
+        document.getElementById('light-rays').style.opacity = lerp(0, 0.8, p);
+        const hint = document.getElementById('hint');
+        hint.style.opacity = p > 0.02 ? 0 : 1;
+
+        // --- LOGIQUE VISIBILITÉ SCÈNES (CORRIGÉ BUG AFFICHAGE) ---
         updateScenes(p);
-
-        requestAnimationFrame(animate);
     }
 
+    // Fonction de visibilité (Simplifiée pour mobile)
     function updateScenes(p) {
+        // [ID, Start%, End%]
         const scenes = [
-            { id: 'txt0', s: 0, e: 0.1 },
-            { id: 'txt1', s: 0.15, e: 0.3 },
-            { id: 'txt2', s: 0.35, e: 0.5 },
-            { id: 'txt7', s: 0.85, e: 1.0 },
-            { id: 'el-tooth', s: 0.1, e: 0.4 },
-            { id: 'el-implant', s: 0.4, e: 0.7 }
+            ['txt0', -0.1, 0.12],
+            ['txt1', 0.15, 0.35],
+            ['txt2', 0.45, 0.65],
+            ['txt7', 0.85, 1.1],
+            ['el-tooth', 0.12, 0.45],
+            ['el-implant', 0.5, 0.85]
         ];
 
         scenes.forEach(sc => {
-            const el = document.getElementById(sc.id);
+            const el = document.getElementById(sc[0]);
             if(!el) return;
-            const opacity = p >= sc.s && p <= sc.e ? 1 : 0;
+            const opacity = p >= sc[1] && p <= sc[2] ? 1 : 0;
+            const yOffset = el.style.opacity == 1 ? 0 : 25; // Petit effet de slide-in
             el.style.opacity = opacity;
-            el.style.transform = `translateY(${(1-opacity) * 20}px) ${el.id.includes('txt') && el.id !== 'txt0' && el.id !== 'txt7' ? '' : 'translateX(-50%)'}`;
+            
+            // Applique le transform selon Desktop (Slide-in latéral) ou Mobile (Slide-in vertical)
+            const isCenteredText = el.id === 'txt0' || el.id === 'txt7';
+            if(mob || isCenteredText) {
+                 el.style.transform = `translateY(${yOffset}px) translateX(-50%)`;
+            } else {
+                 el.style.transform = `translateY(${yOffset}px)`;
+            }
         });
 
-        // Pips active state
+        // Pips navigation active
         const pips = document.querySelectorAll('.pip');
-        const activeIdx = Math.floor(p * pips.length);
-        pips.forEach((pip, i) => pip.classList.toggle('active', i === activeIdx));
+        const activePip = Math.floor(p * pips.length);
+        pips.forEach((pip, i) => {
+            pip.classList.toggle('active', i === activePip);
+            pip.classList.toggle('past', i < activePip);
+        });
     }
 
-    // Cursor Follower
-    document.addEventListener('mousemove', (e) => {
-        const dot = document.getElementById('cursor-dot');
-        dot.style.left = e.clientX + 'px';
-        dot.style.top = e.clientY + 'px';
-    });
+    // Cursor Follower (Desktop only)
+    if(!mob) {
+        document.addEventListener('mousemove', (e) => {
+            const dot = document.getElementById('cursor-dot');
+            dot.style.left = e.clientX + 'px';
+            dot.style.top = e.clientY + 'px';
+        });
+    }
 
+    // Démarrage de la boucle
     animate();
 </script>
 
