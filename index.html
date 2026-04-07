@@ -50,7 +50,7 @@ overflow:hidden;
 
 /* ── SCENE BACKGROUNDS ── */
 .bg-intro  {background:radial-gradient(ellipse 130% 120% at 50% -10%, #2a185c 0%, #150a38 40%, #0a0520 100%)}
-.bg-warm   {background:linear-gradient(160deg,#f0dab8 0%,#e8c888 50%,#d8a848 100%)}
+.bg-warm   {background:linear-gradient(160deg,#1e0e02 0%,#2a1204 50%,#180a02 100%)}
 .bg-navy   {background:linear-gradient(160deg,#040e24 0%,#071428 50%,#030a18 100%)}
 .bg-amber  {background:linear-gradient(160deg,#140900 0%,#261400 50%,#0e0700 100%)}
 .bg-forest {background:linear-gradient(160deg,#021004 0%,#061a06 50%,#020c02 100%)}
@@ -197,7 +197,7 @@ line-height:1.9;
 max-width:520px;
 }
 .sc-body strong{font-weight:700;opacity:.92}
-.sc-body.dark{color:#3a2208}
+.sc-body.dark{color:rgba(255,255,255,.72)}
 .sc-body.light{color:rgba(255,255,255,.62)}
 
 /* Fun fact */
@@ -210,7 +210,7 @@ padding:.75rem 1rem;
 border-radius:6px;
 max-width:520px;
 }
-.fun-fact.dark{background:rgba(0,0,0,.1);color:rgba(42,26,8,.7);border-left:3px solid rgba(42,26,8,.25)}
+.fun-fact.dark{background:rgba(255,255,255,.06);color:rgba(255,255,255,.55);border-left:3px solid rgba(255,150,60,.35)}
 .fun-fact.light{background:rgba(255,255,255,.06);color:rgba(255,255,255,.5);border-left:3px solid rgba(255,255,255,.15)}
 
 /* ── SPEECH BUBBLE ── */
@@ -241,7 +241,7 @@ bottom:-8px;left:21px;
 border:9px solid transparent;
 border-top:9px solid rgba(255,255,255,.95);
 }
-.bubble.dark{background:rgba(250,245,230,.92);border-color:#5a3008;color:#2a1408}
+.bubble.dark{background:rgba(255,255,255,.95);border-color:#5a3008;color:#2a1408}
 .bubble.dark::before{border-top-color:#5a3008}
 .bubble.dark::after{border-top-color:rgba(250,245,230,.92)}
 .bubble-hint{
@@ -381,38 +381,42 @@ transition:all .2s;
 }
 .lb.on{border-color:rgba(255,208,60,.55);color:#FFD060;background:rgba(255,208,60,.08)}
 
-/* Bottom bar */
+/* Bottom bar — minimal modern */
 #ui-bot{
 position:fixed;bottom:0;left:0;right:0;height:48px;
 z-index:900;
 display:flex;align-items:center;justify-content:space-between;
 padding:0 clamp(1rem,3vw,2rem);
-background:rgba(0,0,0,.85);
-backdrop-filter:blur(12px);
--webkit-backdrop-filter:blur(12px);
-border-top:1px solid rgba(255,255,255,.06);
+background:rgba(0,0,0,.75);
+backdrop-filter:blur(16px);
+-webkit-backdrop-filter:blur(16px);
+border-top:1px solid rgba(255,255,255,.05);
 }
 .bot-hint{
-font-family:Inter,sans-serif;font-size:.62rem;font-weight:500;
-letter-spacing:.18em;text-transform:uppercase;
-color:rgba(255,255,255,.22);
+font-family:Inter,sans-serif;font-size:.6rem;font-weight:500;
+letter-spacing:.2em;text-transform:uppercase;
+color:rgba(255,255,255,.28);
 animation:hintP 2.5s ease-in-out infinite;
+display:flex;align-items:center;gap:.4rem;
 }
+.bot-hint svg{opacity:.5;animation:hintP 2.5s ease-in-out infinite}
 .sc-counter{
 font-family:‘Cormorant Garamond’,serif;
 font-size:1rem;font-weight:600;
-color:rgba(255,255,255,.3);letter-spacing:.05em;
+color:rgba(255,255,255,.25);letter-spacing:.08em;
 }
-.nav-btns{display:flex;gap:.35rem}
-.nb{
-width:36px;height:36px;border-radius:50%;
-border:1.5px solid rgba(255,255,255,.15);
-background:transparent;color:rgba(255,255,255,.45);
-font-size:.9rem;cursor:pointer;
+/* Replace clunky buttons with scroll-wheel icon */
+.scroll-icon{
 display:flex;align-items:center;justify-content:center;
-transition:all .2s;
+width:32px;height:32px;
+border:1.5px solid rgba(255,255,255,.12);
+border-radius:100px;
+cursor:pointer;
+transition:border-color .2s,opacity .2s;
+opacity:.5;
 }
-.nb:hover{border-color:rgba(255,208,60,.55);color:#FFD060;background:rgba(255,208,60,.07)}
+.scroll-icon:hover{border-color:rgba(255,208,60,.4);opacity:1}
+.scroll-icon svg{width:14px;height:14px;stroke:rgba(255,255,255,.7);fill:none;stroke-width:2;stroke-linecap:round}
 
 /* Pips */
 #pips{
@@ -420,12 +424,18 @@ position:fixed;right:.85rem;top:50%;transform:translateY(-50%);
 z-index:850;display:flex;flex-direction:column;gap:7px;
 }
 .pip{
-width:5px;height:5px;border-radius:50%;
-background:rgba(255,255,255,.15);cursor:pointer;
-transition:background .35s,transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .35s;
+width:4px;height:4px;border-radius:2px;
+background:rgba(255,255,255,.14);cursor:pointer;
+transition:background .4s,height .45s cubic-bezier(.34,1.56,.64,1),box-shadow .4s;
 }
-.pip.on{background:#FFD060;transform:scale(2.1);box-shadow:0 0 8px rgba(255,208,60,.5)}
-.pip.done{background:rgba(255,255,255,.38)}
+.pip.on{
+background:#FFD060;
+height:16px;
+border-radius:2px;
+box-shadow:0 0 8px rgba(255,208,60,.4);
+transform:none;
+}
+.pip.done{background:rgba(255,255,255,.32)}
 
 /* Progress */
 #prog{
@@ -487,10 +497,11 @@ overflow-y:auto;
 
 .col-visual{
 flex-direction:row;
-flex-wrap:wrap;
+flex-wrap:nowrap;
 justify-content:center;
+align-items:flex-end;
 gap:.8rem;
-max-height:220px;
+max-height:200px;
 overflow:hidden;
 }
 /* Illustration max width on mobile */
@@ -519,8 +530,70 @@ max-width:50% !important;
 .trust-row{gap:.6rem}
 .rat-lg,.rat-md,.rat-cta{width:clamp(80px,25vw,130px)}
 }
-</style>
 
+/* ── WHY US ── */
+.layout-why{
+width:100%;
+display:grid;
+grid-template-rows:auto 1fr;
+gap:1.8rem;
+padding-top:4rem;
+padding-bottom:2rem;
+height:100%;
+align-content:start;
+overflow-y:auto;
+}
+.why-header{
+display:flex;flex-direction:column;gap:.5rem;
+}
+.why-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:1rem;
+align-content:start;
+}
+.why-card{
+background:rgba(255,255,255,.05);
+border:1px solid rgba(255,255,255,.08);
+border-radius:10px;
+padding:1.1rem;
+display:flex;flex-direction:column;gap:.35rem;
+transition:background .2s,border-color .2s;
+}
+.why-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,208,60,.2)}
+.why-card-accent{background:rgba(255,208,60,.06);border-color:rgba(255,208,60,.2)}
+.why-icon{font-size:1.2rem;margin-bottom:.1rem}
+.why-num{
+font-family:‘Cormorant Garamond’,serif;
+font-size:clamp(1.4rem,2.8vw,2rem);
+font-weight:700;color:white;line-height:1;
+}
+.why-label{
+font-family:Inter,sans-serif;
+font-size:clamp(.7rem,1.1vw,.78rem);
+font-weight:700;
+color:rgba(255,255,255,.55);
+line-height:1.35;text-transform:uppercase;letter-spacing:.06em;
+}
+.why-desc{
+font-family:Inter,sans-serif;
+font-size:clamp(.72rem,1vw,.8rem);
+font-weight:400;color:rgba(255,255,255,.38);
+line-height:1.6;margin-top:.15rem;
+}
+@media(max-width:767px){
+.why-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+.layout-why{padding-top:3.5rem;gap:1.2rem;padding-bottom:1rem}
+.why-card{padding:.85rem .9rem}
+.why-num{font-size:clamp(1.2rem,6vw,1.6rem)}
+.why-icon{font-size:1rem}
+.why-desc{font-size:.72rem}
+}
+@media(max-width:380px){
+.why-grid{grid-template-columns:1fr 1fr}
+}
+
+</style>
 </head>
 <body>
 
@@ -541,11 +614,10 @@ max-width:50% !important;
 <!-- BOTTOM UI -->
 
 <div id="ui-bot">
-  <span class="bot-hint" id="bot-hint">Fes scroll per avançar ↓</span>
+  <span class="bot-hint" id="bot-hint"><svg viewBox="0 0 16 16" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><polyline points="3,6 8,11 13,6"/></svg><span id="hint-text">Scroll</span></span>
   <span class="sc-counter" id="sc-cnt">1 / 7</span>
-  <div class="nav-btns">
-    <button class="nb" onclick="navTo(cur-1)" title="Anterior">↑</button>
-    <button class="nb" onclick="navTo(cur+1)" title="Següent">↓</button>
+  <div class="scroll-icon" onclick="navTo(cur+1)" title="Següent">
+    <svg viewBox="0 0 16 16"><polyline points="3,6 8,11 13,6"/></svg>
   </div>
 </div>
 
@@ -600,7 +672,70 @@ max-width:50% !important;
 <line x1="114" y1="119" x2="182" y2="112"/><line x1="114" y1="121" x2="184" y2="121"/>
 </g>
 <path d="M84 136 Q98 150 112 136" stroke="#5A3008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}</style>
+<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}
+/* ── WHY US ── */
+.layout-why{
+  width:100%;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:1.8rem;
+  padding-top:4rem;
+  padding-bottom:2rem;
+  height:100%;
+  align-content:start;
+  overflow-y:auto;
+}
+.why-header{
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.why-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+  align-content:start;
+}
+.why-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:1.1rem;
+  display:flex;flex-direction:column;gap:.35rem;
+  transition:background .2s,border-color .2s;
+}
+.why-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,208,60,.2)}
+.why-card-accent{background:rgba(255,208,60,.06);border-color:rgba(255,208,60,.2)}
+.why-icon{font-size:1.2rem;margin-bottom:.1rem}
+.why-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,2.8vw,2rem);
+  font-weight:700;color:white;line-height:1;
+}
+.why-label{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.7rem,1.1vw,.78rem);
+  font-weight:700;
+  color:rgba(255,255,255,.55);
+  line-height:1.35;text-transform:uppercase;letter-spacing:.06em;
+}
+.why-desc{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.72rem,1vw,.8rem);
+  font-weight:400;color:rgba(255,255,255,.38);
+  line-height:1.6;margin-top:.15rem;
+}
+@media(max-width:767px){
+  .why-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .layout-why{padding-top:3.5rem;gap:1.2rem;padding-bottom:1rem}
+  .why-card{padding:.85rem .9rem}
+  .why-num{font-size:clamp(1.2rem,6vw,1.6rem)}
+  .why-icon{font-size:1rem}
+  .why-desc{font-size:.72rem}
+}
+@media(max-width:380px){
+  .why-grid{grid-template-columns:1fr 1fr}
+}
+
+</style>
 </svg></div>
   <div class="bubble anim d2" data-lang="ca">Fes scroll per baixar → 🐭</div>
   <div class="bubble anim d2" data-lang="es" style="display:none">Haz scroll para bajar → 🐭</div>
@@ -615,10 +750,10 @@ max-width:50% !important;
 <section class="scene" id="sc1" data-idx="1" style="height:100dvh">
   <div class="scene-inner"><div class="layout-split-r">
 <div class="col-text">
-  <span class="sc-label anim d1" data-lang="ca" style="color:#c84820">Capítol I</span>
-  <span class="sc-label anim d1" data-lang="es" style="display:none;color:#c84820">Capítulo I</span>
-  <h2 class="sc-title anim d2" data-lang="ca" style="color:#1a0a04">Una dent que falta.<br>Una vida que <em>canvia</em>.</h2>
-  <h2 class="sc-title anim d2" data-lang="es" style="display:none;color:#1a0a04">Un diente que falta.<br>Una vida que <em>cambia</em>.</h2>
+  <span class="sc-label anim d1" data-lang="ca" style="color:rgba(255,180,80,.85)">Capítol I</span>
+  <span class="sc-label anim d1" data-lang="es" style="display:none;color:rgba(255,180,80,.85)">Capítulo I</span>
+  <h2 class="sc-title anim d2" data-lang="ca" style="color:white">Una dent que falta.<br>Una vida que <em>canvia</em>.</h2>
+  <h2 class="sc-title anim d2" data-lang="es" style="display:none;color:white">Un diente que falta.<br>Una vida que <em>cambia</em>.</h2>
   <p class="sc-body dark anim d3" data-lang="ca">Evitar certes menges. Somriure amb la boca tancada.<br>Parlar amb vergonya. El dolor de tant en tant.<br><strong>Ho coneixes bé, oi?</strong></p>
   <p class="sc-body dark anim d3" data-lang="es" style="display:none">Evitar ciertos alimentos. Sonreír con la boca cerrada.<br>Hablar con vergüenza. El dolor de vez en cuando.<br><strong>Lo conoces bien, ¿verdad?</strong></p>
   <p class="fun-fact dark anim d4" data-lang="ca">💡 Quan perds una dent, el maxil·lar perd el 25% del seu volum óssi en el primer any.</p>
@@ -742,7 +877,70 @@ max-width:50% !important;
 <line x1="114" y1="119" x2="182" y2="112"/><line x1="114" y1="121" x2="184" y2="121"/>
 </g>
 <path d="M84 136 Q98 150 112 136" stroke="#5A3008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}</style>
+<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}
+/* ── WHY US ── */
+.layout-why{
+  width:100%;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:1.8rem;
+  padding-top:4rem;
+  padding-bottom:2rem;
+  height:100%;
+  align-content:start;
+  overflow-y:auto;
+}
+.why-header{
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.why-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+  align-content:start;
+}
+.why-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:1.1rem;
+  display:flex;flex-direction:column;gap:.35rem;
+  transition:background .2s,border-color .2s;
+}
+.why-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,208,60,.2)}
+.why-card-accent{background:rgba(255,208,60,.06);border-color:rgba(255,208,60,.2)}
+.why-icon{font-size:1.2rem;margin-bottom:.1rem}
+.why-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,2.8vw,2rem);
+  font-weight:700;color:white;line-height:1;
+}
+.why-label{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.7rem,1.1vw,.78rem);
+  font-weight:700;
+  color:rgba(255,255,255,.55);
+  line-height:1.35;text-transform:uppercase;letter-spacing:.06em;
+}
+.why-desc{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.72rem,1vw,.8rem);
+  font-weight:400;color:rgba(255,255,255,.38);
+  line-height:1.6;margin-top:.15rem;
+}
+@media(max-width:767px){
+  .why-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .layout-why{padding-top:3.5rem;gap:1.2rem;padding-bottom:1rem}
+  .why-card{padding:.85rem .9rem}
+  .why-num{font-size:clamp(1.2rem,6vw,1.6rem)}
+  .why-icon{font-size:1rem}
+  .why-desc{font-size:.72rem}
+}
+@media(max-width:380px){
+  .why-grid{grid-template-columns:1fr 1fr}
+}
+
+</style>
 </svg></div></div></div></div>
 </section>
 
@@ -844,7 +1042,70 @@ max-width:50% !important;
 <line x1="114" y1="119" x2="182" y2="112"/><line x1="114" y1="121" x2="184" y2="121"/>
 </g>
 <path d="M84 136 Q98 150 112 136" stroke="#5A3008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}</style>
+<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}
+/* ── WHY US ── */
+.layout-why{
+  width:100%;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:1.8rem;
+  padding-top:4rem;
+  padding-bottom:2rem;
+  height:100%;
+  align-content:start;
+  overflow-y:auto;
+}
+.why-header{
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.why-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+  align-content:start;
+}
+.why-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:1.1rem;
+  display:flex;flex-direction:column;gap:.35rem;
+  transition:background .2s,border-color .2s;
+}
+.why-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,208,60,.2)}
+.why-card-accent{background:rgba(255,208,60,.06);border-color:rgba(255,208,60,.2)}
+.why-icon{font-size:1.2rem;margin-bottom:.1rem}
+.why-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,2.8vw,2rem);
+  font-weight:700;color:white;line-height:1;
+}
+.why-label{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.7rem,1.1vw,.78rem);
+  font-weight:700;
+  color:rgba(255,255,255,.55);
+  line-height:1.35;text-transform:uppercase;letter-spacing:.06em;
+}
+.why-desc{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.72rem,1vw,.8rem);
+  font-weight:400;color:rgba(255,255,255,.38);
+  line-height:1.6;margin-top:.15rem;
+}
+@media(max-width:767px){
+  .why-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .layout-why{padding-top:3.5rem;gap:1.2rem;padding-bottom:1rem}
+  .why-card{padding:.85rem .9rem}
+  .why-num{font-size:clamp(1.2rem,6vw,1.6rem)}
+  .why-icon{font-size:1rem}
+  .why-desc{font-size:.72rem}
+}
+@media(max-width:380px){
+  .why-grid{grid-template-columns:1fr 1fr}
+}
+
+</style>
 </svg></div></div></div></div>
 </section>
 
@@ -956,7 +1217,70 @@ max-width:50% !important;
 <text x="462" y="64"  font-size="17" fill="#FFD060" opacity=".72" style="animation:sp 2s .7s ease-in-out infinite">✦</text>
 <text x="32"  y="148" font-size="13" fill="#FFD060" opacity=".6" style="animation:sp 2s 1.2s ease-in-out infinite">✦</text>
 <text x="450" y="144" font-size="15" fill="#FFD060" opacity=".65" style="animation:sp 2s 1.8s ease-in-out infinite">✦</text>
-<style>@keyframes sp{0%,100%{opacity:0;transform:scale(0)rotate(0)}50%{opacity:.9;transform:scale(1.2)rotate(180deg)}}</style>
+<style>@keyframes sp{0%,100%{opacity:0;transform:scale(0)rotate(0)}50%{opacity:.9;transform:scale(1.2)rotate(180deg)}}
+/* ── WHY US ── */
+.layout-why{
+  width:100%;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:1.8rem;
+  padding-top:4rem;
+  padding-bottom:2rem;
+  height:100%;
+  align-content:start;
+  overflow-y:auto;
+}
+.why-header{
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.why-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+  align-content:start;
+}
+.why-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:1.1rem;
+  display:flex;flex-direction:column;gap:.35rem;
+  transition:background .2s,border-color .2s;
+}
+.why-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,208,60,.2)}
+.why-card-accent{background:rgba(255,208,60,.06);border-color:rgba(255,208,60,.2)}
+.why-icon{font-size:1.2rem;margin-bottom:.1rem}
+.why-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,2.8vw,2rem);
+  font-weight:700;color:white;line-height:1;
+}
+.why-label{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.7rem,1.1vw,.78rem);
+  font-weight:700;
+  color:rgba(255,255,255,.55);
+  line-height:1.35;text-transform:uppercase;letter-spacing:.06em;
+}
+.why-desc{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.72rem,1vw,.8rem);
+  font-weight:400;color:rgba(255,255,255,.38);
+  line-height:1.6;margin-top:.15rem;
+}
+@media(max-width:767px){
+  .why-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .layout-why{padding-top:3.5rem;gap:1.2rem;padding-bottom:1rem}
+  .why-card{padding:.85rem .9rem}
+  .why-num{font-size:clamp(1.2rem,6vw,1.6rem)}
+  .why-icon{font-size:1rem}
+  .why-desc{font-size:.72rem}
+}
+@media(max-width:380px){
+  .why-grid{grid-template-columns:1fr 1fr}
+}
+
+</style>
 </svg></div>
   <div style="display:flex;align-items:flex-end;justify-content:center;gap:1.5rem;flex-wrap:wrap" class="anim d4">
     <div class="rat-wrap rat-md"><svg viewBox="0 0 220 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;overflow:visible;display:block">
@@ -1001,7 +1325,70 @@ max-width:50% !important;
 </div></div>
 </section>
 
-<section class="scene" id="sc6" data-idx="6" style="height:100dvh">
+<section class="scene" id="sc6" data-idx="6" style="height:100dvh;background:radial-gradient(ellipse 140% 100% at 50% 0%, #1a0e36 0%, #0e0820 55%, #060410 100%)">
+  <div class="scene-inner">
+    <div class="layout-why">
+      <div class="why-header">
+        <span class="sc-label anim d1" data-lang="ca" style="color:rgba(255,208,60,.7)">Per què nosaltres</span>
+        <span class="sc-label anim d1" data-lang="es" style="display:none;color:rgba(255,208,60,.7)">Por qué nosotros</span>
+        <h2 class="sc-title anim d2" data-lang="ca" style="color:white">El millor equip<br>de la <em>regió</em>.</h2>
+        <h2 class="sc-title anim d2" data-lang="es" style="display:none;color:white">El mejor equipo<br>de la <em>región</em>.</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-card anim d2">
+          <div class="why-icon">🏆</div>
+          <div class="why-num">+15</div>
+          <div class="why-label" data-lang="ca">Anys especialitzats<br>en implantologia</div>
+          <div class="why-label" data-lang="es" style="display:none">Años especializados<br>en implantología</div>
+          <p class="why-desc" data-lang="ca">Equip format a Barcelona, Madrid i Suècia — el bressol mundial dels implants Brånemark.</p>
+          <p class="why-desc" data-lang="es" style="display:none">Equipo formado en Barcelona, Madrid y Suecia — la cuna mundial de los implantes Brånemark.</p>
+        </div>
+        <div class="why-card anim d3">
+          <div class="why-icon">📡</div>
+          <div class="why-num">TAC 3D</div>
+          <div class="why-label" data-lang="ca">Tecnologia punta<br>a Vilanova</div>
+          <div class="why-label" data-lang="es" style="display:none">Tecnología punta<br>en Vilanova</div>
+          <p class="why-desc" data-lang="ca">Escàner CBCT propi al consultori. Planificació digital guiada. Precisió ±0.5mm.</p>
+          <p class="why-desc" data-lang="es" style="display:none">Escáner CBCT propio en la consulta. Planificación digital guiada. Precisión ±0.5mm.</p>
+        </div>
+        <div class="why-card anim d3">
+          <div class="why-icon">🦷</div>
+          <div class="why-num">+2.000</div>
+          <div class="why-label" data-lang="ca">Implants<br>col·locats</div>
+          <div class="why-label" data-lang="es" style="display:none">Implantes<br>colocados</div>
+          <p class="why-desc" data-lang="ca">98% d'èxit als 10 anys. Cada cas, un protocol personalitzat. Cap estadística sense nom.</p>
+          <p class="why-desc" data-lang="es" style="display:none">98% de éxito a los 10 años. Cada caso, un protocolo personalizado. Ninguna estadística sin nombre.</p>
+        </div>
+        <div class="why-card anim d4">
+          <div class="why-icon">📍</div>
+          <div class="why-num">Vilanova</div>
+          <div class="why-label" data-lang="ca">Al cor de<br>la Costa Daurada</div>
+          <div class="why-label" data-lang="es" style="display:none">En el corazón<br>de la Costa Daurada</div>
+          <p class="why-desc" data-lang="ca">Servim el Garraf, el Penedès i el Baix Llobregat. Fàcil accés en tren des de Barcelona.</p>
+          <p class="why-desc" data-lang="es" style="display:none">Servimos el Garraf, el Penedès y el Baix Llobregat. Fácil acceso en tren desde Barcelona.</p>
+        </div>
+        <div class="why-card anim d4">
+          <div class="why-icon">💳</div>
+          <div class="why-num">0%</div>
+          <div class="why-label" data-lang="ca">Finançament<br>sense interessos</div>
+          <div class="why-label" data-lang="es" style="display:none">Financiación<br>sin intereses</div>
+          <p class="why-desc" data-lang="ca">Fins a 36 mesos sense interessos. Pressupost transparent, sense sorpreses. Preu just per a tots.</p>
+          <p class="why-desc" data-lang="es" style="display:none">Hasta 36 meses sin intereses. Presupuesto transparente, sin sorpresas. Precio justo para todos.</p>
+        </div>
+        <div class="why-card why-card-accent anim d5">
+          <div class="why-icon">⭐</div>
+          <div class="why-num" style="color:#FFD060">4.9/5</div>
+          <div class="why-label" data-lang="ca">Valoració<br>pacients</div>
+          <div class="why-label" data-lang="es" style="display:none">Valoración<br>pacientes</div>
+          <p class="why-desc" data-lang="ca">"La millor decisió que vaig prendre. Servei excel·lent i resultat impressionant." — Pacient de Vilanova</p>
+          <p class="why-desc" data-lang="es" style="display:none">"La mejor decisión que tomé. Servicio excelente y resultado impresionante." — Paciente de Vilanova</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="scene" id="sc7" data-idx="7" style="height:100dvh">
   <div class="scene-inner">
 <svg class="stars-layer" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"><g fill="white"><circle cx="0" cy="0" r="0.8" opacity="0.10"><animate attributeName="opacity" values="0.10;0.50;0.10" dur="2s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="37" cy="53" r="1.3" opacity="0.16"><animate attributeName="opacity" values="0.16;0.57;0.16" dur="3s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="74" cy="107" r="1.8" opacity="0.22"><animate attributeName="opacity" values="0.22;0.64;0.22" dur="4s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="111" cy="161" r="0.8" opacity="0.28"><animate attributeName="opacity" values="0.28;0.71;0.28" dur="5s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="149" cy="214" r="1.3" opacity="0.34"><animate attributeName="opacity" values="0.34;0.78;0.34" dur="6s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="186" cy="268" r="1.8" opacity="0.40"><animate attributeName="opacity" values="0.40;0.50;0.40" dur="2s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="223" cy="322" r="0.8" opacity="0.46"><animate attributeName="opacity" values="0.46;0.57;0.46" dur="3s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="261" cy="375" r="1.3" opacity="0.10"><animate attributeName="opacity" values="0.10;0.64;0.10" dur="4s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="298" cy="429" r="1.8" opacity="0.16"><animate attributeName="opacity" values="0.16;0.71;0.16" dur="5s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="335" cy="483" r="0.8" opacity="0.22"><animate attributeName="opacity" values="0.22;0.78;0.22" dur="6s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="373" cy="537" r="1.3" opacity="0.28"><animate attributeName="opacity" values="0.28;0.50;0.28" dur="2s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="410" cy="590" r="1.8" opacity="0.34"><animate attributeName="opacity" values="0.34;0.57;0.34" dur="3s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="447" cy="44" r="0.8" opacity="0.40"><animate attributeName="opacity" values="0.40;0.64;0.40" dur="4s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="484" cy="98" r="1.3" opacity="0.46"><animate attributeName="opacity" values="0.46;0.71;0.46" dur="5s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="522" cy="151" r="1.8" opacity="0.10"><animate attributeName="opacity" values="0.10;0.78;0.10" dur="6s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="559" cy="205" r="0.8" opacity="0.16"><animate attributeName="opacity" values="0.16;0.50;0.16" dur="2s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="596" cy="259" r="1.3" opacity="0.22"><animate attributeName="opacity" values="0.22;0.57;0.22" dur="3s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="634" cy="312" r="1.8" opacity="0.28"><animate attributeName="opacity" values="0.28;0.64;0.28" dur="4s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="671" cy="366" r="0.8" opacity="0.34"><animate attributeName="opacity" values="0.34;0.71;0.34" dur="5s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="708" cy="420" r="1.3" opacity="0.40"><animate attributeName="opacity" values="0.40;0.78;0.40" dur="6s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="746" cy="474" r="1.8" opacity="0.46"><animate attributeName="opacity" values="0.46;0.50;0.46" dur="2s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="783" cy="527" r="0.8" opacity="0.10"><animate attributeName="opacity" values="0.10;0.57;0.10" dur="3s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="820" cy="581" r="1.3" opacity="0.16"><animate attributeName="opacity" values="0.16;0.64;0.16" dur="4s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="857" cy="35" r="1.8" opacity="0.22"><animate attributeName="opacity" values="0.22;0.71;0.22" dur="5s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="895" cy="88" r="0.8" opacity="0.28"><animate attributeName="opacity" values="0.28;0.78;0.28" dur="6s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="932" cy="142" r="1.3" opacity="0.34"><animate attributeName="opacity" values="0.34;0.50;0.34" dur="2s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="969" cy="196" r="1.8" opacity="0.40"><animate attributeName="opacity" values="0.40;0.57;0.40" dur="3s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="7" cy="249" r="0.8" opacity="0.46"><animate attributeName="opacity" values="0.46;0.64;0.46" dur="4s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="44" cy="303" r="1.3" opacity="0.10"><animate attributeName="opacity" values="0.10;0.71;0.10" dur="5s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="81" cy="357" r="1.8" opacity="0.16"><animate attributeName="opacity" values="0.16;0.78;0.16" dur="6s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="119" cy="411" r="0.8" opacity="0.22"><animate attributeName="opacity" values="0.22;0.50;0.22" dur="2s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="156" cy="464" r="1.3" opacity="0.28"><animate attributeName="opacity" values="0.28;0.57;0.28" dur="3s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="193" cy="518" r="1.8" opacity="0.34"><animate attributeName="opacity" values="0.34;0.64;0.34" dur="4s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="230" cy="572" r="0.8" opacity="0.40"><animate attributeName="opacity" values="0.40;0.71;0.40" dur="5s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="268" cy="25" r="1.3" opacity="0.46"><animate attributeName="opacity" values="0.46;0.78;0.46" dur="6s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="305" cy="79" r="1.8" opacity="0.10"><animate attributeName="opacity" values="0.10;0.50;0.10" dur="2s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="342" cy="133" r="0.8" opacity="0.16"><animate attributeName="opacity" values="0.16;0.57;0.16" dur="3s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="380" cy="186" r="1.3" opacity="0.22"><animate attributeName="opacity" values="0.22;0.64;0.22" dur="4s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="417" cy="240" r="1.8" opacity="0.28"><animate attributeName="opacity" values="0.28;0.71;0.28" dur="5s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="454" cy="294" r="0.8" opacity="0.34"><animate attributeName="opacity" values="0.34;0.78;0.34" dur="6s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="492" cy="348" r="1.3" opacity="0.40"><animate attributeName="opacity" values="0.40;0.50;0.40" dur="2s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="529" cy="401" r="1.8" opacity="0.46"><animate attributeName="opacity" values="0.46;0.57;0.46" dur="3s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="566" cy="455" r="0.8" opacity="0.10"><animate attributeName="opacity" values="0.10;0.64;0.10" dur="4s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="603" cy="509" r="1.3" opacity="0.16"><animate attributeName="opacity" values="0.16;0.71;0.16" dur="5s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="641" cy="562" r="1.8" opacity="0.22"><animate attributeName="opacity" values="0.22;0.78;0.22" dur="6s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="678" cy="16" r="0.8" opacity="0.28"><animate attributeName="opacity" values="0.28;0.50;0.28" dur="2s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="715" cy="70" r="1.3" opacity="0.34"><animate attributeName="opacity" values="0.34;0.57;0.34" dur="3s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="753" cy="123" r="1.8" opacity="0.40"><animate attributeName="opacity" values="0.40;0.64;0.40" dur="4s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="790" cy="177" r="0.8" opacity="0.46"><animate attributeName="opacity" values="0.46;0.71;0.46" dur="5s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="827" cy="231" r="1.3" opacity="0.10"><animate attributeName="opacity" values="0.10;0.78;0.10" dur="6s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="864" cy="285" r="1.8" opacity="0.16"><animate attributeName="opacity" values="0.16;0.50;0.16" dur="2s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="902" cy="338" r="0.8" opacity="0.22"><animate attributeName="opacity" values="0.22;0.57;0.22" dur="3s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="939" cy="392" r="1.3" opacity="0.28"><animate attributeName="opacity" values="0.28;0.64;0.28" dur="4s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="976" cy="446" r="1.8" opacity="0.34"><animate attributeName="opacity" values="0.34;0.71;0.34" dur="5s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="14" cy="499" r="0.8" opacity="0.40"><animate attributeName="opacity" values="0.40;0.78;0.40" dur="6s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="51" cy="553" r="1.3" opacity="0.46"><animate attributeName="opacity" values="0.46;0.50;0.46" dur="2s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="88" cy="7" r="1.8" opacity="0.10"><animate attributeName="opacity" values="0.10;0.57;0.10" dur="3s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="126" cy="60" r="0.8" opacity="0.16"><animate attributeName="opacity" values="0.16;0.64;0.16" dur="4s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="163" cy="114" r="1.3" opacity="0.22"><animate attributeName="opacity" values="0.22;0.71;0.22" dur="5s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="200" cy="168" r="1.8" opacity="0.28"><animate attributeName="opacity" values="0.28;0.78;0.28" dur="6s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="238" cy="222" r="0.8" opacity="0.34"><animate attributeName="opacity" values="0.34;0.50;0.34" dur="2s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="275" cy="275" r="1.3" opacity="0.40"><animate attributeName="opacity" values="0.40;0.57;0.40" dur="3s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="312" cy="329" r="1.8" opacity="0.46"><animate attributeName="opacity" values="0.46;0.64;0.46" dur="4s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="349" cy="383" r="0.8" opacity="0.10"><animate attributeName="opacity" values="0.10;0.71;0.10" dur="5s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="387" cy="436" r="1.3" opacity="0.16"><animate attributeName="opacity" values="0.16;0.78;0.16" dur="6s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="424" cy="490" r="1.8" opacity="0.22"><animate attributeName="opacity" values="0.22;0.50;0.22" dur="2s" begin="0.5s" repeatCount="indefinite"/></circle><circle cx="461" cy="544" r="0.8" opacity="0.28"><animate attributeName="opacity" values="0.28;0.57;0.28" dur="3s" begin="1.0s" repeatCount="indefinite"/></circle><circle cx="499" cy="597" r="1.3" opacity="0.34"><animate attributeName="opacity" values="0.34;0.64;0.34" dur="4s" begin="1.5s" repeatCount="indefinite"/></circle><circle cx="536" cy="51" r="1.8" opacity="0.40"><animate attributeName="opacity" values="0.40;0.71;0.40" dur="5s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="573" cy="105" r="0.8" opacity="0.46"><animate attributeName="opacity" values="0.46;0.78;0.46" dur="6s" begin="0.5s" repeatCount="indefinite"/></circle></g></svg>
 <div class="layout-cta">
@@ -1041,7 +1428,70 @@ max-width:50% !important;
 <line x1="114" y1="119" x2="182" y2="112"/><line x1="114" y1="121" x2="184" y2="121"/>
 </g>
 <path d="M84 136 Q98 150 112 136" stroke="#5A3008" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}</style>
+<style>@keyframes tsp{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.1;transform:scale(.3)}}
+/* ── WHY US ── */
+.layout-why{
+  width:100%;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:1.8rem;
+  padding-top:4rem;
+  padding-bottom:2rem;
+  height:100%;
+  align-content:start;
+  overflow-y:auto;
+}
+.why-header{
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.why-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+  align-content:start;
+}
+.why-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:10px;
+  padding:1.1rem;
+  display:flex;flex-direction:column;gap:.35rem;
+  transition:background .2s,border-color .2s;
+}
+.why-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,208,60,.2)}
+.why-card-accent{background:rgba(255,208,60,.06);border-color:rgba(255,208,60,.2)}
+.why-icon{font-size:1.2rem;margin-bottom:.1rem}
+.why-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.4rem,2.8vw,2rem);
+  font-weight:700;color:white;line-height:1;
+}
+.why-label{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.7rem,1.1vw,.78rem);
+  font-weight:700;
+  color:rgba(255,255,255,.55);
+  line-height:1.35;text-transform:uppercase;letter-spacing:.06em;
+}
+.why-desc{
+  font-family:Inter,sans-serif;
+  font-size:clamp(.72rem,1vw,.8rem);
+  font-weight:400;color:rgba(255,255,255,.38);
+  line-height:1.6;margin-top:.15rem;
+}
+@media(max-width:767px){
+  .why-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .layout-why{padding-top:3.5rem;gap:1.2rem;padding-bottom:1rem}
+  .why-card{padding:.85rem .9rem}
+  .why-num{font-size:clamp(1.2rem,6vw,1.6rem)}
+  .why-icon{font-size:1rem}
+  .why-desc{font-size:.72rem}
+}
+@media(max-width:380px){
+  .why-grid{grid-template-columns:1fr 1fr}
+}
+
+</style>
 </svg></div>
     <div class="bubble anim d2" data-lang="ca">🐭 El Ratito diu que l'anomenis ara.</div>
     <div class="bubble anim d2" data-lang="es" style="display:none">🐭 El Ratito dice que llames ahora.</div>
@@ -1096,7 +1546,7 @@ max-width:50% !important;
    Natural scroll · no click-to-advance
    ════════════════════════════════════════════ */
 
-const N = 7;
+const N = 8;
 let cur = 0;
 let lang = 'ca';
 const scenes = Array.from(document.querySelectorAll('.scene'));
@@ -1118,13 +1568,13 @@ scenes.forEach((_,i) => {
 const pips = Array.from(pipsEl.querySelectorAll('.pip'));
 
 // ── Update UI ──
-const HINTS_CA = ['Fes scroll per avançar ↓','Continua baixant ↓','Descobreix més ↓','Segueix la història ↓','Gairebé! ↓','Última escena ↓',''];
-const HINTS_ES = ['Haz scroll para avanzar ↓','Sigue bajando ↓','Descubre más ↓','Sigue la historia ↓','¡Casi! ↓','Última escena ↓',''];
+const HINTS_CA = ['Fes scroll ↓','Continua ↓','Descobreix ↓','Segueix ↓','Gairebé ↓','El somriure ↓','Per què nosaltres ↓',''];
+const HINTS_ES = ['Scroll ↓','Continúa ↓','Descubre ↓','Sigue ↓','¡Casi! ↓','La sonrisa ↓','Por qué nosotros ↓',''];
 
 function updateUI(idx) {
   cur = idx;
   cntEl.textContent = (idx+1) + ' / ' + N;
-  progEl.style.transform = 'scaleX(' + (idx/(N-1)).toFixed(4) + ')';
+  progEl.style.transform = 'scaleX(' + (idx/Math.max(N-1,1)).toFixed(4) + ')';
   pips.forEach((p,i) => {
     p.classList.toggle('on', i===idx);
     p.classList.toggle('done', i<idx);
@@ -1133,7 +1583,9 @@ function updateUI(idx) {
     else if(i<idx) p.classList.add('done');
   });
   const hints = lang==='ca' ? HINTS_CA : HINTS_ES;
-  hintEl.textContent = hints[idx] || '';
+  const hEl = document.getElementById('hint-text');
+  if(hEl) hEl.textContent = hints[idx] || '';
+  else hintEl.textContent = hints[idx] || '';
 }
 
 // ── IntersectionObserver — detect active scene ──
