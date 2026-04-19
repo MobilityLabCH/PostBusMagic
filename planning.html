@@ -1,441 +1,1321 @@
 <!DOCTYPE html>
-<html lang="fr">
+
+<html lang="fr" data-lang="fr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PostBus Connect — Planning exploitation (interne)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="SUONEN — Référence des randonnées le long des bisses alpins du Valais. Carte 3D, météo live, 50+ itinéraires filtrés.">
+<title>SUONEN — Bisses du Valais</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,600;0,700;0,800;1,300&family=Barlow:wght@300;400;500&family=Lora:ital,wght@1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <style>
-:root{
-  --bg:#0A0B10; --bg-2:#0F1118; --ink:#EDEEF2; --muted:#A7ADBD;
-  --brand:#FFD300; --brand-ink:#0B0B0B; --line:#1C2030;
-  --card:rgba(255,255,255,.06); --glass:blur(10px) saturate(130%);
-  --green:#35E0A1; --red:#FF6B6B; --blue:#7AB2FF;
-  --radius:16px; --radius-lg:22px; --shadow:0 20px 60px rgba(0,0,0,.35);
-  --max:1100px;
+/* ══════════════════════════════════════════
+   SUONEN — DESIGN SYSTEM
+══════════════════════════════════════════ */
+:root {
+  --s-black:  #0A0D0F;
+  --s-deep:   #0C1A28;
+  --s-card:   #101820;
+  --s-border: rgba(255,255,255,0.07);
+  --s-canal:  #1B8AAA;
+  --s-canal2: #3AADC8;
+  --s-sky:    #A8DCE8;
+  --s-gold:   #D4A843;
+  --s-gold2:  #F0C858;
+  --s-earth:  #C04A28;
+  --s-stone:  #6B6A62;
+  --s-mist:   #9CA8B2;
+  --s-snow:   #ECE8DC;
+  --s-white:  #F8F4EE;
+  --f-display:'Bebas Neue', sans-serif;
+  --f-cond:   'Barlow Condensed', sans-serif;
+  --f-body:   'Barlow', sans-serif;
+  --f-serif:  'Lora', serif;
+  --f-mono:   'Space Mono', monospace;
+  --ease:     cubic-bezier(0.22,1,0.36,1);
 }
-*{box-sizing:border-box} html,body{margin:0}
-body{
-  background:radial-gradient(900px 600px at 85% -10%,#1B2040 0%,#0B0D14 40%,#07080D 100%) fixed;
-  color:var(--ink); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--f-body);background:var(--s-black);color:var(--s-snow);overflow-x:hidden;-webkit-font-smoothing:antialiased;cursor:none}
+a{color:inherit;text-decoration:none}
+button{cursor:none;border:none;background:none;font-family:inherit;color:inherit}
+img{display:block;max-width:100%}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--s-black)}
+::-webkit-scrollbar-thumb{background:var(--s-canal)}
+
+/* ── CUSTOM CURSOR ── */
+#cursor-ring{
+position:fixed;top:0;left:0;width:36px;height:36px;
+border:1px solid var(–s-canal2);border-radius:50%;
+pointer-events:none;z-index:9999;
+transform:translate(-50%,-50%);
+transition:width .25s var(–ease),height .25s var(–ease),border-color .25s,background .25s;
+mix-blend-mode:screen;
 }
-.container{width:min(92vw,var(--max));margin:auto}
-h1{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;font-weight:700;line-height:1.04;
-   font-size:clamp(28px,4.6vw,54px);margin:0}
-h2{font-family:"Space Grotesk";font-weight:700;margin:0 0 8px}
-h3{margin:.4rem 0}
-p,small{color:var(--muted)}
-header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(8,9,15,.9),rgba(8,9,15,.55) 70%,transparent);backdrop-filter:var(--glass);border-bottom:1px solid #141829}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-.logo{display:flex;gap:10px;align-items:center;font-weight:800}
-.logo .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 4px rgba(255,211,0,.15)}
-.badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:#11131B;border:1px solid var(--line);font-weight:800}
-.btn{display:inline-flex;gap:10px;align-items:center;justify-content:center;padding:12px 14px;border-radius:12px;border:1px solid #2A2F45;background:#151927;color:#fff;font-weight:800;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease}
-.btn:hover{transform:translateY(-1px);box-shadow:0 10px 40px rgba(122,178,255,.18)}
-.btn.brand{background:var(--brand); color:#000; border-color:#C7A700; box-shadow:0 10px 40px rgba(255,211,0,.25)}
-.btn.ghost{background:#11131B}
-.card{background:var(--card);backdrop-filter:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:900px){.grid-2{grid-template-columns:1fr}}
-section{padding:22px 0}
-label{font-weight:800;font-size:.92rem}
-select,input{width:100%;padding:12px;border:1px solid #2A2F45;border-radius:12px;background:#0E1220;color:#E8EBF7}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.tag{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid #2A2F45;border-radius:999px;background:#11131B}
-.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.kpi .box{background:#101320;border:1px solid #252B42;border-radius:10px;padding:10px;text-align:center}
-.ok{color:#9EF3C9}
-.warn{color:#FFD17A}
-.bad{color:#FFB3B3}
-.timeline{display:grid;grid-template-columns:160px 1fr;gap:10px}
-.tl{display:contents}
-.tl .t{font-weight:800}
-.tl .d{color:#D6DBF2}
-.hr{height:1px;background:#1E2436;margin:10px 0}
-.small{font-size:.9rem;color:#A7ADBD}
-.panel{padding:14px}
-.panel h3{margin:0 0 6px}
-input[type="number"]{width:110px}
-table{width:100%;border-collapse:collapse}
-th,td{border-bottom:1px dashed #2A2F45;padding:8px 6px;text-align:left}
-th{color:#CFE0FF}
-.status{font-weight:800}
-footer{padding:28px 0;border-top:1px solid #171C2B;background:linear-gradient(180deg,#0B0D14,#0A0B10);margin-top:22px}
+#cursor-dot{
+position:fixed;top:0;left:0;width:6px;height:6px;
+background:var(–s-canal2);border-radius:50%;
+pointer-events:none;z-index:9999;
+transform:translate(-50%,-50%);
+transition:background .2s;
+}
+body:has(a:hover) #cursor-ring,
+body:has(button:hover) #cursor-ring{width:56px;height:56px;border-color:var(–s-gold);background:rgba(212,168,67,.06)}
+body:has(.b-card:hover) #cursor-ring{width:70px;height:70px;border-color:var(–s-canal2);background:rgba(27,138,170,.08)}
+
+/* ── SCROLL PROGRESS ── */
+#progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(to right,var(–s-canal),var(–s-gold));z-index:500;transition:width .1s linear;width:0}
+
+/* ═══ NAV ═══ */
+#nav{
+position:fixed;inset:0 0 auto 0;z-index:400;
+display:flex;align-items:center;justify-content:space-between;
+padding:1.5rem 3rem;
+transition:all .4s var(–ease);
+}
+#nav.scrolled{
+background:rgba(10,13,15,.95);backdrop-filter:blur(24px) saturate(1.4);
+padding:1rem 3rem;border-bottom:1px solid var(–s-border);
+}
+
+/* SUONEN BRAND MARK */
+.brand{display:flex;align-items:center;gap:1rem;text-decoration:none}
+.brand-mark{
+position:relative;width:40px;height:40px;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+}
+/* Canal cross-section: two parallel lines + name between */
+.brand-canal-top{position:absolute;top:6px;left:0;right:0;height:2px;background:var(–s-canal)}
+.brand-canal-bot{position:absolute;bottom:6px;left:0;right:0;height:2px;background:var(–s-canal)}
+.brand-canal-water{
+position:absolute;inset:12px 0;
+background:linear-gradient(90deg,var(–s-canal),var(–s-canal2));
+opacity:.25;
+}
+.brand-s{
+font-family:var(–f-display);font-size:1.4rem;color:white;
+position:relative;z-index:1;line-height:1;letter-spacing:-0.02em;
+}
+.brand-text{display:flex;flex-direction:column;line-height:1}
+.brand-name{font-family:var(–f-display);font-size:1.35rem;letter-spacing:0.18em;color:var(–s-white)}
+.brand-sub{font-family:var(–f-mono);font-size:0.52rem;letter-spacing:0.22em;color:var(–s-canal2);text-transform:uppercase;margin-top:1px}
+
+.nav-links{display:flex;align-items:center;gap:2.5rem;list-style:none}
+.nav-links a{font-family:var(–f-cond);font-size:0.88rem;letter-spacing:0.14em;font-weight:600;text-transform:uppercase;color:var(–s-mist);transition:color .2s}
+.nav-links a:hover{color:var(–s-white)}
+.nav-right{display:flex;align-items:center;gap:1.5rem}
+.lang-sw{display:flex;background:rgba(255,255,255,.05);border:1px solid var(–s-border);overflow:hidden}
+.lang-btn{padding:.35rem .9rem;font-family:var(–f-mono);font-size:.63rem;font-weight:700;letter-spacing:.1em;color:var(–s-stone);transition:all .2s}
+.lang-btn.on{background:var(–s-canal);color:white}
+.lang-btn:hover:not(.on){color:var(–s-white)}
+.nav-cta{background:var(–s-earth);color:white;padding:.65rem 1.5rem;font-family:var(–f-cond);font-size:.82rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transition:all .2s}
+.nav-cta:hover{background:#D45530}
+.burger{display:none;flex-direction:column;gap:5px;padding:.4rem}
+.burger span{display:block;width:22px;height:1.5px;background:var(–s-snow);transition:all .3s}
+#mob-menu{display:none;position:fixed;inset:0;z-index:390;background:var(–s-black);flex-direction:column;align-items:flex-start;justify-content:center;padding:3rem}
+#mob-menu.open{display:flex}
+#mob-menu nav{display:flex;flex-direction:column;gap:1.2rem}
+#mob-menu a{font-family:var(–f-display);font-size:3.5rem;letter-spacing:0.06em;color:var(–s-snow);transition:color .2s}
+#mob-menu a:hover{color:var(–s-canal2)}
+.mob-lang{display:flex;gap:1rem;margin-top:2.5rem}
+
+/* ═══ HERO ═══ */
+#hero{position:relative;min-height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.hero-bg{
+position:absolute;inset:0;
+background:
+linear-gradient(to bottom,rgba(10,13,15,.45) 0%,rgba(10,13,15,.1) 35%,rgba(10,13,15,.7) 75%,var(–s-black) 100%),
+url(‘https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=85’) center/cover;
+}
+/* Brand color accent: diagonal canal stripe */
+.hero-stripe{
+position:absolute;top:0;right:15%;width:2px;height:100%;
+background:linear-gradient(to bottom,transparent,var(–s-canal),transparent);
+opacity:.4;
+}
+.hero-stripe2{position:absolute;top:0;right:calc(15% + 8px);width:1px;height:100%;background:linear-gradient(to bottom,transparent,var(–s-canal2),transparent);opacity:.2;}
+/* Animated water flow lines */
+.hwrap{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.hw{position:absolute;left:-5%;right:-5%;height:1px;opacity:0;background:linear-gradient(90deg,transparent 0%,rgba(27,138,170,.45) 35%,rgba(212,168,67,.15) 70%,transparent 100%);animation:hwAnim 14s linear infinite}
+.hw:nth-child(1){bottom:38%;animation-delay:0s;animation-duration:16s}
+.hw:nth-child(2){bottom:48%;animation-delay:3s;animation-duration:12s}
+.hw:nth-child(3){bottom:58%;animation-delay:7s;animation-duration:18s}
+.hw:nth-child(4){bottom:68%;animation-delay:1.5s;animation-duration:14s;opacity:0}
+@keyframes hwAnim{0%{opacity:0;transform:translateX(-3%)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateX(3%)}}
+
+.hero-content{position:relative;z-index:2;padding:0 3rem 5rem}
+.hero-kicker{
+font-family:var(–f-mono);font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;
+color:var(–s-canal2);display:flex;align-items:center;gap:1rem;margin-bottom:2rem;
+opacity:0;animation:fadeUp 1s var(–ease) .2s both;
+}
+.hero-kicker::before,.hero-kicker::after{content:’’;display:block;width:40px;height:1px;background:var(–s-canal2)}
+.hero-h{
+font-family:var(–f-display);
+font-size:clamp(5.5rem,14vw,14rem);
+line-height:.88;letter-spacing:0.02em;
+opacity:0;animation:fadeUp 1s var(–ease) .4s both;
+}
+.hero-h .em{color:var(–s-canal2)}
+.hero-h .str{-webkit-text-stroke:1.5px var(–s-snow);color:transparent}
+.hero-body{
+font-family:var(–f-serif);font-style:italic;font-size:clamp(.95rem,1.5vw,1.1rem);
+color:var(–s-mist);max-width:480px;line-height:1.75;
+margin:2rem 0 2.5rem;
+opacity:0;animation:fadeUp 1s var(–ease) .65s both;
+}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;opacity:0;animation:fadeUp 1s var(–ease) .85s both}
+.btn-p{display:inline-flex;align-items:center;gap:.8rem;background:var(–s-canal);color:white;padding:1rem 2rem;font-family:var(–f-cond);font-size:.92rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .25s var(–ease)}
+.btn-p:hover{background:var(–s-canal2);transform:translateY(-2px)}
+.btn-p .arr{transition:transform .25s}
+.btn-p:hover .arr{transform:translateX(5px)}
+.btn-o{display:inline-flex;align-items:center;gap:.8rem;border:1px solid rgba(255,255,255,.18);color:var(–s-snow);padding:1rem 2rem;font-family:var(–f-cond);font-size:.92rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:all .25s}
+.btn-o:hover{border-color:var(–s-canal2);color:var(–s-canal2)}
+
+/* Hero stats — floating bottom right */
+.hero-facts{
+position:absolute;bottom:0;right:0;z-index:2;display:flex;
+opacity:0;animation:fadeIn 1s ease 1.2s both;
+}
+.hf{padding:1.2rem 2rem;border-left:1px solid var(–s-border);background:rgba(10,13,15,.75);backdrop-filter:blur(12px)}
+.hf-v{font-family:var(–f-display);font-size:2.2rem;color:var(–s-white);line-height:1}
+.hf-l{font-family:var(–f-mono);font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(–s-stone);margin-top:3px}
+
+/* ═══ STATUS BAR — bisses en eau ═══ */
+#status-bar{
+background:var(–s-deep);border-top:1px solid var(–s-border);border-bottom:1px solid var(–s-border);
+padding:.85rem 3rem;
+display:flex;align-items:center;gap:2rem;
+overflow-x:auto;scrollbar-width:none;
+}
+#status-bar::-webkit-scrollbar{display:none}
+.status-label{font-family:var(–f-mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(–s-stone);white-space:nowrap;flex-shrink:0}
+.status-pills{display:flex;gap:.75rem;flex-shrink:0}
+.spill{
+display:flex;align-items:center;gap:.5rem;
+padding:.3rem .9rem;font-family:var(–f-mono);font-size:.62rem;letter-spacing:.08em;
+border:1px solid;white-space:nowrap;transition:all .2s;
+}
+.spill.on{border-color:rgba(50,180,100,.4);background:rgba(50,180,100,.08);color:#7AE090}
+.spill.off{border-color:rgba(107,106,98,.3);background:rgba(107,106,98,.05);color:var(–s-stone)}
+.spill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.spill.on .spill-dot{background:#7AE090;box-shadow:0 0 6px #7AE090}
+.spill.off .spill-dot{background:var(–s-stone)}
+
+/* ═══ MANIFESTO ═══ */
+#manifesto{background:var(–s-canal);position:relative;overflow:hidden;padding:5.5rem 3rem}
+#manifesto::before{content:’’;position:absolute;inset:0;background:repeating-linear-gradient(-55deg,transparent,transparent 50px,rgba(255,255,255,.03) 50px,rgba(255,255,255,.03) 51px)}
+/* Canal section diagram as decorative BG */
+#manifesto::after{
+content:‘SUONEN’;position:absolute;bottom:-3rem;right:0;
+font-family:var(–f-display);font-size:18rem;line-height:1;
+opacity:.07;color:white;letter-spacing:0;pointer-events:none;
+}
+.man-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 2fr;gap:5rem;align-items:center;position:relative;z-index:1}
+.man-brand{display:flex;flex-direction:column;gap:0}
+.man-mark{font-family:var(–f-mono);font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;opacity:.6;margin-bottom:.75rem}
+.man-word{font-family:var(–f-display);font-size:5.5rem;line-height:.85;color:white}
+.man-word span{display:block;font-family:var(–f-cond);font-weight:300;font-style:italic;font-size:1.8rem;opacity:.45}
+.man-quote{font-family:var(–f-serif);font-style:italic;font-size:clamp(1.4rem,2.5vw,2.1rem);line-height:1.4;color:rgba(255,255,255,.93)}
+.man-quote em{font-style:normal;color:var(–s-gold2)}
+.man-sub{margin-top:1.5rem;font-size:.9rem;color:rgba(255,255,255,.6);line-height:1.75;font-weight:300}
+
+/* ═══ PILLARS ═══ */
+#pillars{background:var(–s-deep);border-bottom:1px solid var(–s-border)}
+.pillars{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.pill-item{padding:3.5rem 3rem;border-right:1px solid var(–s-border);position:relative;overflow:hidden;transition:background .3s}
+.pill-item:last-child{border-right:0}
+.pill-item:hover{background:rgba(27,138,170,.06)}
+.pill-n{font-family:var(–f-display);font-size:6rem;color:rgba(255,255,255,.04);position:absolute;top:1.5rem;right:2rem;line-height:1}
+.pill-icon{font-size:2rem;margin-bottom:1.5rem}
+.pill-title{font-family:var(–f-cond);font-size:1.45rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(–s-white);margin-bottom:.8rem}
+.pill-text{font-size:.88rem;color:var(–s-mist);line-height:1.78;font-weight:300}
+
+/* ═══ SELECTOR ═══ */
+#selector{background:var(–s-card);border-bottom:1px solid var(–s-border)}
+.sel-inner{max-width:1280px;margin:0 auto;padding:4.5rem 3rem}
+.sel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;margin-bottom:2.5rem;flex-wrap:wrap}
+.sel-h{font-family:var(–f-display);font-size:clamp(2.5rem,5vw,4rem);line-height:.92;letter-spacing:.03em}
+.sel-h em{color:var(–s-canal2);font-style:normal}
+.btn-rst{font-family:var(–f-mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(–s-stone);border-bottom:1px solid var(–s-stone);transition:color .2s;padding-bottom:1px}
+.btn-rst:hover{color:var(–s-snow)}
+/* SEARCH INPUT */
+.sel-search{width:100%;background:rgba(255,255,255,.04);border:1px solid var(–s-border);color:var(–s-white);padding:1rem 1.5rem;font-family:var(–f-body);font-size:.95rem;outline:none;margin-bottom:1.5rem;transition:border-color .2s}
+.sel-search:focus{border-color:var(–s-canal)}
+.sel-search::placeholder{color:var(–s-stone)}
+.fg{display:flex;align-items:flex-start;gap:1.5rem;margin-bottom:1.1rem}
+.fl{font-family:var(–f-mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(–s-stone);min-width:80px;padding-top:.55rem;flex-shrink:0}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap}
+.chip{padding:.45rem 1rem;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(–s-mist);font-size:.8rem;font-weight:500;cursor:none;transition:all .2s;user-select:none}
+.chip:hover{border-color:var(–s-canal2);color:var(–s-white)}
+.chip.on{background:rgba(27,138,170,.2);border-color:var(–s-canal);color:var(–s-white)}
+.chip.on-r{background:rgba(192,74,40,.2);border-color:var(–s-earth);color:#FF9070}
+.chip.on-g{background:rgba(30,110,50,.22);border-color:#3A8A50;color:#80D090}
+.res-bar{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(–s-border);display:flex;align-items:center;gap:1.5rem}
+.res-n{font-family:var(–f-display);font-size:3.5rem;color:var(–s-canal2);line-height:1}
+.res-t{font-size:.85rem;color:var(–s-mist);font-weight:300;line-height:1.4}
+.res-t strong{color:var(–s-white);display:block}
+
+/* ═══ BISSES GRID ═══ */
+#bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(255,255,255,.04);padding:2px}
+
+/* CARD — 3D tilt */
+.bc{
+background:var(–s-card);cursor:none;position:relative;overflow:hidden;
+transform-style:preserve-3d;transform:perspective(800px) rotateX(0) rotateY(0);
+transition:transform .1s ease,box-shadow .3s;
+}
+.bc.hidden{display:none}
+.bc:hover{box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 30px rgba(27,138,170,.1)}
+.bc-img{position:relative;height:220px;overflow:hidden}
+.bc-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(–ease);filter:brightness(.8) saturate(1.1)}
+.bc:hover .bc-img img{filter:brightness(.9) saturate(1.2)}
+
+/* ELEVATION MINI PREVIEW */
+.bc-elev{
+position:absolute;bottom:0;left:0;right:0;height:50px;
+opacity:0;transition:opacity .3s;
+}
+.bc:hover .bc-elev{opacity:1}
+.bc-stripe{position:absolute;top:0;left:0;width:4px;height:100%}
+.s-f{background:#3A8A50}.s-m{background:#1B8AAA}.s-d{background:#C04A28}
+.bc-dtag{position:absolute;top:1rem;left:1.25rem;font-family:var(–f-mono);font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .7rem;backdrop-filter:blur(10px);border:1px solid}
+.dt-f{background:rgba(25,65,35,.85);border-color:rgba(80,180,100,.4);color:#80D090}
+.dt-m{background:rgba(10,55,90,.85);border-color:rgba(60,170,200,.4);color:#80C8E8}
+.dt-d{background:rgba(90,25,15,.85);border-color:rgba(200,80,60,.4);color:#FFA080}
+.bc-badges{position:absolute;top:1rem;right:1rem;display:flex;flex-direction:column;gap:.4rem;align-items:flex-end}
+.bb{font-family:var(–f-mono);font-size:.56rem;letter-spacing:.08em;padding:.22rem .6rem;backdrop-filter:blur(10px)}
+.bb-v{background:rgba(192,74,40,.85);color:#FFA080}
+.bb-f{background:rgba(25,80,40,.85);color:#80D090}
+.bb-t{background:rgba(212,168,67,.9);color:#1a1200}
+
+/* WEATHER BADGE */
+.bc-weather{
+position:absolute;bottom:1rem;right:1rem;
+background:rgba(10,13,15,.85);backdrop-filter:blur(10px);
+border:1px solid var(–s-border);
+padding:.3rem .7rem;display:flex;align-items:center;gap:.4rem;
+font-family:var(–f-mono);font-size:.65rem;color:var(–s-snow);
+opacity:0;transition:opacity .3s;
+}
+.bc:hover .bc-weather{opacity:1}
+
+.bc-body{padding:1.5rem}
+.bc-region{font-family:var(–f-mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(–s-canal2);margin-bottom:.4rem}
+.bc-name{font-family:var(–f-display);font-size:1.7rem;letter-spacing:.03em;line-height:1;color:var(–s-white);margin-bottom:.6rem}
+.bc-desc{font-size:.83rem;color:var(–s-mist);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:1.2rem}
+
+/* ELEVATION PROFILE IN CARD */
+.bc-elev-mini{height:40px;margin-bottom:1rem}
+.bc-elev-mini svg{width:100%;height:100%}
+
+.bc-meta{display:flex;align-items:stretch;border-top:1px solid var(–s-border);padding-top:1rem;gap:0}
+.bm{display:flex;flex-direction:column;gap:2px;padding-right:1.1rem;margin-right:1.1rem;border-right:1px solid var(–s-border)}
+.bm:last-of-type{border-right:0}
+.bm-v{font-family:var(–f-cond);font-size:1rem;font-weight:700;color:var(–s-white)}
+.bm-l{font-family:var(–f-mono);font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;color:var(–s-stone)}
+.bc-rating{margin-left:auto;display:flex;align-items:center;gap:.35rem}
+.br-v{font-family:var(–f-cond);font-size:1rem;font-weight:700;color:var(–s-gold)}
+.br-n{font-family:var(–f-mono);font-size:.58rem;color:var(–s-stone)}
+
+/* EN EAU STATUS */
+.bc-status{display:flex;align-items:center;gap:.5rem;margin-top:.75rem;font-family:var(–f-mono);font-size:.6rem;letter-spacing:.08em}
+.bc-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.st-on .bc-status-dot{background:#7AE090;box-shadow:0 0 5px #7AE090}
+.st-on .bc-status-lbl{color:#7AE090}
+.st-off .bc-status-dot{background:var(–s-stone)}
+.st-off .bc-status-lbl{color:var(–s-stone)}
+
+.bc-foot{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.5rem;border-top:1px solid var(–s-border);background:rgba(255,255,255,0);transition:background .25s;font-family:var(–f-cond);font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(–s-canal)}
+.bc:hover .bc-foot{background:rgba(27,138,170,.1);color:var(–s-canal2)}
+.bc-arr{transition:transform .25s}
+.bc:hover .bc-arr{transform:translateX(5px)}
+
+/* ═══ MAP ═══ */
+#mapwrap{border-top:1px solid var(–s-border);border-bottom:1px solid var(–s-border)}
+.map-head{max-width:1280px;margin:0 auto;padding:4.5rem 3rem 2rem;display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;flex-wrap:wrap}
+.map-h{font-family:var(–f-display);font-size:clamp(2.5rem,5vw,4rem);line-height:.92}
+.map-h em{color:var(–s-gold);font-style:normal}
+.map-desc{font-size:.88rem;color:var(–s-mist);max-width:360px;line-height:1.7;font-weight:300}
+.map-layout{display:grid;grid-template-columns:280px 1fr;height:580px;border-top:1px solid var(–s-border)}
+.map-sb{background:var(–s-card);border-right:1px solid var(–s-border);padding:2rem 1.75rem;display:flex;flex-direction:column;gap:1.5rem;overflow-y:auto}
+.msb-h{font-family:var(–f-mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(–s-stone);margin-bottom:.75rem}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:.45rem 0}
+.tl{font-size:.83rem;color:var(–s-mist);font-weight:300}
+.tgl{width:36px;height:20px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);position:relative;cursor:none;transition:background .2s;flex-shrink:0}
+.tgl.on{background:var(–s-canal)}
+.tgl::after{content:’’;position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:white;transition:transform .2s var(–ease)}
+.tgl.on::after{transform:translateX(16px)}
+.leg-item{display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:var(–s-mist);padding:.3rem 0}
+.leg-line{width:24px;height:3px}
+#mapbox{height:100%}
+/* Mapbox popup */
+.mapboxgl-popup-content{background:var(–s-card)!important;color:var(–s-snow)!important;border:1px solid var(–s-border)!important;padding:1.1rem!important;font-family:var(–f-body)!important;box-shadow:0 8px 30px rgba(0,0,0,.6)!important;min-width:210px;border-radius:0!important}
+.mapboxgl-popup-close-button{color:var(–s-stone)!important;font-size:1rem!important}
+.pu-name{font-family:var(–f-display);font-size:1.2rem;letter-spacing:.04em;color:var(–s-white)}
+.pu-reg{font-family:var(–f-mono);font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(–s-canal2);margin:3px 0 8px}
+.pu-row{display:flex;gap:.8rem;font-size:.78rem;color:var(–s-mist);margin-bottom:8px}
+.pu-btn{display:block;padding:.55rem .75rem;background:var(–s-canal);color:white;text-align:center;font-family:var(–f-cond);font-size:.8rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:none;transition:background .2s}
+.pu-btn:hover{background:var(–s-canal2)}
+.mapboxgl-popup-tip{display:none!important}
+
+/* ═══ FEATURED ═══ */
+#featured{background:var(–s-deep);overflow:hidden}
+.feat-layout{display:grid;grid-template-columns:1fr 1fr}
+.feat-vis{position:relative;overflow:hidden}
+.feat-vis img{width:100%;height:100%;min-height:560px;object-fit:cover;filter:brightness(.72) saturate(1.15);transition:transform 8s var(–ease)}
+.feat-vis:hover img{transform:scale(1.04)}
+.feat-ov{position:absolute;inset:0;background:linear-gradient(to right,transparent 50%,var(–s-deep) 100%),linear-gradient(to top,rgba(12,26,40,.6) 0%,transparent 40%)}
+.feat-pill{position:absolute;top:2rem;left:2rem;font-family:var(–f-mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;padding:.35rem .9rem;background:rgba(212,168,67,.12);border:1px solid rgba(212,168,67,.35);color:var(–s-gold2)}
+.feat-c{padding:4.5rem 4rem;display:flex;flex-direction:column;justify-content:center}
+.feat-eye{font-family:var(–f-mono);font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(–s-canal2);display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.feat-eye::before{content:’’;width:24px;height:1px;background:var(–s-canal2)}
+.feat-h{font-family:var(–f-display);font-size:clamp(2.5rem,5vw,4rem);line-height:.92;margin-bottom:.3rem}
+.feat-sub{font-family:var(–f-cond);font-size:1.3rem;font-weight:300;font-style:italic;color:var(–s-mist);margin-bottom:1.5rem}
+.feat-q{font-family:var(–f-serif);font-style:italic;font-size:1.05rem;color:var(–s-sky);line-height:1.65;border-left:2px solid var(–s-canal);padding-left:1.25rem;margin-bottom:1.75rem}
+.feat-desc{font-size:.88rem;color:var(–s-mist);line-height:1.8;font-weight:300;margin-bottom:2rem}
+.feat-stats{display:flex;gap:2.5rem;margin-bottom:2rem}
+.fst-v{font-family:var(–f-display);font-size:2.2rem;color:var(–s-white);line-height:1}
+.fst-l{font-family:var(–f-mono);font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(–s-stone);margin-top:2px}
+
+/* ═══ WEATHER SECTION ═══ */
+#weather-band{
+background:var(–s-card);border-top:1px solid var(–s-border);border-bottom:1px solid var(–s-border);
+padding:2.5rem 3rem;
+}
+.wb-inner{max-width:1280px;margin:0 auto}
+.wb-title{font-family:var(–f-mono);font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(–s-stone);margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem}
+.wb-title::before{content:’’;display:block;width:20px;height:1px;background:var(–s-stone)}
+.wb-cards{display:flex;gap:.75rem;overflow-x:auto;scrollbar-width:none;padding-bottom:.5rem}
+.wb-cards::-webkit-scrollbar{display:none}
+.wc{
+flex-shrink:0;min-width:160px;background:rgba(255,255,255,.03);border:1px solid var(–s-border);
+padding:1.1rem 1.25rem;transition:border-color .2s;
+}
+.wc:hover{border-color:rgba(27,138,170,.3)}
+.wc-name{font-family:var(–f-cond);font-size:.95rem;font-weight:700;text-transform:uppercase;color:var(–s-white);margin-bottom:.3rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wc-region{font-family:var(–f-mono);font-size:.55rem;letter-spacing:.12em;color:var(–s-canal2);text-transform:uppercase;margin-bottom:.75rem}
+.wc-main{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem}
+.wc-icon{font-size:1.8rem}
+.wc-temp{font-family:var(–f-display);font-size:2rem;color:var(–s-white);line-height:1}
+.wc-desc{font-size:.72rem;color:var(–s-mist)}
+.wc-prec{font-family:var(–f-mono);font-size:.6rem;color:var(–s-stone);margin-top:.3rem}
+
+/* ═══ HERITAGE ═══ */
+#heritage{border-top:1px solid var(–s-border)}
+.her-inner{max-width:1280px;margin:0 auto;padding:6rem 3rem}
+.her-top{margin-bottom:4rem}
+.her-eyebrow{font-family:var(–f-mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(–s-canal2);display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.her-eyebrow::before{content:’’;display:block;width:20px;height:1px;background:var(–s-canal2)}
+.her-h{font-family:var(–f-display);font-size:clamp(2.5rem,5vw,4.5rem);line-height:.92}
+.her-h em{color:var(–s-gold);font-style:normal}
+.her-grid{display:grid;grid-template-columns:1fr 2fr;gap:6rem;align-items:start}
+.her-left{position:sticky;top:8rem}
+.her-big{font-family:var(–f-display);font-size:10rem;line-height:.8;color:rgba(255,255,255,.04)}
+.her-left-h{font-family:var(–f-display);font-size:2.5rem;line-height:.95;color:var(–s-white)}
+.her-left-s{font-family:var(–f-cond);font-style:italic;font-size:1.3rem;font-weight:300;color:var(–s-canal2)}
+.her-items{display:flex;flex-direction:column}
+.hi{padding:2.5rem 0;border-bottom:1px solid var(–s-border)}
+.hi:first-child{border-top:1px solid var(–s-border)}
+.hi-top{display:flex;align-items:center;gap:1.5rem;margin-bottom:1rem}
+.hi-n{font-family:var(–f-mono);font-size:.62rem;letter-spacing:.15em;color:var(–s-canal2);min-width:30px}
+.hi-title{font-family:var(–f-cond);font-size:1.45rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(–s-white)}
+.hi-text{font-size:.9rem;color:var(–s-mist);line-height:1.8;font-weight:300}
+
+/* ═══ CTA ═══ */
+#cta{
+background:var(–s-deep);border-top:3px solid var(–s-canal);
+padding:7rem 3rem;text-align:center;position:relative;overflow:hidden;
+}
+#cta::before{content:‘SUONEN’;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(–f-display);font-size:24rem;color:rgba(255,255,255,.015);white-space:nowrap;pointer-events:none;line-height:1}
+.cta-in{max-width:640px;margin:0 auto;position:relative;z-index:1}
+.cta-k{font-family:var(–f-mono);font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(–s-canal2);margin-bottom:1.5rem}
+.cta-h{font-family:var(–f-display);font-size:clamp(2.5rem,7vw,5.5rem);line-height:.92;margin-bottom:1.25rem}
+.cta-h em{color:var(–s-gold);font-style:normal}
+.cta-p{font-size:1rem;color:var(–s-mist);font-weight:300;line-height:1.75;margin-bottom:2.5rem}
+.cta-form{display:flex;gap:0;max-width:460px;margin:0 auto}
+.cta-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-right:0;color:var(–s-white);padding:1rem 1.25rem;font-family:var(–f-body);font-size:.9rem;outline:none;transition:border-color .2s}
+.cta-inp:focus{border-color:var(–s-canal)}
+.cta-inp::placeholder{color:var(–s-stone)}
+.cta-sub{background:var(–s-earth);color:white;padding:1rem 1.75rem;font-family:var(–f-cond);font-size:.85rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transition:background .2s;white-space:nowrap}
+.cta-sub:hover{background:#D45530}
+
+/* ═══ FOOTER ═══ */
+footer{background:var(–s-card);border-top:1px solid var(–s-border)}
+.ft{max-width:1280px;margin:0 auto;padding:4rem 3rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem}
+.fb .brand{margin-bottom:1.25rem}
+.fb-d{font-size:.84rem;color:var(–s-stone);line-height:1.7;max-width:270px}
+.fc-h{font-family:var(–f-mono);font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(–s-stone);margin-bottom:1.25rem}
+.fc ul{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.fc ul a{font-size:.84rem;color:var(–s-mist);font-weight:300;transition:color .2s}
+.fc ul a:hover{color:var(–s-canal2)}
+.fb-b{max-width:1280px;margin:0 auto;padding:1.5rem 3rem;border-top:1px solid var(–s-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.fc-copy{font-family:var(–f-mono);font-size:.6rem;letter-spacing:.08em;color:var(–s-stone)}
+
+/* ═══ MODAL ═══ */
+#modal-bg{display:none;position:fixed;inset:0;z-index:600;background:rgba(10,13,15,.92);backdrop-filter:blur(8px);overflow-y:auto}
+#modal-bg.open{display:block}
+.modal{max-width:960px;margin:2.5rem auto;animation:modalUp .35s var(–ease);position:relative}
+@keyframes modalUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.mx{position:absolute;top:1.5rem;right:1.5rem;z-index:10;width:38px;height:38px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(–s-mist);transition:background .2s}
+.mx:hover{background:rgba(255,255,255,.18);color:var(–s-white)}
+.m-imgw{position:relative;height:360px;overflow:hidden}
+.m-imgw img{width:100%;height:100%;object-fit:cover;filter:brightness(.75) saturate(1.1)}
+.m-imgov{position:absolute;inset:0;background:linear-gradient(to top,var(–s-black) 0%,rgba(10,13,15,.5) 40%,transparent 70%)}
+.m-imgc{position:absolute;bottom:2rem;left:3rem;right:3rem}
+.m-reg{font-family:var(–f-mono);font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(–s-canal2);margin-bottom:.5rem}
+.m-title{font-family:var(–f-display);font-size:3rem;letter-spacing:.04em;color:var(–s-white);line-height:1}
+.m-body{background:var(–s-card);border:1px solid var(–s-border);border-top:0;padding:2.5rem 3rem}
+.m-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(–s-border);border:1px solid var(–s-border);margin-bottom:2.5rem}
+.ms{background:rgba(10,13,15,.8);padding:1.2rem 1rem;text-align:center}
+.ms-v{font-family:var(–f-display);font-size:1.5rem;color:var(–s-white);line-height:1;margin-bottom:4px}
+.ms-l{font-family:var(–f-mono);font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(–s-stone)}
+/* ELEVATION PROFILE IN MODAL */
+.m-elev{margin-bottom:2rem;background:rgba(255,255,255,.02);border:1px solid var(–s-border);padding:1.25rem}
+.m-elev-title{font-family:var(–f-mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(–s-stone);margin-bottom:.75rem}
+.m-elev svg{width:100%;height:80px}
+.m-desc{font-size:.92rem;color:var(–s-mist);line-height:1.85;margin-bottom:2.5rem;font-weight:300}
+.m-cols{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;margin-bottom:2rem}
+.mc-h{font-family:var(–f-cond);font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(–s-border)}
+.ml{list-style:none}
+.ml li{display:flex;align-items:flex-start;gap:.75rem;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.85rem;color:var(–s-mist);line-height:1.5}
+.ml li:last-child{border-bottom:0}
+.ml-ic{flex-shrink:0;font-size:.9rem;margin-top:1px}
+.m-btns{display:flex;gap:1rem;flex-wrap:wrap;padding-top:2rem;border-top:1px solid var(–s-border)}
+.mbp{flex:1;min-width:180px;background:var(–s-canal);color:white;padding:.9rem 1.5rem;text-align:center;font-family:var(–f-cond);font-size:.85rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:background .2s}
+.mbp:hover{background:var(–s-canal2)}
+.mbg{flex:1;min-width:140px;border:1px solid var(–s-border);color:var(–s-mist);padding:.9rem 1.5rem;text-align:center;font-family:var(–f-cond);font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:all .2s}
+.mbg:hover{border-color:var(–s-canal2);color:var(–s-canal2)}
+
+/* ═══ TOKEN SETUP ═══ */
+#token-setup{display:none;position:fixed;inset:0;z-index:700;background:rgba(10,13,15,.97);backdrop-filter:blur(10px);align-items:center;justify-content:center}
+#token-setup.show{display:flex}
+.ts-box{max-width:480px;width:90%;background:var(–s-card);border:1px solid var(–s-border);padding:3rem}
+.ts-h{font-family:var(–f-display);font-size:2.5rem;letter-spacing:.04em;margin-bottom:.75rem}
+.ts-p{font-size:.88rem;color:var(–s-mist);line-height:1.7;margin-bottom:1.5rem}
+.ts-p a{color:var(–s-canal2);border-bottom:1px solid var(–s-canal2)}
+.ts-inp{width:100%;background:rgba(255,255,255,.05);border:1px solid var(–s-border);color:var(–s-white);padding:.9rem 1.1rem;font-family:var(–f-mono);font-size:.75rem;outline:none;margin-bottom:1rem;transition:border-color .2s}
+.ts-inp:focus{border-color:var(–s-canal)}
+.ts-inp::placeholder{color:var(–s-stone)}
+.ts-btns{display:flex;gap:.75rem}
+.ts-save{flex:1;background:var(–s-canal);color:white;padding:.9rem;font-family:var(–f-cond);font-size:.9rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:background .2s}
+.ts-save:hover{background:var(–s-canal2)}
+.ts-skip{flex:1;border:1px solid var(–s-border);color:var(–s-mist);padding:.9rem;font-family:var(–f-cond);font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;transition:all .2s}
+.ts-skip:hover{border-color:var(–s-mist);color:var(–s-white)}
+
+/* ═══ UTILS ═══ */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s var(–ease),transform .6s var(–ease)}
+.reveal.in{opacity:1;transform:none}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1024px){
+#bgrid{grid-template-columns:repeat(2,1fr)}
+.feat-layout{grid-template-columns:1fr}
+.feat-vis{min-height:300px}
+.map-layout{grid-template-columns:1fr;height:auto}
+.map-sb{flex-direction:row;flex-wrap:wrap;height:auto;gap:1rem}
+#mapbox{height:420px}
+.her-grid{grid-template-columns:1fr}
+.her-left{position:static}
+.man-inner{grid-template-columns:1fr;gap:2.5rem}
+.pillars{grid-template-columns:1fr}
+.pill-item{border-right:0;border-bottom:1px solid var(–s-border)}
+.ft{grid-template-columns:1fr 1fr;gap:2rem}
+.hero-facts{display:none}
+}
+@media(max-width:768px){
+#nav{padding:1rem 1.5rem}
+.nav-links,.nav-cta{display:none}
+.burger{display:flex}
+#bgrid{grid-template-columns:1fr}
+.hero-content{padding:0 1.5rem 3.5rem}
+.hero-h{font-size:clamp(4rem,20vw,6rem)}
+.m-stats{grid-template-columns:repeat(3,1fr)}
+.m-cols{grid-template-columns:1fr}
+.m-body{padding:2rem 1.5rem}
+.m-imgc{left:1.5rem;right:1.5rem}
+.m-title{font-size:2rem}
+.feat-c{padding:2.5rem 1.5rem}
+.ft{grid-template-columns:1fr}
+.fb-b{flex-direction:column;align-items:flex-start}
+.her-inner{padding:4rem 1.5rem}
+.sel-inner{padding:3rem 1.5rem}
+.cta-form{flex-direction:column}
+#status-bar{padding:.75rem 1.5rem}
+.map-head{padding:3rem 1.5rem 1.5rem}
+}
 </style>
+
 </head>
 <body>
-<header>
-  <div class="container nav">
-    <div class="logo">
-      <span class="dot"></span><span>PostBus Connect</span>
-      <span class="badge">Planning exploitation — Interne</span>
-    </div>
-    <div class="row">
-      <button class="btn" id="btnPrint">Imprimer</button>
-      <button class="btn brand" id="btnPDF">Exporter PDF</button>
+
+<!-- CURSOR -->
+
+<div id="cursor-ring"></div>
+<div id="cursor-dot"></div>
+<!-- SCROLL PROGRESS -->
+<div id="progress"></div>
+
+<!-- ═══ TOKEN SETUP MODAL ═══ -->
+
+<div id="token-setup">
+  <div class="ts-box">
+    <div class="ts-h">Carte 3D</div>
+    <p class="ts-p">
+      Pour activer la carte interactive Mapbox, entrez votre token gratuit.<br>
+      <a href="https://mapbox.com" target="_blank">Obtenir un token →</a><br>
+      <span style="color:var(--s-stone);font-size:.8rem;font-family:var(--f-mono)">Gratuit · 50k chargements/mois</span>
+    </p>
+    <input class="ts-inp" id="token-inp" placeholder="pk.eyJ1IjoiVk9UUkVfVVNFUiIs..." autocomplete="off">
+    <div class="ts-btns">
+      <button class="ts-save" onclick="saveToken()">Activer la carte</button>
+      <button class="ts-skip" onclick="skipToken()">Plus tard</button>
     </div>
   </div>
-</header>
+</div>
 
-<section>
-  <div class="container">
-    <div class="card panel">
-      <div class="grid-2">
-        <div>
-          <h2>Journée à planifier</h2>
-          <div class="row" style="gap:12px;align-items:flex-end">
-            <div style="min-width:280px">
-              <label for="selDate">Date (week-ends fin déc. 2025 → mars 2026)</label>
-              <select id="selDate"></select>
-            </div>
-            <div>
-              <button class="btn brand" id="btnGenerate">Générer le planning</button>
-            </div>
-            <span class="tag">Service : <b>Ven–Sam–Dim uniquement</b></span>
-          </div>
-          <p class="small">Le système génère jusqu’à <b>3 bus/jour</b> : Lausanne (fixe) + 2 villes alternées (Genève / Fribourg / Yverdon). Une seule course A/R par chauffeur.</p>
-        </div>
-        <div>
-          <h2>Paramètres (deadhead & buffers)</h2>
-          <div class="row">
-            <div>
-              <label>Pré-service dépôt → départ</label><br>
-              <input id="preTrip" type="number" value="20"> <small>min</small>
-            </div>
-            <div>
-              <label>Fin de service (arrivée → dépôt)</label><br>
-              <input id="postTrip" type="number" value="20"> <small>min</small>
-            </div>
-          </div>
-          <div class="row" style="margin-top:8px">
-            <div><label>Deadhead Genève</label><br><input id="dh-Geneve" type="number" value="15"> <small>min</small></div>
-            <div><label>Deadhead Lausanne</label><br><input id="dh-Lausanne" type="number" value="15"> <small>min</small></div>
-            <div><label>Deadhead Yverdon</label><br><input id="dh-Yverdon" type="number" value="10"> <small>min</small></div>
-            <div><label>Deadhead Fribourg</label><br><input id="dh-Fribourg" type="number" value="15"> <small>min</small></div>
-          </div>
-        </div>
+<!-- ═══ NAV ═══ -->
+
+<nav id="nav">
+  <a href="/" class="brand" onclick="return false">
+    <div class="brand-mark">
+      <div class="brand-canal-top"></div>
+      <div class="brand-canal-water"></div>
+      <div class="brand-canal-bot"></div>
+      <div class="brand-s">S</div>
+    </div>
+    <div class="brand-text">
+      <div class="brand-name">SUONEN</div>
+      <div class="brand-sub">Bisses du Valais</div>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#bgrid-wrap" data-i18n="nav.explorer">Explorer</a></li>
+    <li><a href="#mapwrap" data-i18n="nav.carte">Carte 3D</a></li>
+    <li><a href="#heritage" data-i18n="nav.histoire">Histoire</a></li>
+    <li><a href="#cta" data-i18n="nav.contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-sw">
+      <button class="lang-btn on" id="btn-fr" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" id="btn-de" onclick="setLang('de')">DE</button>
+    </div>
+    <a href="#selector" class="nav-cta" data-i18n="nav.cta">Mon bisse</a>
+  </div>
+  <div class="burger" id="burger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+
+<div id="mob-menu">
+  <nav>
+    <a href="#bgrid-wrap" onclick="toggleMenu()" data-i18n="nav.explorer">Explorer</a>
+    <a href="#mapwrap" onclick="toggleMenu()" data-i18n="nav.carte">Carte 3D</a>
+    <a href="#heritage" onclick="toggleMenu()" data-i18n="nav.histoire">Histoire</a>
+    <a href="#selector" onclick="toggleMenu()" style="color:var(--s-canal2)" data-i18n="nav.cta">Mon bisse</a>
+  </nav>
+  <div class="mob-lang">
+    <button class="lang-btn on" id="mbtn-fr" onclick="setLang('fr');toggleMenu()">FR</button>
+    <button class="lang-btn" id="mbtn-de" onclick="setLang('de');toggleMenu()">DE</button>
+  </div>
+</div>
+
+<!-- ═══ HERO ═══ -->
+
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-stripe"></div><div class="hero-stripe2"></div>
+  <div class="hwrap"><div class="hw"></div><div class="hw"></div><div class="hw"></div><div class="hw"></div></div>
+  <div class="hero-content">
+    <div class="hero-kicker" data-i18n="hero.kicker">Valais · Suisse · Patrimoine vivant · XIV<sup>e</sup> siècle</div>
+    <h1 class="hero-h" data-i18n="hero.h"><span class="em">L'EAU</span><br>QUI A<br><span class="str">FAÇONNÉ</span></h1>
+    <p class="hero-body" data-i18n="hero.body">Depuis six siècles, des canaux alpins traversent le Valais à flanc de falaise. Ils ont nourri les vignes, abreuvé les villages, façonné un paysage que l'on parcourt encore à pied aujourd'hui.</p>
+    <div class="hero-btns">
+      <a href="#selector" class="btn-p"><span data-i18n="hero.cta1">Trouver mon bisse</span><span class="arr">→</span></a>
+      <a href="#mapwrap" class="btn-o" data-i18n="hero.cta2">Voir la carte 3D</a>
+    </div>
+  </div>
+  <div class="hero-facts">
+    <div class="hf"><div class="hf-v">50+</div><div class="hf-l" data-i18n="hero.f1">Bisses</div></div>
+    <div class="hf"><div class="hf-v">500km</div><div class="hf-l" data-i18n="hero.f2">Sentiers</div></div>
+    <div class="hf"><div class="hf-v">XIV<sup style="font-size:.7em">e</sup></div><div class="hf-l" data-i18n="hero.f3">Origines</div></div>
+  </div>
+</section>
+
+<!-- ═══ STATUS BAR ═══ -->
+
+<div id="status-bar">
+  <div class="status-label" data-i18n="status.label">Bisses en eau · Actuellement</div>
+  <div class="status-pills" id="status-pills"></div>
+</div>
+
+<!-- ═══ MANIFESTO ═══ -->
+
+<section id="manifesto">
+  <div class="man-inner">
+    <div class="man-brand">
+      <div class="man-mark" data-i18n="man.mark">Manifeste</div>
+      <div class="man-word">SUONEN<span data-i18n="man.word2">Bisses du Valais</span></div>
+    </div>
+    <div>
+      <p class="man-quote" data-i18n="man.quote">L'eau n'irrigue pas que les vignes.<br>Elle irrigue les <em>âmes</em>.</p>
+      <p class="man-sub" data-i18n="man.sub">Les bisses ne sont pas des chemins de randonnée. Ce sont des prouesses d'ingénierie alpine nées de la nécessité, entretenues pendant six siècles par des hommes qui ont cru que l'eau valait qu'on risque sa vie pour elle. Marcher le long d'un bisse, c'est poser ses pas dans les leurs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PILLARS ═══ -->
+
+<section id="pillars">
+  <div class="pillars">
+    <div class="pill-item reveal"><div class="pill-n">01</div><div class="pill-icon">⏳</div><div class="pill-title" data-i18n="p1.t">Six siècles d'histoire</div><p class="pill-text" data-i18n="p1.tx">Construits dès le XIVe siècle, les bisses figurent parmi les plus anciens systèmes d'irrigation encore actifs en Europe. Chaque canal a son histoire, ses gardiens, ses exploits d'ingénierie taillés dans la roche à mains nues.</p></div>
+    <div class="pill-item reveal d1"><div class="pill-n">02</div><div class="pill-icon">🌊</div><div class="pill-title" data-i18n="p2.t">Patrimoine vivant</div><p class="pill-text" data-i18n="p2.tx">Contrairement aux vestiges muséifiés, les bisses fonctionnent encore. L'eau coule d'avril à novembre, irriguant vignes et alpages exactement comme elle le faisait cinq siècles avant nous. Certains bisseniers parcourent encore leur canal chaque matin.</p></div>
+    <div class="pill-item reveal d2"><div class="pill-n">03</div><div class="pill-icon">🥾</div><div class="pill-title" data-i18n="p3.t">La randonnée idéale</div><p class="pill-text" data-i18n="p3.tx">Les bisses longent les courbes de niveau de la montagne — dénivelé minimal, progression fluide. De la balade familiale au sentier vertigineux pour alpinistes, il existe un bisse pour chaque profil et chaque humeur du Valais.</p></div>
+  </div>
+</section>
+
+<!-- ═══ SELECTOR ═══ -->
+
+<section id="selector">
+  <div class="sel-inner">
+    <div class="sel-head">
+      <h2 class="sel-h reveal"><span data-i18n="sel.t1">Quel bisse</span><br><em data-i18n="sel.t2">vous ressemble ?</em></h2>
+      <button class="btn-rst" onclick="resetAll()" data-i18n="sel.rst">Réinitialiser</button>
+    </div>
+    <input class="sel-search" id="search" data-i18n-ph="sel.search" placeholder="Rechercher un bisse..." oninput="applyFilters()">
+    <div class="filter-row reveal d1">
+      <div class="fg"><div class="fl" data-i18n="f.dur">Durée</div><div class="chips">
+        <div class="chip" data-g="dur" data-v="court" onclick="chip(this)" data-fr="< 2h" data-de="< 2h">< 2h</div>
+        <div class="chip" data-g="dur" data-v="demi" onclick="chip(this)" data-fr="Demi-journée" data-de="Halbtag">Demi-journée</div>
+        <div class="chip" data-g="dur" data-v="jour" onclick="chip(this)" data-fr="Journée" data-de="Ganztag">Journée</div>
+        <div class="chip" data-g="dur" data-v="multi" onclick="chip(this)" data-fr="Multi-jours" data-de="Mehrtage">Multi-jours</div>
+      </div></div>
+      <div class="fg"><div class="fl" data-i18n="f.dif">Niveau</div><div class="chips">
+        <div class="chip" data-g="dif" data-v="facile" onclick="chip(this)" data-fr="🟢 Facile" data-de="🟢 Einfach">🟢 Facile</div>
+        <div class="chip" data-g="dif" data-v="moyen" onclick="chip(this)" data-fr="🔵 Moyen" data-de="🔵 Mittel">🔵 Moyen</div>
+        <div class="chip" data-g="dif" data-v="difficile" onclick="chip(this)" data-fr="🔴 Difficile" data-de="🔴 Schwer">🔴 Difficile</div>
+      </div></div>
+      <div class="fg"><div class="fl" data-i18n="f.pro">Profil</div><div class="chips">
+        <div class="chip" data-g="vrt" data-v="sans" onclick="chip(this,'on-r')" data-fr="😌 Sans vertige" data-de="😌 Schwindelfrei">😌 Sans vertige</div>
+        <div class="chip" data-g="fam" data-v="oui" onclick="chip(this,'on-g')" data-fr="👨‍👩‍👧 Famille" data-de="👨‍👩‍👧 Familie">👨‍👩‍👧 Famille</div>
+        <div class="chip" data-g="vib" data-v="panorama" onclick="chip(this)" data-fr="🏔 Panorama" data-de="🏔 Panorama">🏔 Panorama</div>
+        <div class="chip" data-g="vib" data-v="vignes" onclick="chip(this)" data-fr="🍇 Vignes" data-de="🍇 Weinberge">🍇 Vignes</div>
+        <div class="chip" data-g="vib" data-v="foret" onclick="chip(this)" data-fr="🌲 Forêt" data-de="🌲 Wald">🌲 Forêt</div>
+        <div class="chip" data-g="vib" data-v="glaciers" onclick="chip(this)" data-fr="🧊 Glaciers" data-de="🧊 Gletscher">🧊 Glaciers</div>
+        <div class="chip" data-g="vib" data-v="spectaculaire" onclick="chip(this)" data-fr="⚡ Spectaculaire" data-de="⚡ Spektakulär">⚡ Spectaculaire</div>
+      </div></div>
+    </div>
+    <div class="res-bar reveal d2">
+      <div class="res-n" id="rNum">10</div>
+      <div class="res-t"><strong data-i18n="res.l">bisses trouvés</strong><span data-i18n="res.s">Cliquez pour affiner</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ GRID ═══ -->
+
+<div id="bgrid-wrap"><div id="bgrid"></div></div>
+
+<!-- ═══ WEATHER BAND ═══ -->
+
+<div id="weather-band">
+  <div class="wb-inner">
+    <div class="wb-title" data-i18n="wb.t">Météo aux départs · Live Open-Meteo</div>
+    <div class="wb-cards" id="wb-cards"><div style="font-size:.8rem;color:var(--s-stone);padding:.5rem">Chargement météo…</div></div>
+  </div>
+</div>
+
+<!-- ═══ MAP ═══ -->
+
+<div id="mapwrap">
+  <div class="map-head">
+    <div>
+      <div class="reveal" style="font-family:var(--f-mono);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--s-canal2);display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem"><span style="display:block;width:20px;height:1px;background:var(--s-canal2)"></span><span data-i18n="map.eye">Cartographie 3D · Mapbox</span></div>
+      <h2 class="map-h reveal d1" data-i18n="map.h">Valais <em>en relief</em></h2>
+    </div>
+    <p class="map-desc reveal d2" data-i18n="map.d">Terrain 3D, tracés GPX colorés par difficulté. Cliquez sur un marqueur pour ouvrir la fiche. Basculez les couches à gauche.</p>
+  </div>
+  <div class="map-layout">
+    <div class="map-sb">
+      <div>
+        <div class="msb-h" data-i18n="map.lay">Couches</div>
+        <div class="tr"><span class="tl" data-i18n="map.t3d">Terrain 3D</span><div class="tgl on" id="tgl3d" onclick="mToggle(this,'3d')"></div></div>
+        <div class="tr"><span class="tl" data-i18n="map.tgpx">Tracés GPX</span><div class="tgl on" id="tglgpx" onclick="mToggle(this,'gpx')"></div></div>
+        <div class="tr"><span class="tl" data-i18n="map.tpoi">Buvettes</span><div class="tgl on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tr"><span class="tl" data-i18n="map.theat">Heatmap</span><div class="tgl" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div>
+        <div class="msb-h" data-i18n="map.leg">Légende</div>
+        <div class="leg-item"><div class="leg-line" style="background:#3A8A50"></div><span data-i18n="l.f">Facile · En eau</span></div>
+        <div class="leg-item"><div class="leg-line" style="background:#1B8AAA"></div><span data-i18n="l.m">Moyen · En eau</span></div>
+        <div class="leg-item"><div class="leg-line" style="background:#C04A28"></div><span data-i18n="l.d">Difficile · En eau</span></div>
+        <div class="leg-item"><div class="leg-line" style="background:#454540"></div><span data-i18n="l.s">Hors saison</span></div>
       </div>
     </div>
+    <div id="mapbox"></div>
+  </div>
+</div>
 
-    <div id="dayKPIs" class="kpi" style="margin:12px 0 6px; display:none">
-      <div class="box"><b id="k-date">—</b><br><small>Date</small></div>
-      <div class="box"><b id="k-bus">—</b><br><small>Bus planifiés</small></div>
-      <div class="box"><b id="k-legal">—</b><br><small>Conformité OTR 1</small></div>
-      <div class="box"><b id="k-pause">—</b><br><small>Pause ≥45 min</small></div>
+<!-- ═══ FEATURED ═══ -->
+
+<section id="featured">
+  <div class="feat-layout">
+    <div class="feat-vis">
+      <img src="https://images.unsplash.com/photo-1551632811-561732d1e306?w=1280&q=85" alt="Bisse du Ro" loading="lazy">
+      <div class="feat-ov"></div>
+      <div class="feat-pill" data-i18n="feat.pill">★ Incontournable</div>
     </div>
+    <div class="feat-c">
+      <div class="feat-eye" data-i18n="feat.eye">Coup de cœur de la rédaction</div>
+      <h2 class="feat-h">Bisse du Ro</h2>
+      <div class="feat-sub" data-i18n="feat.sub">Crans-Montana · 1 800 m d'altitude</div>
+      <blockquote class="feat-q" data-i18n="feat.q">Un sentier taillé dans la falaise, suspendu entre le vide et le ciel. Face à vous : les 4 000 m du Valais.</blockquote>
+      <p class="feat-desc" data-i18n="feat.desc">Le Bisse du Ro est l'archétype du bisse spectaculaire. Construit au XVe siècle pour acheminer l'eau des alpages de Montana, son tracé vertigineux longe la montagne sur 12 km, offrant des panoramas sans équivalent sur le Cervin, le Grand Combin et les Alpes bernoises. Un passage obligé pour qui visite le Valais.</p>
+      <div class="feat-stats">
+        <div><div class="fst-v">12 km</div><div class="fst-l" data-i18n="s.dist">Distance</div></div>
+        <div><div class="fst-v">4h30</div><div class="fst-l" data-i18n="s.dur">Durée</div></div>
+        <div><div class="fst-v">↑480m</div><div class="fst-l">D+</div></div>
+        <div><div class="fst-v">4.9★</div><div class="fst-l" data-i18n="s.note">Note</div></div>
+      </div>
+      <button class="btn-p" onclick="openModal('ro')" style="align-self:flex-start">
+        <span data-i18n="feat.cta">Voir l'itinéraire complet</span><span class="arr">→</span>
+      </button>
+    </div>
+  </div>
+</section>
 
-    <div id="plans"></div>
+<!-- ═══ HERITAGE ═══ -->
 
-    <div class="card panel" style="margin-top:14px">
-      <h2>Informations utiles</h2>
-      <div class="grid-2">
-        <div>
-          <h3>Dépôts (à confirmer avec Région Ouest)</h3>
-          <table>
-            <thead><tr><th>Ville</th><th>Zone d’exploitation probable</th></tr></thead>
-            <tbody>
-              <tr><td>Genève</td><td>Vernier / secteur aéroport</td></tr>
-              <tr><td>Lausanne</td><td>Renens / Crissier</td></tr>
-              <tr><td>Yverdon</td><td>Yverdon-les-Bains (siège régional)</td></tr>
-              <tr><td>Fribourg</td><td>Givisiez</td></tr>
-            </tbody>
-          </table>
-          <small class="small">Confirmer les adresses exactes avec CarPostal Région Ouest — une fois figées, remplace ces libellés.</small>
-        </div>
-        <div>
-          <h3>Règles CH (OTR 1 — synthèse terrain)</h3>
-          <ul class="small">
-            <li>Pause conduite : <b>45 min</b> après <b>4 h 30</b> max (fractionnable 15+30).</li>
-            <li>Conduite/jour : <b>9 h</b> (jusqu’à <b>10 h</b> 2×/semaine).</li>
-            <li>Repos journalier : en principe <b>11 h</b>.</li>
-            <li>Ici, la pause est prise à la station (long arrêt midi).</li>
-          </ul>
-          <h3>Consignes</h3>
-          <ul class="small">
-            <li>1 chauffeur = <b>1 A/R/jour</b> (pas d’autres courses).</li>
-            <li>Check véhicule au dépôt (départ) + retour dépôt (plein/contrôle).</li>
-            <li>Hotline exploitation : <b>+41 79 464 64 43</b> (exemple).</li>
-          </ul>
-        </div>
+<section id="heritage">
+  <div class="her-inner">
+    <div class="her-top">
+      <div class="her-eyebrow reveal" data-i18n="her.eye">Patrimoine</div>
+      <h2 class="her-h reveal d1"><span data-i18n="her.h1">Pourquoi les</span> <em data-i18n="her.h2">bisses</em> <span data-i18n="her.h3">comptent</span></h2>
+    </div>
+    <div class="her-grid">
+      <div class="her-left reveal">
+        <div class="her-big">XIV</div>
+        <div class="her-left-h" data-i18n="her.lh">Six siècles</div>
+        <div class="her-left-s" data-i18n="her.ls">d'ingéniosité alpine</div>
+      </div>
+      <div class="her-items">
+        <div class="hi reveal"><div class="hi-top"><div class="hi-n">01</div><div class="hi-title" data-i18n="h1.t">Nés de la nécessité</div></div><p class="hi-text" data-i18n="h1.tx">Le Valais est un paradoxe géographique : entouré de glaciers, il souffre d'un déficit hydrique chronique sur ses versants exposés au soleil. Pour survivre, les paysans valaisans ont taillé des canaux dans la roche — capables d'acheminer l'eau des torrents sur des dizaines de kilomètres jusqu'aux champs asséchés. Un exploit accompli à mains nues, bien avant l'ingénierie moderne.</p></div>
+        <div class="hi reveal"><div class="hi-top"><div class="hi-n">02</div><div class="hi-title" data-i18n="h2.t">Le bissenier</div></div><p class="hi-text" data-i18n="h2.tx">Chaque bisse avait son bissenier — gardien qui le parcourait chaque aube pour déboucher les feuilles, colmater les brèches, signaler les glissements. Cette charge, transmise de père en fils pendant des siècles, impliquait parfois de marcher à la lueur d'une lampe sur des passages aériens à 1 800 m, seul, avant que le village ne s'éveille. Certains exercent encore aujourd'hui.</p></div>
+        <div class="hi reveal"><div class="hi-top"><div class="hi-n">03</div><div class="hi-title" data-i18n="h3.t">Les consortages</div></div><p class="hi-text" data-i18n="h3.tx">L'eau des bisses était une ressource trop précieuse pour être laissée au hasard. Des "consortages" — coopératives hydrauliques parmi les plus anciennes de Suisse — réglementaient la distribution à la minute près depuis le XIVe siècle. Ces institutions, avec leurs règles écrites et leurs assemblées annuelles, sont l'une des premières formes de démocratie directe alpine. Certaines fonctionnent encore.</p></div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ═══ CTA ═══ -->
+
+<section id="cta">
+  <div class="cta-in">
+    <div class="cta-k reveal" data-i18n="cta.k">Restez dans le courant</div>
+    <h2 class="cta-h reveal d1"><span data-i18n="cta.h1">Ne ratez aucun</span><br><em data-i18n="cta.h2">bisse en eau</em></h2>
+    <p class="cta-p reveal d2" data-i18n="cta.p">Conditions en temps réel, nouveaux itinéraires, récits des bisseniers, alertes fermetures. Une lettre mensuelle qui sent le mélèze et l'eau de glacier.</p>
+    <div class="cta-form reveal d3">
+      <input type="email" class="cta-inp" data-i18n-ph="cta.ph" placeholder="votre@email.ch">
+      <button class="cta-sub" data-i18n="cta.sub">S'abonner</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+
 <footer>
-  <div class="container">
-    <small>© 2025 MobilityLab — PostBus Connect (interne). Prototype planning.</small>
+  <div class="ft">
+    <div class="fb">
+      <a href="/" class="brand" onclick="return false">
+        <div class="brand-mark"><div class="brand-canal-top"></div><div class="brand-canal-water"></div><div class="brand-canal-bot"></div><div class="brand-s">S</div></div>
+        <div class="brand-text"><div class="brand-name">SUONEN</div><div class="brand-sub">Bisses du Valais</div></div>
+      </a>
+      <p class="fb-d" data-i18n="ft.d">La référence des randonnées le long des bisses du Valais. Carte 3D, météo live, 50+ itinéraires, patrimoine vivant.</p>
+    </div>
+    <div class="fc"><div class="fc-h" data-i18n="ft.c1">Explorer</div><ul>
+      <li><a href="#bgrid-wrap" data-i18n="fc.e1">Tous les bisses</a></li>
+      <li><a href="#mapwrap" data-i18n="fc.e2">Carte 3D</a></li>
+      <li><a href="#selector" data-i18n="fc.e3">Trouver mon bisse</a></li>
+      <li><a href="#featured" data-i18n="fc.e4">Coups de cœur</a></li>
+    </ul></div>
+    <div class="fc"><div class="fc-h" data-i18n="ft.c2">Infos</div><ul>
+      <li><a href="#" data-i18n="fc.i1">Accès & transport</a></li>
+      <li><a href="#" data-i18n="fc.i2">Météo Valais</a></li>
+      <li><a href="#" data-i18n="fc.i3">Télécharger GPX</a></li>
+      <li><a href="#" data-i18n="fc.i4">État des bisses</a></li>
+    </ul></div>
+    <div class="fc"><div class="fc-h" data-i18n="ft.c3">À propos</div><ul>
+      <li><a href="#heritage" data-i18n="fc.a1">Histoire</a></li>
+      <li><a href="#" data-i18n="fc.a2">Les bisseniers</a></li>
+      <li><a href="#cta" data-i18n="fc.a3">Contact</a></li>
+      <li><a href="#"><span data-i18n="fc.a4">Français</span> / Deutsch</a></li>
+    </ul></div>
+  </div>
+  <div class="fb-b">
+    <div class="fc-copy" data-i18n="ft.copy">© 2026 SUONEN — Bisses du Valais · Patrimoine vivant</div>
+    <div class="fc-copy">suonen.ch · Valais · Wallis · Switzerland</div>
   </div>
 </footer>
 
-<!-- jsPDF pour export -->
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<!-- ═══ MODAL ═══ -->
+
+<div id="modal-bg" onclick="closeBg(event)">
+  <div class="modal">
+    <button class="mx" onclick="closeModal()">✕</button>
+    <div class="m-imgw"><img id="m-img" src="" alt=""><div class="m-imgov"></div>
+      <div class="m-imgc"><div class="m-reg" id="m-reg"></div><div class="m-title" id="m-ttl"></div></div>
+    </div>
+    <div class="m-body">
+      <div class="m-stats" id="m-stats"></div>
+      <div class="m-elev"><div class="m-elev-title" data-i18n="m.elev">Profil altimétrique</div><svg id="m-elev-svg" viewBox="0 0 400 80" preserveAspectRatio="none"></svg></div>
+      <p class="m-desc" id="m-desc"></p>
+      <div class="m-cols">
+        <div><div class="mc-h" data-i18n="m.inf">Infos pratiques</div><ul class="ml" id="m-info"></ul></div>
+        <div><div class="mc-h" data-i18n="m.par">Sur le parcours</div><ul class="ml" id="m-parc"></ul></div>
+      </div>
+      <div class="m-btns">
+        <a href="#" class="mbp" data-i18n="m.gpx">⬇ Télécharger GPX</a>
+        <a href="#mapwrap" class="mbg" onclick="closeModal()" data-i18n="m.map">🗺 Sur la carte</a>
+        <a href="#" class="mbg" data-i18n="m.met">🌤 Météo départ</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-/* ====== Données d'offre & règles ====== */
-const ELIGIBILITY={
-  "Genève ⇄ Zinal": {eligible:true, reason:"TP ~4h24 · véhicule ~2h27"},
-  "Genève ⇄ Ovronnaz": {eligible:true, reason:"TP ~3h35 · véhicule ~1h59"},
-  "Genève ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h00–4h15 · véhicule ~2h45"},
-  "Genève ⇄ Belalp": {eligible:true, reason:"TP ~3h50 · véhicule ~2h35"},
-  "Genève ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h45–4h00 · véhicule ~2h30"},
-  "Genève ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~4h00–4h20 · véhicule ~2h35"},
-  "Genève ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h45 · véhicule ~2h20"},
+/* ══════════════════════════════════════════
+   SUONEN — JAVASCRIPT
+══════════════════════════════════════════ */
 
-  "Lausanne ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h42 · véhicule 1h06–1h12"},
-  "Lausanne ⇄ Leukerbad": {eligible:true, reason:"TP ~2h17 · véhicule ~1h32"},
-  "Lausanne ⇄ Lötschental": {eligible:true, reason:"TP ~2h40 · véhicule ~1h40"},
-  "Lausanne ⇄ Saas-Fee": {eligible:true, reason:"TP ~3h30 · véhicule ~2h20"},
-  "Lausanne ⇄ Belalp": {eligible:true, reason:"TP ~3h10 · véhicule ~2h05"},
-  "Lausanne ⇄ Grimentz/St-Luc": {eligible:true, reason:"TP ~3h20 · véhicule ~2h05"},
-  "Lausanne ⇄ Evolène/Arolla": {eligible:true, reason:"TP ~3h30 · véhicule ~2h05"},
-  "Lausanne ⇄ Thyon 2000": {eligible:true, reason:"TP ~3h15 · véhicule ~1h50"},
-
-  "Yverdon ⇄ Ovronnaz": {eligible:true, reason:"TP ~2h45 · véhicule ~1h35"},
-  "Yverdon ⇄ Leukerbad": {eligible:true, reason:"TP ~3h05 · véhicule ~1h55"},
-  "Yverdon ⇄ Lötschental": {eligible:true, reason:"TP ~3h00 · véhicule ~1h50"},
-  "Yverdon ⇄ Belalp": {eligible:true, reason:"TP ~3h20 · véhicule ~2h10"},
-
-  "Fribourg ⇄ Zinal": {eligible:true, reason:"TP ~3h50 · véhicule ~2h30"},
-  "Fribourg ⇄ Saas-Fee": {eligible:true, reason:"TP ~4h05 · véhicule ~2h40"},
-  "Fribourg ⇄ Belalp": {eligible:true, reason:"TP ~3h40 · véhicule ~2h20"},
-  "Fribourg ⇄ Adelboden": {eligible:true, reason:"TP ~2h35 · véhicule ~1h40"}
-};
-
-const CITY_POOLS={
-  "Genève":["Zinal","Ovronnaz","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
-  "Lausanne":["Ovronnaz","Leukerbad","Lötschental","Saas-Fee","Belalp","Grimentz/St-Luc","Evolène/Arolla","Thyon 2000"],
-  "Yverdon":["Ovronnaz","Leukerbad","Lötschental","Belalp"],
-  "Fribourg":["Zinal","Saas-Fee","Belalp","Adelboden"]
-};
-
-const DEP_HOURS = { // heures "produit"
-  "Genève":  {dep:"06:30", ret:"16:45"},
-  "Lausanne":{dep:"07:00", ret:"17:00"},
-  "Yverdon": {dep:"07:10", ret:"16:30"},
-  "Fribourg":{dep:"06:45", ret:"16:40"}
-};
-
-// Saison : fin déc 2025 → mars 2026, Ven–Sam–Dim uniquement
-const SEASONS=[{start:"2025-12-20", end:"2026-03-31"}];
-function isWeekend(d){ const g=d.getDay(); return g===5||g===6||g===0; } // ven/sam/dim
-function inSeason(d){ return SEASONS.some(s=> d>=new Date(s.start+"T00:00:00") && d<=new Date(s.end+"T23:59:59")); }
-
-function minutes(h,m){return (parseInt(h,10)||0)*60+(parseInt(m,10)||0);}
-function hhmmToMin(t){const [h,m]=t.split(":").map(Number);return h*60+m;}
-function minToHHMM(x){const H=((Math.floor(x/60))%24+24)%24, M=((x%60)+60)%60; return String(H).padStart(2,"0")+":"+String(M).padStart(2,"0");}
-
-function rideMinutes(from,to){
-  const meta=ELIGIBILITY[`${from} ⇄ ${to}`]; if(!meta) return 120;
-  const s=meta.reason;
-  // cherche "1h06–1h12" ou "~1h55" ou "2h45"
-  let r=s.match(/(\d{1,2})h(\d{1,2})\s*[–-]\s*(\d{1,2})h(\d{1,2})/);
-  if(r){ const a=minutes(r[1],r[2]), b=minutes(r[3],r[4]); return Math.round((a+b)/2); }
-  r=s.match(/~?\s*(\d{1,2})h(\d{1,2})/);
-  if(r){ return minutes(r[1],r[2]); }
-  r=s.match(/~?\s*(\d{1,2})h\b/);
-  if(r){ return parseInt(r[1],10)*60; }
-  return 120;
-}
-
-// rotation : Lausanne fixe + 2 villes alternées (Genève/Yverdon/Fribourg)
-function hashDate(dateStr){ const d=dateStr.replaceAll('-',''); let h=0; for(const ch of d){ h=(h*33 + ch.charCodeAt(0))%997; } return h; }
-function servicesForDate(dateStr){
-  const h=hashDate(dateStr);
-  const rotating=["Genève","Yverdon","Fribourg"];
-  const a=rotating[h % rotating.length];
-  const b=rotating[(h+1) % rotating.length];
-  const cities=["Lausanne", a, b];
-  return cities.map((city,idx)=>{
-    const pool=CITY_POOLS[city]; const to=pool[(h+idx)%pool.length];
-    return {from:city, to, dep:DEP_HOURS[city].dep, ret:DEP_HOURS[city].ret};
-  });
-}
-
-function weekendDatesList(){
-  const out=[];
-  const start=new Date("2025-12-20T00:00:00");
-  const end  =new Date("2026-03-31T23:59:59");
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    if(isWeekend(d) && inSeason(d)) out.push(new Date(d));
-  }
-  return out;
-}
-
-/* ====== UI ====== */
-const selDate=document.getElementById("selDate");
-const plansWrap=document.getElementById("plans");
-const kDate=document.getElementById("k-date");
-const kBus=document.getElementById("k-bus");
-const kLegal=document.getElementById("k-legal");
-const kPause=document.getElementById("k-pause");
-const dayKPIs=document.getElementById("dayKPIs");
-
-(function populateDates(){
-  selDate.innerHTML="";
-  for(const d of weekendDatesList()){
-    const iso=d.toISOString().split("T")[0];
-    const opt=document.createElement("option");
-    opt.value=iso; opt.textContent=d.toLocaleDateString("fr-CH",{weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"});
-    selDate.appendChild(opt);
-  }
+/* ─ CURSOR ─ */
+const cRing = document.getElementById('cursor-ring');
+const cDot  = document.getElementById('cursor-dot');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cDot.style.left=mx+'px';cDot.style.top=my+'px'},{passive:true});
+(function animCursor(){
+  rx+=(mx-rx)*.12; ry+=(my-ry)*.12;
+  cRing.style.left=rx+'px'; cRing.style.top=ry+'px';
+  requestAnimationFrame(animCursor);
 })();
 
-/* ====== Génération planning ====== */
-function getNum(id){ return parseInt(document.getElementById(id).value,10)||0; }
-function deadhead(city){
-  const map={"Genève":"dh-Geneve","Lausanne":"dh-Lausanne","Yverdon":"dh-Yverdon","Fribourg":"dh-Fribourg"};
-  return getNum(map[city]||"dh-Lausanne");
+/* ─ SCROLL PROGRESS ─ */
+window.addEventListener('scroll',()=>{
+  const p=document.getElementById('progress');
+  const pct=(scrollY/(document.documentElement.scrollHeight-innerHeight))*100;
+  p.style.width=pct+'%';
+  document.getElementById('nav').classList.toggle('scrolled',scrollY>60);
+},{passive:true});
+
+/* ─ TOKEN ─ */
+// Token stored only in localStorage — never in source code
+let MTOKEN = localStorage.getItem('suonen_mb_token')||'';
+function saveToken(){
+  const v=document.getElementById('token-inp').value.trim();
+  if(v.startsWith('pk.')){ localStorage.setItem('suonen_mb_token',v); MTOKEN=v; document.getElementById('token-setup').classList.remove('show'); initMap(); }
+  else alert('Token invalide. Il doit commencer par pk.');
 }
-const OTR={BREAK_AFTER_MIN:270, BREAK_MIN:45, MAX_DRIVE_DAY:540}; // 4h30, 45’, 9h
+function skipToken(){ document.getElementById('token-setup').classList.remove('show'); }
 
-function genPlanCard(dateISO, svc){
-  const rideMin = rideMinutes(svc.from, svc.to);
-  const pre   = getNum("preTrip");
-  const post  = getNum("postTrip");
-  const dh    = deadhead(svc.from);
-
-  const depClient = hhmmToMin(svc.dep);
-  const retClient = hhmmToMin(svc.ret);
-
-  const depoOut   = depClient - (dh + pre);
-  const arrSta    = depClient + rideMin;
-  const arrOri    = retClient + rideMin;
-  const depoBack  = arrOri + dh + post;
-
-  const driveTotal = (rideMin*2) + (dh*2); // simple : deadheads considérés conduite
-  const middayStop = retClient - arrSta;
-
-  const legalDriveOK = driveTotal <= OTR.MAX_DRIVE_DAY;
-  const breakOK = middayStop >= OTR.BREAK_MIN;
-  const breakNeed = rideMin > OTR.BREAK_AFTER_MIN ? "⚠ prévoir pause à l'aller" : "pause à la station";
-
-  const status = (legalDriveOK && breakOK) ? "ok" : (legalDriveOK ? "warn" : "bad");
-  const statusTxt = legalDriveOK ? (breakOK ? "OK" : "Pause insuffisante") : "> 9 h conduite";
-
-  const card=document.createElement("div");
-  card.className="card panel";
-  card.innerHTML=`
-    <div class="row" style="justify-content:space-between;align-items:flex-start">
-      <div>
-        <h2>${svc.from} → ${svc.to} <span class="tag">Aller/Retour</span></h2>
-        <small>Date : ${new Date(dateISO).toLocaleDateString('fr-CH',{weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</small>
-        <div class="hr"></div>
-        <div class="timeline">
-          <div class="tl"><div class="t">${minToHHMM(depoOut)}</div><div class="d">Dépôt (${svc.from}) — prise de service + sortie</div></div>
-          <div class="tl"><div class="t">${minToHHMM(depClient - dh)}</div><div class="d">Arrivée point de départ (deadhead ~${dh} min)</div></div>
-          <div class="tl"><div class="t">${svc.dep}</div><div class="d"><b>Départ client</b> — ${svc.from} → ${svc.to}</div></div>
-          <div class="tl"><div class="t">${minToHHMM(arrSta)}</div><div class="d">Arrivée station (conduite ≈ ${rideMin} min)</div></div>
-          <div class="tl"><div class="t">${svc.ret}</div><div class="d"><b>Départ retour</b> — station → ${svc.from}</div></div>
-          <div class="tl"><div class="t">${minToHHMM(arrOri)}</div><div class="d">Arrivée ${svc.from} (conduite ≈ ${rideMin} min)</div></div>
-          <div class="tl"><div class="t">${minToHHMM(arrOri + dh)}</div><div class="d">Retour dépôt (${svc.from}) (deadhead ~${dh} min)</div></div>
-          <div class="tl"><div class="t">${minToHHMM(depoBack)}</div><div class="d">Fin de service (post-checks ~${post} min)</div></div>
-        </div>
-      </div>
-      <div style="min-width:240px">
-        <h3>Conformité</h3>
-        <table>
-          <tr><td>Conduite totale</td><td><b>${(driveTotal/60).toFixed(1)} h</b> (max 9 h)</td></tr>
-          <tr><td>Pause midi</td><td><b>${middayStop} min</b> (≥ 45 min)</td></tr>
-          <tr><td>Remarque</td><td>${breakNeed}</td></tr>
-          <tr><td>Statut</td><td class="status ${status}">${statusTxt}</td></tr>
-        </table>
-        <div class="hr"></div>
-        <h3>Notes exploitation</h3>
-        <ul class="small">
-          <li>Le chauffeur effectue <b>uniquement</b> cet A/R.</li>
-          <li>Pause prise à la station (resto staff / salle chauffeurs si dispo).</li>
-          <li>Check carburant & propreté au retour dépôt.</li>
-        </ul>
-      </div>
-    </div>`;
-  return {card, legalDriveOK, breakOK};
+/* ─ TRANSLATIONS ─ */
+const T={
+fr:{
+'nav.explorer':'Explorer','nav.carte':'Carte 3D','nav.histoire':'Histoire','nav.contact':'Contact','nav.cta':'Mon bisse',
+'hero.kicker':'Valais · Suisse · Patrimoine vivant · XIV<sup>e</sup> siècle',
+'hero.h':'<span class="em">L\'EAU</span><br>QUI A<br><span class="str">FAÇONNÉ</span>',
+'hero.body':'Depuis six siècles, des canaux alpins traversent le Valais à flanc de falaise. Ils ont nourri les vignes, abreuvé les villages, façonné un paysage que l\'on parcourt encore à pied aujourd\'hui.',
+'hero.cta1':'Trouver mon bisse','hero.cta2':'Voir la carte 3D',
+'hero.f1':'Bisses','hero.f2':'Sentiers','hero.f3':'Origines',
+'status.label':'Bisses en eau · Actuellement',
+'man.mark':'Manifeste','man.word2':'Bisses du Valais',
+'man.quote':'L\'eau n\'irrigue pas que les vignes.<br>Elle irrigue les <em>âmes</em>.',
+'man.sub':'Les bisses ne sont pas des chemins de randonnée. Ce sont des prouesses d\'ingénierie alpine nées de la nécessité, entretenues pendant six siècles par des hommes qui ont cru que l\'eau valait qu\'on risque sa vie pour elle. Marcher le long d\'un bisse, c\'est poser ses pas dans les leurs.',
+'p1.t':'Six siècles d\'histoire','p1.tx':'Construits dès le XIVe siècle, les bisses figurent parmi les plus anciens systèmes d\'irrigation encore actifs en Europe. Chaque canal a son histoire, ses gardiens, ses exploits d\'ingénierie taillés dans la roche.',
+'p2.t':'Patrimoine vivant','p2.tx':'Les bisses fonctionnent encore. L\'eau coule d\'avril à novembre, irriguant vignes et alpages exactement comme elle le faisait cinq siècles avant nous.',
+'p3.t':'La randonnée idéale','p3.tx':'Les bisses longent les courbes de niveau — dénivelé minimal, progression fluide. De la balade familiale au sentier vertigineux, un bisse pour chaque profil.',
+'sel.t1':'Quel bisse','sel.t2':'vous ressemble ?','sel.rst':'Réinitialiser','sel.search':'Rechercher un bisse…',
+'f.dur':'Durée','f.dif':'Niveau','f.pro':'Profil',
+'res.l':'bisses trouvés','res.s':'Affinez pour personnaliser',
+'wb.t':'Météo aux départs · Live Open-Meteo',
+'map.eye':'Cartographie 3D · Mapbox','map.h':'Valais <em>en relief</em>','map.d':'Terrain 3D, tracés GPX colorés par difficulté. Cliquez sur un marqueur pour ouvrir la fiche.',
+'map.lay':'Couches','map.t3d':'Terrain 3D','map.tgpx':'Tracés GPX','map.tpoi':'Buvettes','map.theat':'Heatmap','map.leg':'Légende',
+'l.f':'Facile · En eau','l.m':'Moyen · En eau','l.d':'Difficile · En eau','l.s':'Hors saison',
+'feat.pill':'★ Incontournable','feat.eye':'Coup de cœur de la rédaction','feat.sub':'Crans-Montana · 1 800 m',
+'feat.q':'Un sentier taillé dans la falaise, suspendu entre le vide et le ciel. Face à vous : les 4 000 m du Valais.',
+'feat.desc':'Le Bisse du Ro est l\'archétype du bisse spectaculaire. Son tracé vertigineux longe la montagne sur 12 km, offrant des panoramas sans équivalent sur le Cervin, le Grand Combin et les Alpes bernoises.',
+'feat.cta':'Voir l\'itinéraire complet',
+'s.dist':'Distance','s.dur':'Durée','s.note':'Note',
+'her.eye':'Patrimoine','her.h1':'Pourquoi les','her.h2':'bisses','her.h3':'comptent',
+'her.lh':'Six siècles','her.ls':'d\'ingéniosité alpine',
+'h1.t':'Nés de la nécessité','h1.tx':'Le Valais est un paradoxe géographique : entouré de glaciers, il souffre d\'un déficit hydrique chronique sur ses versants ensoleillés. Les paysans valaisans ont taillé des canaux dans la roche pour y acheminer l\'eau des torrents — un exploit accompli à mains nues pendant des siècles.',
+'h2.t':'Le bissenier','h2.tx':'Chaque bisse avait son bissenier — gardien qui le parcourait chaque aube pour déboucher les feuilles, colmater les brèches. Cette charge transmise de père en fils pendant des siècles exigeait parfois de marcher sur des passages aériens à 1 800 m avant que le village ne s\'éveille.',
+'h3.t':'Les consortages','h3.tx':'Des "consortages" — coopératives hydrauliques parmi les plus anciennes de Suisse — réglementaient la distribution de l\'eau à la minute près depuis le XIVe siècle. Ces institutions, avec leurs règles écrites et assemblées annuelles, sont l\'une des premières formes de démocratie directe alpine.',
+'cta.k':'Restez dans le courant','cta.h1':'Ne ratez aucun','cta.h2':'bisse en eau',
+'cta.p':'Conditions en temps réel, nouveaux itinéraires, récits des bisseniers. Une lettre mensuelle qui sent le mélèze et l\'eau de glacier.',
+'cta.ph':'votre@email.ch','cta.sub':'S\'abonner',
+'ft.d':'La référence des randonnées le long des bisses du Valais. Carte 3D, météo live, 50+ itinéraires.','ft.c1':'Explorer','ft.c2':'Infos','ft.c3':'À propos',
+'fc.e1':'Tous les bisses','fc.e2':'Carte 3D','fc.e3':'Trouver mon bisse','fc.e4':'Coups de cœur',
+'fc.i1':'Accès & transport','fc.i2':'Météo Valais','fc.i3':'Télécharger GPX','fc.i4':'État des bisses',
+'fc.a1':'Histoire','fc.a2':'Les bisseniers','fc.a3':'Contact','fc.a4':'Français',
+'ft.copy':'© 2026 SUONEN — Bisses du Valais · Patrimoine vivant',
+'m.elev':'Profil altimétrique','m.inf':'Infos pratiques','m.par':'Sur le parcours','m.gpx':'⬇ GPX','m.map':'🗺 Carte','m.met':'🌤 Météo',
+'card.cta':'Voir l\'itinéraire','status.on':'En eau','status.off':'Hors saison',
+},
+de:{
+'nav.explorer':'Erkunden','nav.carte':'3D-Karte','nav.histoire':'Geschichte','nav.contact':'Kontakt','nav.cta':'Mein Suon',
+'hero.kicker':'Wallis · Schweiz · Lebendes Erbe · XIV. Jahrhundert',
+'hero.h':'<span class="em">DAS WASSER</span><br>DAS DIE<br><span class="str">ALPEN FORMTE</span>',
+'hero.body':'Seit sechs Jahrhunderten durchziehen alpine Kanäle das Wallis an Felswänden. Sie bewässerten Weinberge, versorgten Dörfer und formten eine Landschaft, die man noch heute zu Fuss erkunden kann.',
+'hero.cta1':'Meinen Suon finden','hero.cta2':'3D-Karte ansehen',
+'hero.f1':'Suonen','hero.f2':'Wanderwege','hero.f3':'Ursprung',
+'status.label':'Suonen in Betrieb · Aktuell',
+'man.mark':'Manifest','man.word2':'Walliser Wasserkanäle',
+'man.quote':'Das Wasser bewässert nicht nur Weinberge.<br>Es bewässert <em>Seelen</em>.',
+'man.sub':'Suonen sind keine Wanderwege. Sie sind alpine Ingenieursleistungen, geboren aus der Not, gepflegt von Männern, die glaubten, dass Wasser es wert sei, ihr Leben dafür zu riskieren. Einem Suon entlangzugehen bedeutet, in deren Fussstapfen zu treten.',
+'p1.t':'Sechs Jahrhunderte Geschichte','p1.tx':'Seit dem 14. Jahrhundert gebaut, sind die Suonen eines der ältesten noch aktiven Bewässerungssysteme Europas. Jeder Kanal hat seine Geschichte, seine Hüter, seine in Fels gehauenen Leistungen.',
+'p2.t':'Lebendes Erbe','p2.tx':'Die Suonen funktionieren noch. Das Wasser fliesst von April bis November und bewässert Weinberge wie vor fünf Jahrhunderten.',
+'p3.t':'Die ideale Wanderung','p3.tx':'Suonen folgen den Höhenlinien — minimales Gefälle, fliessender Fortschritt. Vom Familienspaziergang zum schwindelerregenden Pfad, ein Suon für jedes Profil.',
+'sel.t1':'Welcher Suon','sel.t2':'passt zu Ihnen?','sel.rst':'Zurücksetzen','sel.search':'Suon suchen…',
+'f.dur':'Dauer','f.dif':'Schwierigkeit','f.pro':'Profil',
+'res.l':'Suonen gefunden','res.s':'Filter verfeinern',
+'wb.t':'Wetter an Startpunkten · Live Open-Meteo',
+'map.eye':'3D-Kartografie · Mapbox','map.h':'Wallis <em>in Relief</em>','map.d':'3D-Gelände, GPX-Tracks nach Schwierigkeit. Klicken Sie auf einen Marker für die detaillierte Karte.',
+'map.lay':'Ebenen','map.t3d':'3D-Gelände','map.tgpx':'GPX-Tracks','map.tpoi':'Beizen','map.theat':'Heatmap','map.leg':'Legende',
+'l.f':'Einfach · In Betrieb','l.m':'Mittel · In Betrieb','l.d':'Schwer · In Betrieb','l.s':'Ausserhalb Saison',
+'feat.pill':'★ Empfehlung','feat.eye':'Redaktionsempfehlung','feat.sub':'Crans-Montana · 1 800 m',
+'feat.q':'Ein in den Fels gehauener Pfad, schwebend zwischen Leere und Himmel. Vor Ihnen: die 4 000 m des Wallis.',
+'feat.desc':'Der Suon du Ro ist der Inbegriff eines spektakulären Suons. Sein schwindelerregendes Trassee führt 12 km lang an Felsen entlang mit unvergleichlichen Aussichten auf Matterhorn und Grand Combin.',
+'feat.cta':'Vollständige Route ansehen',
+'s.dist':'Distanz','s.dur':'Dauer','s.note':'Bewertung',
+'her.eye':'Erbe','her.h1':'Warum die','her.h2':'Suonen','her.h3':'wichtig sind',
+'her.lh':'Sechs Jahrhunderte','her.ls':'alpinen Einfallsreichtums',
+'h1.t':'Aus der Not geboren','h1.tx':'Das Wallis ist paradox: von Gletschern umgeben, leidet es an chronischem Wassermangel. Die Walliser gruben Kanäle in Fels, um Wasser von Bächen zu trockenen Feldern zu leiten — eine Leistung die von Hand über Jahrhunderte vollbracht wurde.',
+'h2.t':'Der Suoner','h2.tx':'Jeder Suon hatte seinen Suoner — einen Hüter, der ihn bei Tagesanbruch ablief. Diese von Vater auf Sohn weitergegebene Aufgabe erforderte manchmal das Begehen von Luftpassagen in 1 800 m Höhe vor Sonnenaufgang.',
+'h3.t':'Die Konsortschaften','h3.tx':'Konsortschaften — unter den ältesten Wassergenossenschaften der Schweiz — regelten die Verteilung auf die Minute seit dem 14. Jahrhundert. Diese Institutionen mit ihren Jahresversammlungen sind eine der frühesten Formen direkter alpiner Demokratie.',
+'cta.k':'Im Rhythmus des Wassers','cta.h1':'Keinen','cta.h2':'Suon verpassen',
+'cta.p':'Echtzeitbedingungen, neue Routen, Suoner-Geschichten. Ein monatlicher Brief nach Lärche und Gletscherwasser.',
+'cta.ph':'ihre@email.ch','cta.sub':'Abonnieren',
+'ft.d':'Die Referenz für Wanderungen entlang der Walliser Suonen. 3D-Karte, Live-Wetter, 50+ Routen.','ft.c1':'Erkunden','ft.c2':'Infos','ft.c3':'Über uns',
+'fc.e1':'Alle Suonen','fc.e2':'3D-Karte','fc.e3':'Meinen Suon finden','fc.e4':'Empfehlungen',
+'fc.i1':'Anreise & Transport','fc.i2':'Wetter Wallis','fc.i3':'GPX herunterladen','fc.i4':'Suon-Status',
+'fc.a1':'Geschichte','fc.a2':'Die Suoner','fc.a3':'Kontakt','fc.a4':'Deutsch',
+'ft.copy':'© 2026 SUONEN — Bisses du Valais · Lebendes Erbe',
+'m.elev':'Höhenprofil','m.inf':'Praktische Infos','m.par':'Auf der Route','m.gpx':'⬇ GPX','m.map':'🗺 Karte','m.met':'🌤 Wetter',
+'card.cta':'Route ansehen','status.on':'In Betrieb','status.off':'Ausser Betrieb',
+}};
+let lang='fr';
+function setLang(l){
+  lang=l;document.documentElement.lang=l;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const v=T[l][el.dataset.i18n];if(v!==undefined)el.innerHTML=v});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const v=T[l][el.dataset.i18nPh||el.getAttribute('data-i18n-ph')];if(v)el.placeholder=v});
+  document.querySelectorAll('.lang-btn,[id^="mbtn-"]').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll(`#btn-${l},#mbtn-${l}`).forEach(b=>b.classList.add('on'));
+  document.querySelectorAll('.chip[data-fr]').forEach(c=>c.textContent=c.dataset[l]||c.dataset.fr);
+  document.querySelectorAll('.bc-foot-t').forEach(el=>el.textContent=T[l]['card.cta']);
+  renderStatusPills();
 }
 
-function generateDay(){
-  const iso=selDate.value;
-  if(!iso){ alert("Choisis une date."); return; }
-  plansWrap.innerHTML="";
-  const services=servicesForDate(iso);
-  let okDrive=0, okBreak=0;
+/* ─ DATA ─ */
+const now=new Date(),curMon=now.getMonth()+1;
+const BISSES=[
+  {id:'clavau',name:'Bisse de Clavau',name_de:'Suon de Clavau',region:'Sion',region_de:'Sitten',dist:'9 km',dur:'3h',dplus:'150m',dminus:'150m',diff:'moyen',vertige:false,famille:false,durcat:'demi',vibes:['vignes','histoire','panorama'],rating:4.8,reviews:142,seasonStart:4,seasonEnd:11,desc_fr:'Au fil des vignes en terrasses d\'appellation, ce bisse du XVe siècle relie les gorges sauvages de la Liène aux coteaux de Clavau. Un itinéraire entre nature et culture, avec vue panoramique sur les Alpes et le vignoble valaisan.',desc_de:'Entlang der Terrassenweinberge verbindet dieser Suon aus dem 15. Jahrhundert die wilden Schluchten der Liène mit den Hängen von Clavau. Panoramablick auf die Alpen.',img:'https://images.unsplash.com/photo-1598628804065-f2f8eb947fe3?w=800&q=80',coords:[7.37,46.27],path:[[7.312,46.278],[7.325,46.272],[7.338,46.265],[7.352,46.258],[7.367,46.247],[7.384,46.230]],elevProfile:[150,160,165,168,162,155,148,155,150],
+   info_fr:[['🚉','Départ Icogne via car postal depuis Sion'],['🚃','Retour gare de Sion'],['📅','Bisse en eau : Avril – Novembre'],['👟','Chaussures légères suffisantes'],['🕳️','Passage tunnel – lampe conseillée']],
+   info_de:[['🚉','Start Icogne per Postauto ab Sitten'],['🚃','Rückkehr Bahnhof Sitten'],['📅','Wasser : April – November'],['👟','Leichte Wanderschuhe'],['🕳️','Tunnelpassage – Taschenlampe']],
+   parcours_fr:[['🌊','Barrage de la Liène – km 1'],['🕳️','Tunnel – lampe utile'],['🍇','Vignobles de Clavau – km 6'],['📷','Panorama Alpes – km 5'],['🍽️','Buvettes à Sion – arrivée']],
+   parcours_de:[['🌊','Damm Liène – km 1'],['🕳️','Tunnel'],['🍇','Weinberge Clavau – km 6'],['📷','Alpenpanorama – km 5'],['🍽️','Beizen Sitten – Ankunft']]},
+  {id:'ro',name:'Bisse du Ro',name_de:'Suon du Ro',region:'Crans-Montana',region_de:'Crans-Montana',dist:'12 km',dur:'4h30',dplus:'480m',dminus:'480m',diff:'difficile',vertige:true,famille:false,durcat:'jour',vibes:['panorama','spectaculaire'],rating:4.9,reviews:287,seasonStart:6,seasonEnd:10,desc_fr:'Suspendu à flanc de falaise à 1 800 m, le Bisse du Ro offre des panoramas incomparables sur les 4 000 m valaisans. Les passages en corniche, sécurisés, restent déconseillés aux personnes sujettes au vertige.',desc_de:'An Felswänden in 1 800 m Höhe bietet der Suon du Ro unvergleichliche Panoramen. Nicht für Personen mit Höhenangst.',img:'https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&q=80',coords:[7.47,46.30],path:[[7.442,46.295],[7.458,46.298],[7.471,46.302],[7.485,46.306],[7.498,46.310],[7.512,46.308]],elevProfile:[1750,1780,1810,1820,1830,1815,1800,1780,1760],
+   info_fr:[['🚌','Navette depuis Montana (saison)'],['⚠️','Passages vertigineux – déconseillé acrophobes'],['📅','Juin – mi-Octobre'],['🥾','Bonnes chaussures obligatoires'],['🌤️','Éviter par temps d\'orage']],
+   info_de:[['🚌','Shuttle ab Montana (Saison)'],['⚠️','Schwindelerregende Passagen'],['📅','Juni – Mitte Oktober'],['🥾','Gute Wanderschuhe Pflicht'],['🌤️','Bei Gewitter meiden']],
+   parcours_fr:[['🏔️','Vue Cervin et 4000m – dès km 2'],['🌉','Passerelles en corniche – km 4-5'],['💧','Bisse en eau Juin–Sept'],['🍽️','Buvette au départ Montana'],['🌅','Panorama exceptionnel – km 8']],
+   parcours_de:[['🏔️','Blick Matterhorn – ab km 2'],['🌉','Brücken am Fels – km 4-5'],['💧','Wasser Juni–Sept'],['🍽️','Buvette Montana'],['🌅','Aussergewöhnliches Panorama – km 8']]},
+  {id:'vex',name:'Bisse de Vex',name_de:'Suon de Vex',region:'Mayens-de-Sion',region_de:'Mayens-de-Sion',dist:'11 km',dur:'3h',dplus:'200m',dminus:'200m',diff:'facile',vertige:false,famille:true,durcat:'demi',vibes:['foret','famille','histoire'],rating:4.6,reviews:198,seasonStart:4,seasonEnd:11,desc_fr:'Construit en 1435, le Bisse de Vex serpente entre forêts de mélèzes et alpages. Sentier pédagogique sur l\'histoire de l\'eau, accessible aux enfants dès 6 ans.',desc_de:'1435 gebaut, schlängelt sich durch Lärchenwälder. Lehrpfad für Kinder ab 6 Jahren.',img:'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=800&q=80',coords:[7.42,46.20],path:[[7.395,46.212],[7.408,46.208],[7.421,46.203],[7.435,46.198],[7.448,46.194]],elevProfile:[900,920,935,930,940,928,920,910,905],
+   info_fr:[['🚌','Bus depuis Sion – 20 min'],['👧','Accessible dès 6 ans'],['🦮','Chiens acceptés en laisse'],['📅','Avril – Novembre'],['♿','Partiellement accessible PMR']],
+   info_de:[['🚌','Bus ab Sitten – 20 Min'],['👧','Ab 6 Jahren'],['🦮','Hunde erlaubt'],['📅','April – November'],['♿','Teilweise rollstuhlgerecht']],
+   parcours_fr:[['🪵','Cabane du bissenier (XVe s.)'],['📚','12 panneaux pédagogiques'],['🌲','Forêt de mélèzes – km 4'],['🍽️','Auberge Mayens-de-Sion'],['🌄','Vue sur les Diablerets']],
+   parcours_de:[['🪵','Bissenier-Hütte (15. Jh.)'],['📚','12 Lernstationen'],['🌲','Lärchenwald – km 4'],['🍽️','Gasthaus Mayens-de-Sion'],['🌄','Blick auf Diablerets']]},
+  {id:'torrentneuf',name:'Bisse de Torrent Neuf',name_de:'Suon Torrent Neuf',region:'Savièse',region_de:'Savièse',dist:'9 km',dur:'3h',dplus:'220m',dminus:'220m',diff:'moyen',vertige:true,famille:false,durcat:'demi',vibes:['vignes','spectaculaire','histoire'],rating:4.8,reviews:175,seasonStart:5,seasonEnd:10,desc_fr:'Passerelles en corniche, sculptures contemporaines, étangs de Savièse — ce sentier didactique longe les vignobles du fameux Fendant. Récemment réaménagé, spectaculaire.',desc_de:'Felsbrücken, zeitgenössische Skulpturen, Teiche von Savièse — dieser Lehrpfad begleitet die Fendant-Weinberge.',img:'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80',coords:[7.31,46.24],path:[[7.285,46.252],[7.298,46.248],[7.312,46.244],[7.326,46.240],[7.340,46.235]],elevProfile:[800,820,845,860,870,855,840,825,810],
+   info_fr:[['🚌','Car postal depuis Sion'],['⚠️','Section vertigineuse sécurisée'],['🍷','Vignobles Fendant'],['📅','Mai – Octobre'],['🎨','Sculptures km 3-5']],
+   info_de:[['🚌','Postauto ab Sitten'],['⚠️','Gesicherter Schwindel-Abschnitt'],['🍷','Fendant-Weinberge'],['📅','Mai – Oktober'],['🎨','Skulpturen km 3-5']],
+   parcours_fr:[['🌉','Passerelles suspendues en corniche'],['🎨','Parcours sculpturel – km 3'],['💧','Répartiteur d\'eau ingénieux'],['🌊','Étangs de Savièse'],['⛪','Chapelle Sainte-Marguerite']],
+   parcours_de:[['🌉','Hängebrücken am Fels'],['🎨','Skulpturenpfad – km 3'],['💧','Ingeniöser Wasserverteiler'],['🌊','Teiche Savièse'],['⛪','Kapelle Ste-Marguerite']]},
+  {id:'ayent',name:'Bisse d\'Ayent',name_de:'Suon d\'Ayent',region:'Anzère – Tseuzier',region_de:'Anzère – Tseuzier',dist:'17 km',dur:'6h',dplus:'560m',dminus:'600m',diff:'moyen',vertige:false,famille:false,durcat:'jour',vibes:['panorama','glaciers','foret'],rating:4.7,reviews:131,seasonStart:6,seasonEnd:10,desc_fr:'Le Bisse d\'Ayent conduit au lac de Tseuzier (1 777 m). Un tunnel taillé dans la roche permet de franchir une falaise. Vues permanentes sur les 4 000 m valaisans.',desc_de:'Führt zum Lac de Tseuzier (1 777 m). Ein Felstunnel durchquert eine Wand. Permanenter Blick auf die 4 000 m.',img:'https://images.unsplash.com/photo-1527824404775-dce343a7d1f4?w=800&q=80',coords:[7.40,46.31],path:[[7.368,46.308],[7.383,46.312],[7.400,46.318],[7.418,46.322],[7.432,46.328]],elevProfile:[1500,1550,1600,1650,1700,1750,1777,1720,1680],
+   info_fr:[['🚌','Car postal depuis Anzère'],['🏊','Baignade au lac Tseuzier'],['🕳️','Tunnel dans la falaise'],['📅','Juin – Octobre'],['🍽️','Auberge du lac en saison']],
+   info_de:[['🚌','Postauto ab Anzère'],['🏊','Baden im Lac Tseuzier'],['🕳️','Felstunnel'],['📅','Juni – Oktober'],['🍽️','Bergrestaurant Saison']],
+   parcours_fr:[['🏔️','Vue 4000m dès le départ'],['🕳️','Tunnel dans la falaise – km 7'],['💧','Lac de Tseuzier – 1 777 m'],['🌲','Descente en forêt – km 12-17'],['🚡','Funiculaire Montana–Sierre']],
+   parcours_de:[['🏔️','4000m-Blick ab Start'],['🕳️','Felstunnel – km 7'],['💧','Lac de Tseuzier – 1 777 m'],['🌲','Waldabstieg – km 12-17'],['🚡','Standseilbahn Montana–Sider']]},
+  {id:'levron',name:'Bisse du Levron',name_de:'Suon du Levron',region:'Verbier – Ruinettes',region_de:'Verbier – Ruinettes',dist:'6.5 km',dur:'2h30',dplus:'120m',dminus:'500m',diff:'facile',vertige:false,famille:true,durcat:'demi',vibes:['panorama','glaciers','famille'],rating:4.6,reviews:89,seasonStart:6,seasonEnd:9,desc_fr:'Départ en téléphérique aux Ruinettes. Sculptures en bois, chutes d\'eau spectaculaires et vues sur le Grand Combin. Descente lumineuse sur Verbier.',desc_de:'Start mit der Gondelbahn zu den Ruinettes. Holzskulpturen, Wasserfälle und Blick auf den Grand Combin.',img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',coords:[7.22,46.10],path:[[7.200,46.112],[7.212,46.108],[7.224,46.103],[7.238,46.098],[7.250,46.093]],elevProfile:[2200,2180,2150,2100,2050,2000,1950,1900,1800],
+   info_fr:[['🚡','Téléphérique Verbier–Ruinettes'],['👧','Idéal dès 5 ans'],['📅','Juin – Septembre'],['🎨','Sculptures km 2-4'],['☕','Buvette du glacier']],
+   info_de:[['🚡','Gondelbahn Verbier–Ruinettes'],['👧','Ab 5 Jahren'],['📅','Juni – September'],['🎨','Skulpturen km 2-4'],['☕','Gletscherbuvette']],
+   parcours_fr:[['🌊','Chute d\'eau – km 1'],['🎨','Sculptures en bois – km 2'],['🏔️','Vue Massif des Combins'],['🌿','Prairies alpines – km 4-6'],['🍽️','Restaurants Verbier – arrivée']],
+   parcours_de:[['🌊','Wasserfall – km 1'],['🎨','Holzskulpturen – km 2'],['🏔️','Blick Massif des Combins'],['🌿','Alpenwiesen – km 4-6'],['🍽️','Restaurants Verbier – Ankunft']]},
+  {id:'trient',name:'Bisse du Trient',name_de:'Suon du Trient',region:'Col de la Forclaz',region_de:'Col de la Forclaz',dist:'6.6 km',dur:'1h45',dplus:'150m',dminus:'150m',diff:'facile',vertige:false,famille:true,durcat:'court',vibes:['glaciers','famille','foret'],rating:4.7,reviews:203,seasonStart:6,seasonEnd:9,desc_fr:'Vue sur le glacier du Trient, sentier éducatif pour enfants et buvette avec concerts d\'été. Le bisse idéal pour une première expérience en famille.',desc_de:'Blick auf den Gletscher, Kinderlehrpfad und Sommerbuvette. Ideal für den ersten Familienausflug.',img:'https://images.unsplash.com/photo-1544194215-541c2d3561a4?w=800&q=80',coords:[7.01,46.04],path:[[6.988,46.045],[7.000,46.042],[7.012,46.040],[7.024,46.038],[7.036,46.035]],elevProfile:[1500,1510,1520,1530,1525,1515,1510,1505,1500],
+   info_fr:[['🚌','Bus depuis Martigny'],['👶','Accessible dès 4 ans'],['🎓','Sentier éducatif 6-12 ans'],['📅','Juin – mi-septembre'],['🎵','Concerts buvette en été']],
+   info_de:[['🚌','Bus ab Martigny'],['👶','Ab 4 Jahren'],['🎓','Lehrpfad 6-12 Jahre'],['📅','Juni – Mitte September'],['🎵','Sommerkonzerte Buvette']],
+   parcours_fr:[['🧊','Vue sur le glacier dès le départ'],['📖','10 postes éducatifs'],['🌸','Flore alpine remarquable'],['☕','Buvette du glacier – km 3'],['🔁','Parcours aller-retour']],
+   parcours_de:[['🧊','Gletscherblick ab Start'],['📖','10 Lernstationen'],['🌸','Alpenflora'],['☕','Gletscherbuvette – km 3'],['🔁','Hin-und-Rückweg']]},
+  {id:'saxon',name:'Bisse de Saxon',name_de:'Suon de Saxon',region:'Nendaz – Saxon',region_de:'Nendaz – Saxon',dist:'32 km',dur:'8h50',dplus:'800m',dminus:'1200m',diff:'difficile',vertige:false,famille:false,durcat:'multi',vibes:['panorama','histoire','foret'],rating:4.7,reviews:64,seasonStart:6,seasonEnd:9,desc_fr:'Le plus long bisse du Valais (1876). Il traverse alpages sauvages et forêts de mélèzes sur 32 km. Les cabanes des gardiens sont encore visibles.',desc_de:'Der längste Suon des Wallis (1876). 32 km wilde Alpen und Lärchenwälder. Suoner-Hütten noch sichtbar.',img:'https://images.unsplash.com/photo-1531761535209-180857e963b9?w=800&q=80',coords:[7.27,46.17],path:[[7.245,46.182],[7.262,46.176],[7.278,46.170],[7.295,46.164],[7.310,46.158]],elevProfile:[1200,1250,1300,1350,1400,1380,1360,1340,1320],
+   info_fr:[['🏕️','Prévoir 1 nuit en altitude'],['🧢','Équipement complet'],['📅','Juin – Septembre'],['🚐','Navette La Tzoumaz'],['📦','Ravitaillement limité']],
+   info_de:[['🏕️','1 Übernachtung planen'],['🧢','Vollständige Ausrüstung'],['📅','Juni – September'],['🚐','Shuttle La Tzoumaz'],['📦','Wenig Verpflegung']],
+   parcours_fr:[['🏔️','Alpages de Nendaz – km 8-15'],['🏠','Cabane du Bourlâ (XVIIIe s.)'],['🌲','Forêts de mélèzes – km 18-24'],['🌊','Tracé historique à sec'],['🌄','Vue Massif des Combins']],
+   parcours_de:[['🏔️','Alpen Nendaz – km 8-15'],['🏠','Bourlâ-Hütte (18. Jh.)'],['🌲','Lärchenwälder – km 18-24'],['🌊','Historisches Trassee'],['🌄','Blick Massif des Combins']]},
+  {id:'vieux',name:'Bisse Vieux de Nendaz',name_de:'Alter Suon Nendaz',region:'Nendaz',region_de:'Nendaz',dist:'10 km',dur:'3h',dplus:'50m',dminus:'250m',diff:'facile',vertige:false,famille:true,durcat:'demi',vibes:['panorama','histoire','foret'],rating:4.5,reviews:156,seasonStart:6,seasonEnd:10,desc_fr:'Le plus haut des trois bisses étagés de Nendaz. Il parcourt la montagne presque en cercle à 1 500 m, avec vue permanente sur la vallée du Rhône.',desc_de:'Der höchste der drei gestaffelten Suonen von Nendaz. Kreist die Berge auf 1 500 m mit permanentem Rhonetalblick.',img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',coords:[7.28,46.19],path:[[7.256,46.198],[7.270,46.193],[7.284,46.188],[7.298,46.183]],elevProfile:[1480,1490,1500,1505,1510,1505,1498,1490,1485],
+   info_fr:[['🚡','Télécabine Nendaz option'],['👧','Dès 7 ans'],['🐄','Alpages avec troupeaux'],['📅','Juin – Octobre'],['🍽️','Auberge Haute-Nendaz']],
+   info_de:[['🚡','Gondelbahn Nendaz optional'],['👧','Ab 7 Jahren'],['🐄','Alpen mit Herden'],['📅','Juni – Oktober'],['🍽️','Gasthaus Haute-Nendaz']],
+   parcours_fr:[['🏔️','Vue vallée du Rhône permanente'],['🌲','Forêts de pins – km 3-5'],['🐄','Alpages – km 6-8'],['🏠','Chalets traditionnels Nendaz'],['🌄','Coucher de soleil sur Bernois']],
+   parcours_de:[['🏔️','Permanenter Rhonetalblick'],['🌲','Kiefernwälder – km 3-5'],['🐄','Alpen – km 6-8'],['🏠','Traditionelle Chalets'],['🌄','Sonnenuntergang Berner Alpen']]},
+  {id:'tsittoret',name:'Bisse du Tsittoret',name_de:'Suon du Tsittoret',region:'Isérables',region_de:'Isérables',dist:'8 km',dur:'3h',dplus:'300m',dminus:'300m',diff:'moyen',vertige:false,famille:false,durcat:'demi',vibes:['panorama','foret','histoire'],rating:4.5,reviews:78,seasonStart:5,seasonEnd:10,desc_fr:'Accessible par le funiculaire d\'Isérables. Circuit méconnu dans les forêts de mélèzes, avec vues sur la vallée du Rhône et le Grand Combin.',desc_de:'Per Standseilbahn von Isérables. Wenig bekannte Runde durch Lärchenwälder mit Aussicht auf Rhonetal und Grand Combin.',img:'https://images.unsplash.com/photo-1527824404775-dce343a7d1f4?w=800&q=80',coords:[7.18,46.13],path:[[7.162,46.138],[7.175,46.133],[7.188,46.128],[7.200,46.123]],elevProfile:[1100,1150,1200,1250,1300,1350,1380,1340,1300],
+   info_fr:[['🚡','Funiculaire depuis Riddes'],['🏘️','Village médiéval d\'Isérables'],['📅','Mai – Octobre'],['🧭','Circuit – retour au départ'],['⛰️','Altitude 1100–1400 m']],
+   info_de:[['🚡','Standseilbahn ab Riddes'],['🏘️','Mittelalterliches Dorf Isérables'],['📅','Mai – Oktober'],['🧭','Rundstrecke'],['⛰️','Höhe 1100–1400 m']],
+   parcours_fr:[['🏘️','Village médiéval Isérables'],['🌲','Forêts de mélèzes – km 2-6'],['🏔️','Vue Grand Combin – km 4'],['💧','Source du bisse – km 3'],['🍷','Caves à vins du village']],
+   parcours_de:[['🏘️','Mittelalterliches Dorf'],['🌲','Lärchenwälder – km 2-6'],['🏔️','Grand Combin Blick – km 4'],['💧','Suon-Quelle – km 3'],['🍷','Dorfweinkeller']]}
+];
 
-  services.forEach(svc=>{
-    const {card, legalDriveOK, breakOK}=genPlanCard(iso, svc);
-    plansWrap.appendChild(card);
-    if(legalDriveOK) okDrive++; if(breakOK) okBreak++;
+/* ─ STATUS PILLS ─ */
+function isEnEau(b){ return curMon>=b.seasonStart && curMon<=b.seasonEnd; }
+function renderStatusPills(){
+  const el=document.getElementById('status-pills'); el.innerHTML='';
+  BISSES.slice(0,8).forEach(b=>{
+    const on=isEnEau(b);
+    const name=lang==='de'?b.name_de:b.name;
+    const lbl=on?(T[lang]['status.on']||'En eau'):(T[lang]['status.off']||'Hors saison');
+    el.innerHTML+=`<div class="spill ${on?'on':'off'}"><div class="spill-dot"></div><span>${name} · ${lbl}</span></div>`;
   });
-
-  dayKPIs.style.display="grid";
-  kDate.textContent=new Date(iso).toLocaleDateString("fr-CH",{weekday:"long", day:"2-digit", month:"long", year:"numeric"});
-  kBus.textContent=services.length+" / 3";
-  kLegal.textContent=(okDrive===services.length)?"OK":"À surveiller";
-  kPause.textContent=(okBreak===services.length)?"OK":"Vérifier";
 }
 
-document.getElementById("btnGenerate").addEventListener("click", generateDay);
+/* ─ SVG ELEVATION PROFILE ─ */
+function makeElevSVG(profile,w=400,h=80,color='rgba(27,138,170,0.8)'){
+  const min=Math.min(...profile),max=Math.max(...profile),range=max-min||1;
+  const pts=profile.map((v,i)=>{
+    const x=(i/(profile.length-1))*w;
+    const y=h-((v-min)/range)*(h*0.75)-h*0.1;
+    return `${x},${y}`;
+  });
+  const area=`M0,${h} L${pts.join(' L')} L${w},${h} Z`;
+  const line=`M${pts.join(' L')}`;
+  return `<path d="${area}" fill="rgba(27,138,170,0.12)" stroke="none"/>
+          <path d="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
 
-/* ====== Impression & PDF ====== */
-document.getElementById("btnPrint").addEventListener("click", ()=>window.print());
+/* ─ RENDER CARDS ─ */
+function renderCards(){
+  const g=document.getElementById('bgrid'); g.innerHTML='';
+  BISSES.forEach((b,i)=>{
+    const enEau=isEnEau(b);
+    const nm=lang==='de'?b.name_de:b.name;
+    const rg=lang==='de'?b.region_de:b.region;
+    const ds=lang==='de'?b.desc_de:b.desc_fr;
+    const dc=b.diff==='facile'?'dt-f':b.diff==='moyen'?'dt-m':'dt-d';
+    const sc=b.diff==='facile'?'s-f':b.diff==='moyen'?'s-m':'s-d';
+    const dlabel=lang==='de'?(b.diff==='facile'?'🟢 Einfach':b.diff==='moyen'?'🔵 Mittel':'🔴 Schwer'):(b.diff==='facile'?'🟢 Facile':b.diff==='moyen'?'🔵 Moyen':'🔴 Difficile');
+    const elevColor=b.diff==='facile'?'rgba(58,138,80,0.8)':b.diff==='moyen'?'rgba(27,138,170,0.8)':'rgba(192,74,40,0.8)';
+    const statusOn=enEau;
+    const stClass=statusOn?'st-on':'st-off';
+    const stLbl=statusOn?(T[lang]['status.on']||'En eau'):(T[lang]['status.off']||'Hors saison');
+    const cta=T[lang]['card.cta']||'Voir l\'itinéraire';
+    const top=b.rating>=4.8?'<div class="bb bb-t">★ Top</div>':'';
+    const vb=b.vertige?'<div class="bb bb-v">⚠️ Vertige</div>':'';
+    const fb=b.famille?`<div class="bb bb-f">👨‍👩‍👧 ${lang==='de'?'Familie':'Famille'}</div>`:'';
+    const d=document.createElement('div');
+    d.className='bc reveal'; d.style.transitionDelay=(i%3)*0.06+'s';
+    d.dataset.id=b.id; d.dataset.dif=b.diff; d.dataset.dur=b.durcat;
+    d.dataset.vrt=b.vertige; d.dataset.fam=b.famille; d.dataset.vib=b.vibes.join(',');
+    d.innerHTML=`
+      <div class="bc-img">
+        <img src="${b.img}" alt="${nm}" loading="lazy">
+        <div class="bc-stripe ${sc}"></div>
+        <div class="bc-dtag ${dc}">${dlabel}</div>
+        <div class="bc-badges">${top}${vb}${fb}</div>
+        <div class="bc-weather" id="wth-${b.id}">—</div>
+      </div>
+      <div class="bc-body">
+        <div class="bc-region">${rg}</div>
+        <div class="bc-name">${nm}</div>
+        <p class="bc-desc">${ds}</p>
+        <div class="bc-elev-mini"><svg viewBox="0 0 400 40" preserveAspectRatio="none">${makeElevSVG(b.elevProfile,400,40,elevColor)}</svg></div>
+        <div class="bc-meta">
+          <div class="bm"><div class="bm-v">${b.dist}</div><div class="bm-l">${lang==='de'?'Distanz':'Dist.'}</div></div>
+          <div class="bm"><div class="bm-v">${b.dur}</div><div class="bm-l">${lang==='de'?'Dauer':'Durée'}</div></div>
+          <div class="bm"><div class="bm-v">↑${b.dplus}</div><div class="bm-l">D+</div></div>
+          <div class="bc-rating"><div class="br-v">★${b.rating}</div><div class="br-n">(${b.reviews})</div></div>
+        </div>
+        <div class="bc-status ${stClass}"><div class="bc-status-dot"></div><span class="bc-status-lbl">${stLbl}</span></div>
+      </div>
+      <div class="bc-foot" onclick="openModal('${b.id}')"><span class="bc-foot-t">${cta}</span><span class="bc-arr">→</span></div>`;
+    // 3D tilt
+    d.addEventListener('mousemove',e=>{
+      const r=d.getBoundingClientRect();
+      const rx=(e.clientY-r.top)/r.height-.5, ry=(e.clientX-r.left)/r.width-.5;
+      d.style.transform=`perspective(800px) rotateX(${-rx*6}deg) rotateY(${ry*8}deg) scale(1.01)`;
+    });
+    d.addEventListener('mouseleave',()=>d.style.transform='perspective(800px) rotateX(0) rotateY(0) scale(1)');
+    g.appendChild(d);
+  });
+  initReveal();
+}
 
-document.getElementById("btnPDF").addEventListener("click", ()=>{
-  const { jsPDF } = window.jspdf;
-  const doc=new jsPDF({unit:"pt", format:"a4"});
-  const PAD=40, W=595, LINE="#E5E7EB";
-
-  function divider(y){ doc.setDrawColor(220); doc.line(PAD,y,W-PAD,y); }
-
-  // En-tête
-  doc.setFillColor("#FFD300"); doc.rect(0,0,W,70,"F");
-  doc.setTextColor("#0B0B0B"); doc.setFont("helvetica","bold"); doc.setFontSize(18);
-  doc.text("PostBus Connect — Planning exploitation (interne)", PAD, 44);
-
-  // Date
-  const dTxt = selDate.value ? new Date(selDate.value).toLocaleDateString("fr-CH",{weekday:"long", day:"2-digit", month:"long", year:"numeric"}) : "—";
-  doc.setFont("helvetica","normal"); doc.setFontSize(11); doc.setTextColor("#111");
-  doc.text("Date : "+dTxt+" — Ven–Sam–Dim uniquement · 1 A/R par chauffeur", PAD, 86);
-  divider(96);
-
-  // Rendu simple des cartes
-  let y=112; let page=1;
-  const services=servicesForDate(selDate.value||"2026-01-03"); // fallback si vide
-  for(const svc of services){
-    const rideMin=rideMinutes(svc.from, svc.to);
-    const pre=getNum("preTrip"), post=getNum("postTrip"), dh=deadhead(svc.from);
-    const dep = hhmmToMin(svc.dep), ret = hhmmToMin(svc.ret);
-    const depoOut=dep-(dh+pre), arrSta=dep+rideMin, arrOri=ret+rideMin, depoBack=arrOri+dh+post;
-    const driveTotal=(rideMin*2)+(dh*2), middayStop=ret-arrSta;
-
-    // Titre
-    doc.setFont("helvetica","bold"); doc.setFontSize(14); doc.setTextColor("#111");
-    doc.text(`${svc.from} → ${svc.to} (A/R)`, PAD, y);
-    y+=16; doc.setFont("helvetica","normal"); doc.setFontSize(11);
-    const rows=[
-      [`${minToHHMM(depoOut)}`, `Dépôt ${svc.from} — prise de service + sortie`],
-      [`${minToHHMM(dep - dh)}`, `Arrivée point de départ (deadhead ~${dh} min)`],
-      [`${svc.dep}`, `Départ client — ${svc.from} → ${svc.to}`],
-      [`${minToHHMM(arrSta)}`, `Arrivée station (conduite ≈ ${rideMin} min)`],
-      [`${svc.ret}`, `Départ retour — station → ${svc.from}`],
-      [`${minToHHMM(arrOri)}`, `Arrivée ${svc.from} (conduite ≈ ${rideMin} min)`],
-      [`${minToHHMM(arrOri + dh)}`, `Retour dépôt ${svc.from} (deadhead ~${dh} min)`],
-      [`${minToHHMM(depoBack)}`, `Fin de service (post-checks ~${post} min)`],
-    ];
-    for(const [t,desc] of rows){
-      doc.text(t, PAD, y); doc.text("— "+desc, PAD+70, y);
-      y+=14;
-    }
-    // Bloc conformité
-    y+=2; divider(y); y+=12;
-    doc.text(`Conduite totale : ${(driveTotal/60).toFixed(1)} h (≤ 9 h)  ·  Pause à la station : ${middayStop} min (≥ 45)`, PAD, y);
-    y+=16; divider(y); y+=18;
-
-    // Saut de page si besoin
-    if(y>770){ doc.text(`© MobilityLab — page ${page}`, PAD, 820); doc.addPage(); page++; y=70; }
+/* ─ WEATHER API (Open-Meteo, no key needed) ─ */
+async function loadWeather(){
+  const wbCards=document.getElementById('wb-cards'); wbCards.innerHTML='';
+  const wCodes={0:'☀️ Dégagé',1:'🌤 Peu nuageux',2:'⛅ Nuageux',3:'☁️ Couvert',45:'🌫 Brouillard',48:'🌫 Brouillard',51:'🌦 Bruine',61:'🌧 Pluie',80:'🌦 Averses',95:'⛈ Orage',99:'⛈ Orage'};
+  const wCodesDE={0:'☀️ Klar',1:'🌤 Leicht bewölkt',2:'⛅ Bewölkt',3:'☁️ Bedeckt',45:'🌫 Nebel',51:'🌦 Niesel',61:'🌧 Regen',80:'🌦 Schauer',95:'⛈ Gewitter'};
+  const sample=BISSES.slice(0,6);
+  for(const b of sample){
+    try{
+      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${b.coords[1]}&longitude=${b.coords[0]}&current=temperature_2m,weathercode&timezone=Europe%2FZurich`);
+      const d=await r.json();
+      const temp=Math.round(d.current.temperature_2m);
+      const code=d.current.weathercode;
+      const desc=(lang==='de'?wCodesDE:wCodes)[code]||'—';
+      const nm=lang==='de'?b.name_de:b.name;
+      wbCards.innerHTML+=`<div class="wc"><div class="wc-name">${nm}</div><div class="wc-region">${b.region}</div><div class="wc-main"><div class="wc-icon">${desc.split(' ')[0]}</div><div class="wc-temp">${temp}°</div></div><div class="wc-desc">${desc.substring(desc.indexOf(' ')+1)}</div></div>`;
+      // Also update card badge
+      const wBadge=document.getElementById('wth-'+b.id);
+      if(wBadge) wBadge.textContent=`${desc.split(' ')[0]} ${temp}°C`;
+    }catch(e){ /* silent fail */ }
   }
+  if(!wbCards.children.length) wbCards.innerHTML='<div style="font-size:.8rem;color:var(--s-stone);padding:.5rem" data-i18n="wb.err">Météo indisponible</div>';
+}
 
-  doc.text(`© MobilityLab — page ${page}`, PAD, 820);
-  const fname = `Planning_PBC_${selDate.value||"jour"}.pdf`;
-  doc.save(fname);
+/* ─ FILTER ─ */
+const F={dur:null,dif:null,vrt:null,fam:null,vib:null};
+function chip(el,cls='on'){
+  const g=el.dataset.g,v=el.dataset.v,was=['on','on-r','on-g'].some(c=>el.classList.contains(c));
+  document.querySelectorAll(`[data-g="${g}"]`).forEach(c=>c.classList.remove('on','on-r','on-g'));
+  if(!was){el.classList.add(cls);F[g]=v;}else F[g]=null;
+  applyFilters();
+}
+function applyFilters(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  let n=0;
+  document.querySelectorAll('.bc').forEach(c=>{
+    const nm=c.querySelector('.bc-name')?.textContent?.toLowerCase()||'';
+    const rg=c.querySelector('.bc-region')?.textContent?.toLowerCase()||'';
+    let show=true;
+    if(q&&!nm.includes(q)&&!rg.includes(q)) show=false;
+    if(F.dur&&c.dataset.dur!==F.dur) show=false;
+    if(F.dif&&c.dataset.dif!==F.dif) show=false;
+    if(F.vrt==='sans'&&c.dataset.vrt==='true') show=false;
+    if(F.fam==='oui'&&c.dataset.fam!=='true') show=false;
+    if(F.vib){const vs=c.dataset.vib?c.dataset.vib.split(','):[];if(!vs.includes(F.vib))show=false;}
+    c.classList.toggle('hidden',!show);
+    if(show)n++;
+  });
+  document.getElementById('rNum').textContent=n;
+}
+function resetAll(){
+  Object.keys(F).forEach(k=>F[k]=null);
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on','on-r','on-g'));
+  document.getElementById('search').value='';
+  document.querySelectorAll('.bc').forEach(c=>c.classList.remove('hidden'));
+  document.getElementById('rNum').textContent=BISSES.length;
+}
+
+/* ─ MODAL ─ */
+function openModal(id){
+  const b=BISSES.find(x=>x.id===id);if(!b)return;
+  const nm=lang==='de'?b.name_de:b.name, rg=lang==='de'?b.region_de:b.region;
+  const ds=lang==='de'?b.desc_de:b.desc_fr;
+  const info=lang==='de'?b.info_de:b.info_fr, parc=lang==='de'?b.parcours_de:b.parcours_fr;
+  document.getElementById('m-img').src=b.img; document.getElementById('m-img').alt=nm;
+  document.getElementById('m-reg').textContent=rg; document.getElementById('m-ttl').textContent=nm;
+  document.getElementById('m-desc').textContent=ds;
+  const tD=lang==='de'?'Distanz':'Distance',tDr=lang==='de'?'Dauer':'Durée',tN=lang==='de'?'Bewertung':'Note',tS=lang==='de'?'Saison':'Saison';
+  document.getElementById('m-stats').innerHTML=[
+    [b.dist,tD],[b.dur,tDr],['↑'+b.dplus,'D+'],['↓'+b.dminus,'D−'],['★'+b.rating,b.reviews+' avis']
+  ].map(([v,l])=>`<div class="ms"><div class="ms-v">${v}</div><div class="ms-l">${l}</div></div>`).join('');
+  const ec=b.diff==='facile'?'rgba(58,138,80,.8)':b.diff==='moyen'?'rgba(27,138,170,.8)':'rgba(192,74,40,.8)';
+  document.getElementById('m-elev-svg').innerHTML=makeElevSVG(b.elevProfile,400,80,ec);
+  document.getElementById('m-info').innerHTML=info.map(([i,t])=>`<li><span class="ml-ic">${i}</span><span>${t}</span></li>`).join('');
+  document.getElementById('m-parc').innerHTML=parc.map(([i,t])=>`<li><span class="ml-ic">${i}</span><span>${t}</span></li>`).join('');
+  document.getElementById('modal-bg').classList.add('open');
+  document.body.style.overflow='hidden';
+  try{if(window.MAP)window.MAP.flyTo({center:b.coords,zoom:13,pitch:50,bearing:-15,duration:1500})}catch(e){}
+}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');document.body.style.overflow='';}
+function closeBg(e){if(e.target===document.getElementById('modal-bg'))closeModal();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+/* ─ MAPBOX ─ */
+function initMap(){
+  const token=localStorage.getItem('suonen_mb_token')||'';
+  if(!token){document.getElementById('token-setup').classList.add('show');return;}
+  try{
+    mapboxgl.accessToken=token;
+    const map=new mapboxgl.Map({container:'mapbox',style:'mapbox://styles/mapbox/outdoors-v12',center:[7.35,46.20],zoom:9.2,pitch:45,bearing:-10,antialias:true});
+    window.MAP=map;
+    map.addControl(new mapboxgl.NavigationControl({visualizePitch:true}),'top-right');
+    map.on('load',()=>{
+      try{
+        map.addSource('dem',{type:'raster-dem',url:'mapbox://mapbox.mapbox-terrain-dem-v1',tileSize:512,maxzoom:14});
+        map.setTerrain({source:'dem',exaggeration:1.4});
+        map.addLayer({id:'sky',type:'sky',paint:{'sky-type':'atmosphere','sky-atmosphere-sun':[0,90],'sky-atmosphere-sun-intensity':12}});
+      }catch(e){}
+      const dc={facile:'#3A8A50',moyen:'#1B8AAA',difficile:'#C04A28'};
+      BISSES.forEach(b=>{
+        if(!b.path||b.path.length<2)return;
+        try{
+          map.addSource('p-'+b.id,{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:b.path}}});
+          map.addLayer({id:'l-'+b.id,type:'line',source:'p-'+b.id,layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':dc[b.diff]||'#1B8AAA','line-width':3,'line-opacity':.85}});
+        }catch(e){}
+        const el=document.createElement('div');
+        el.style.cssText=`width:13px;height:13px;border-radius:50%;background:${dc[b.diff]};border:2px solid white;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .2s`;
+        el.addEventListener('mouseenter',()=>el.style.transform='scale(1.7)');
+        el.addEventListener('mouseleave',()=>el.style.transform='');
+        const nm=lang==='de'?b.name_de:b.name;
+        const popup=new mapboxgl.Popup({offset:14,closeButton:true,maxWidth:'230px'});
+        popup.setHTML(`<div class="pu-name">${nm}</div><div class="pu-reg">${b.region}</div><div class="pu-row">${b.dist} · ${b.dur} · ★${b.rating}</div><div class="pu-btn" onclick="openModal('${b.id}')">${lang==='de'?'Route ansehen →':'Voir l\'itinéraire →'}</div>`);
+        new mapboxgl.Marker(el).setLngLat(b.coords).setPopup(popup).addTo(map);
+      });
+    });
+    window.mToggle=function(el,k){
+      el.classList.toggle('on');const on=el.classList.contains('on');
+      try{
+        if(k==='3d')map.setTerrain(on?{source:'dem',exaggeration:1.4}:null);
+        if(k==='gpx')BISSES.forEach(b=>{try{map.setLayoutProperty('l-'+b.id,'visibility',on?'visible':'none')}catch(e){}});
+      }catch(e){}
+    };
+  }catch(err){
+    document.getElementById('mapbox').innerHTML=`<div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:2rem;text-align:center"><div style="font-size:2rem">🗺️</div><div style="font-family:var(--f-display);font-size:1.5rem;color:var(--s-mist)">Carte non disponible</div><div style="font-size:.8rem;color:var(--s-stone);font-family:var(--f-mono)">Token Mapbox invalide. <button onclick="localStorage.removeItem('suonen_mb_token');initMap()" style="color:var(--s-canal2);border-bottom:1px solid var(--s-canal2);cursor:pointer;background:none;border-top:0;border-left:0;border-right:0;font-family:inherit">Réinitialiser</button></div></div>`;
+  }
+}
+// Init token — use stored token or show setup
+window.addEventListener('DOMContentLoaded',()=>{
+  const stored=localStorage.getItem('suonen_mb_token');
+  if(!stored){ initMap(); } // Will show setup dialog
+  else { initMap(); } // Will use stored token
+});
+
+/* ─ NAV / MENU ─ */
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>60),{passive:true});
+function toggleMenu(){const m=document.getElementById('mob-menu');m.classList.toggle('open');document.body.style.overflow=m.classList.contains('open')?'hidden':'';}
+
+/* ─ REVEAL ─ */
+function initReveal(){
+  const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.1});
+  document.querySelectorAll('.reveal:not(.in)').forEach(el=>io.observe(el));
+}
+
+/* ─ INIT ─ */
+document.addEventListener('DOMContentLoaded',()=>{
+  // Check for stored token, pre-fill input
+  const stored=localStorage.getItem('suonen_mb_token');
+  if(stored)document.getElementById('token-inp').value=stored;
+  renderCards();
+  renderStatusPills();
+  initReveal();
+  initMap();
+  // Load weather async
+  setTimeout(()=>loadWeather(),500);
 });
 </script>
+
 </body>
 </html>
