@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Innovation & Ventures — Die Schweizerische Post</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #fff; color: #1A1A1A; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+
+:root {
+  --y: #FFCC00;
+  --black: #1A1A1A;
+  --body: #3D3D3D;
+  --muted: #6B6B6B;
+  --rule: #E8E8E8;
+  --bg: #F7F7F7;
+  --max: 760px;
+  --pad: clamp(1.25rem, 5vw, 2.5rem);
+}
+
+/* Header */
+.site-header {
+  background: var(--black); padding: 0 var(--pad);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 52px; position: sticky; top: 0; z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+.logo-mark { width: 28px; height: 28px; background: var(--y); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; color: var(--black); flex-shrink: 0; }
+.logo-text { color: #fff; font-size: 13px; font-weight: 500; }
+.breadcrumb { color: #888; font-size: 12px; }
+
+/* Tab nav */
+.page-nav {
+  background: #fff; border-bottom: 1px solid var(--rule);
+  padding: 0 var(--pad); display: flex; overflow-x: auto;
+  position: sticky; top: 52px; z-index: 90; scrollbar-width: none;
+}
+.page-nav::-webkit-scrollbar { display: none; }
+.page-nav button {
+  background: none; border: none; border-bottom: 3px solid transparent;
+  cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;
+  color: var(--muted); padding: 13px 16px 10px; white-space: nowrap;
+  transition: color .15s, border-color .15s; flex-shrink: 0;
+}
+.page-nav button:hover { color: var(--black); }
+.page-nav button.active { color: var(--black); border-bottom-color: var(--y); }
+
+/* Pages */
+.page { display: none; }
+.page.active { display: block; }
+
+/* Content */
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
+
+/* Hero */
+.hero { padding: 52px 0 40px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.hero h1 { font-size: clamp(1.75rem, 4vw, 2.4rem); font-weight: 800; line-height: 1.15; letter-spacing: -.03em; color: var(--black); margin-bottom: 20px; }
+.hero h1 em { font-style: normal; background: var(--y); padding: 0 3px; border-radius: 2px; }
+.hero p { font-size: 1rem; line-height: 1.75; color: var(--body); }
+.hero p + p { margin-top: 14px; }
+
+/* Section */
+.section { padding: 40px 0; border-top: 1px solid var(--rule); }
+.section h2 { font-size: clamp(1.05rem, 2vw, 1.25rem); font-weight: 700; letter-spacing: -.015em; color: var(--black); margin-bottom: 14px; }
+.section p { font-size: .93rem; line-height: 1.75; color: var(--body); }
+.section p + p { margin-top: 12px; }
+.section p strong { color: var(--black); font-weight: 600; }
+.section a.link { color: var(--black); font-weight: 600; font-size: .88rem; text-decoration: none; border-bottom: 1.5px solid var(--y); padding-bottom: 1px; display: inline-block; margin-top: 16px; }
+
+/* 3-card row — only used on landing */
+.three { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 20px; }
+@media(max-width:560px){ .three { grid-template-columns:1fr; } }
+.three-card { background: #fff; padding: 20px 18px; border-top: 3px solid transparent; transition: border-color .15s; }
+.three-card:hover { border-top-color: var(--y); }
+.three-card h3 { font-size: .85rem; font-weight: 700; margin-bottom: 6px; }
+.three-card p { font-size: .81rem; color: var(--body); line-height: 1.6; margin: 0; }
+.three-card a { display: inline-block; margin-top: 12px; font-size: .78rem; font-weight: 600; color: var(--black); text-decoration: none; border-bottom: 1.5px solid var(--y); }
+
+/* Value list — simple dl */
+.vlist { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+.vitem { display: flex; gap: 14px; align-items: flex-start; }
+.vitem::before { content: ''; width: 3px; min-width: 3px; height: 18px; background: var(--y); margin-top: 2px; border-radius: 2px; }
+.vitem-text strong { display: block; font-size: .88rem; font-weight: 700; color: var(--black); margin-bottom: 2px; }
+.vitem-text span { font-size: .84rem; color: var(--body); line-height: 1.6; }
+
+/* Story list */
+.story-list { margin-top: 20px; display: flex; flex-direction: column; gap: 0; border: 1px solid var(--rule); }
+.story { padding: 20px 18px; border-bottom: 1px solid var(--rule); }
+.story:last-child { border-bottom: none; }
+.story-tag { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.story h3 { font-size: .9rem; font-weight: 700; margin-bottom: 6px; color: var(--black); }
+.story p { font-size: .84rem; line-height: 1.65; color: var(--body); }
+.story a { display: inline-block; margin-top: 8px; font-size: .78rem; font-weight: 600; color: var(--black); text-decoration: none; border-bottom: 1.5px solid var(--y); }
+
+/* Partner chips */
+.chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+.chip { border: 1px solid var(--rule); padding: 5px 12px; font-size: .79rem; font-weight: 500; color: var(--body); border-radius: 2px; background: #fff; }
+
+/* Portfolio grid */
+.portfolio { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 20px; }
+.pc { background: #fff; padding: 16px 14px; }
+.pc.exit { opacity: .5; }
+.pc h4 { font-size: .83rem; font-weight: 700; color: var(--black); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+.pc .eb { font-size: .65rem; font-weight: 700; color: var(--muted); background: var(--bg); padding: 1px 5px; border-radius: 2px; letter-spacing: .06em; text-transform: uppercase; }
+.pc p { font-size: .76rem; color: var(--body); line-height: 1.5; margin-bottom: 4px; }
+.pc a { font-size: .74rem; color: var(--muted); text-decoration: none; }
+
+/* Facts strip */
+.facts { display: flex; flex-wrap: wrap; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 20px; }
+.fact { background: #fff; padding: 14px 18px; flex: 1; min-width: 140px; }
+.fact strong { display: block; font-size: 1rem; font-weight: 800; color: var(--black); margin-bottom: 2px; }
+.fact span { font-size: .76rem; color: var(--muted); }
+
+/* Contact */
+.contact { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 20px; }
+.ci { background: #fff; padding: 18px 16px; }
+.ci strong { display: block; font-size: .84rem; font-weight: 700; margin-bottom: 5px; }
+.ci p, .ci a { font-size: .81rem; color: var(--body); line-height: 1.55; }
+.ci a { color: var(--black); font-weight: 600; text-decoration: none; border-bottom: 1.5px solid var(--y); }
+
+/* Reveal */
+.reveal { opacity: 0; transform: translateY(10px); transition: opacity .35s, transform .35s; }
+.reveal.visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } }
+
+/* Footer */
+.site-footer { border-top: 1px solid var(--rule); padding: 22px var(--pad); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--bg); }
+.site-footer p { font-size: .75rem; color: var(--muted); }
+.site-footer a { font-size: .75rem; color: var(--black); font-weight: 600; text-decoration: none; border-bottom: 1.5px solid var(--y); }
+
+@media(max-width:480px){ .breadcrumb { display:none; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="#">
+    <div class="logo-mark">+P</div>
+    <span class="logo-text">Die Schweizerische Post</span>
+  </a>
+  <span class="breadcrumb">Über uns › Innovation & Ventures</span>
+</header>
+
+<nav class="page-nav">
+  <button class="active" onclick="show('p1',this)">Innovation & Ventures</button>
+  <button onclick="show('p2',this)">Open Innovation</button>
+  <button onclick="show('p3',this)">Swiss Post Ventures</button>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 1 — Innovation & Ventures
+════════════════════════════════════════════ -->
+<main id="p1" class="page active">
+<div class="wrap">
+
+  <section class="hero reveal">
+    <p class="eyebrow">Innovation & Ventures</p>
+    <h1>Die Post von morgen<br>entsteht <em>heute</em>.</h1>
+    <p>Die Schweiz verändert sich. Mobilitätsbedürfnisse wandeln sich, Kommunikation wird digitaler, der öffentliche Dienst muss neu gedacht werden. Die Post will nicht nur mithalten. Sie will mitgestalten, als verlässliche Partnerin für die Bevölkerung, die Wirtschaft und die Gesellschaft.</p>
+    <p>Innovationen entstehen bei uns selten im Alleingang. Sie entstehen im Dialog mit Start-ups, Hochschulen, Partnern und 47'000 Mitarbeitenden, die täglich neue Ideen einbringen.</p>
+  </section>
+
+  <section class="section reveal">
+    <h2>Drei Wege, wie Innovation entsteht</h2>
+    <p>Innovation hat bei der Post verschiedene Formen: intern, kollaborativ und investitionsgetrieben.</p>
+    <div class="three">
+      <div class="three-card">
+        <h3>Open Innovation</h3>
+        <p>Zusammenarbeit mit Unternehmen, Hochschulen, Start-ups und Talenten, von der Idee bis zur Umsetzung.</p>
+        <a href="#" onclick="show('p2',document.querySelectorAll('.page-nav button')[1]);return false;">Mehr erfahren →</a>
+      </div>
+      <div class="three-card">
+        <h3>Swiss Post Ventures</h3>
+        <p>Gezielte Investitionen in Start-ups mit strategischer Relevanz, ergänzt durch Knowhow und Netzwerk.</p>
+        <a href="#" onclick="show('p3',document.querySelectorAll('.page-nav button')[2]);return false;">Mehr erfahren →</a>
+      </div>
+      <div class="three-card">
+        <h3>Innovation bei der Post</h3>
+        <p>Intern: wie wir Ideen entwickeln, testen und einführen, vom EspaceLab bis zum Early-Label.</p>
+        <a href="#">Mehr erfahren →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <h2>EspaceLab & Early-Label</h2>
+    <p>Im <strong>EspaceLab</strong> arbeiten Teams, Partner und Expertinnen gemeinsam an neuen Lösungen. Durch Co-Creation und Prototyping werden Ideen rasch sichtbar und weiterentwickelt.</p>
+    <p>Angebote mit <strong>Early-Label</strong> werden früh im Markt getestet. Kundinnen und Kunden können neue Produkte ausprobieren und mit Feedback zur Weiterentwicklung beitragen.</p>
+    <a class="link" href="#">Zu den Markttests →</a>
+  </section>
+
+  <section class="section reveal">
+    <h2>Kontakt</h2>
+    <p>Neue Idee oder Kooperationsvorschlag?</p>
+    <div class="contact">
+      <div class="ci"><strong>Innovation und Partnerschaften</strong><a href="mailto:innovation@post.ch">innovation@post.ch</a></div>
+      <div class="ci"><strong>Medienanfragen</strong><a href="#">Zur Medienstelle →</a></div>
+      <div class="ci"><strong>Adresse</strong><p>Die Schweizerische Post AG<br>Wankdorfallee 4, 3030 Bern</p></div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 2 — Open Innovation
+════════════════════════════════════════════ -->
+<main id="p2" class="page">
+<div class="wrap">
+
+  <section class="hero reveal">
+    <p class="eyebrow">Open Innovation</p>
+    <h1>Zusammenarbeit &amp;<br><em>Success Stories</em></h1>
+    <p>Die Post ist seit Jahren eine der meistausgezeichneten Posten weltweit. Gute Ideen entstehen dabei selten nur intern. Deshalb suchen wir den Dialog mit Start-ups, Hochschulen und Partnern, die andere Perspektiven einbringen und gemeinsam mit uns etwas aufbauen wollen.</p>
+    <p>Seit 1849 bringt die Post die Schweiz voran, verlässlich und nah an den Menschen. Diese Grundhaltung ist auch der Ausgangspunkt unserer Partnerschaften.</p>
+  </section>
+
+  <section class="section reveal">
+    <h2>Was wir gemeinsam tun können</h2>
+    <p><strong>Start-ups:</strong> Wenn eine Idee in der Logistik, der Mobilität oder bei digitalen Diensten etwas verändern kann, wollen wir sie im echten Betrieb sehen. Wir öffnen unsere Infrastruktur, bringen Erfahrung in der Geschäftsentwicklung ein und helfen dabei, den Weg vom Prototyp zur Marktreife zu verkürzen. Wer mit der Post testet, testet in der Realität, nicht im Sandkasten.</p>
+    <p><strong>Hochschulen und Forschungsteams:</strong> Unter dem Dach von Post Academia arbeiten wir an Fragen, die im Tagesgeschäft keinen Platz haben. Welche Rolle spielt die Post in der Mobilität von morgen? Wie gestaltet man digitale Dienste, denen Menschen wirklich vertrauen? Wir suchen Expertise, unabhängige Perspektiven und Talente, die Lust haben, an echten Problemen zu arbeiten.</p>
+    <p><strong>Foresight-Partner:</strong> Seit Jahren beobachten wir mit spezialisierten Partnern gesellschaftliche und technologische Verschiebungen, bevor sie Mainstream werden. Das hilft uns, die richtigen Fragen früh zu stellen, und gibt unseren Kooperationspartnern Orientierung in einem sich schnell verändernden Umfeld.</p>
+    <p><strong>Internationale Netzwerke:</strong> Über Swissnex, die globale Postgemeinschaft und weitere Netzwerke sind wir mit Innovationsökosystemen in Europa, Nordamerika und Asien verbunden. Wer mit uns arbeitet, arbeitet nicht nur mit der Post, sondern mit dem, was durch sie erreichbar wird.</p>
+  </section>
+
+  <section class="section reveal">
+    <h2>Ausgewählte Projekte</h2>
+    <div class="story-list">
+      <div class="story">
+        <p class="story-tag">Mobilität</p>
+        <h3>AmiGo</h3>
+        <p>PostAuto und Baidu Apollo Go erproben in der Ostschweiz einen autonomen Fahrdienst auf Abruf. Ab 2026 können Passagiere in St. Gallen und Appenzell mitfahren. Ein Pilotprojekt, das zeigen soll, wie bedarfsgerechte Mobilität in der Peripherie aussehen kann.</p>
+        <a href="#">Mehr erfahren →</a>
+      </div>
+      <div class="story">
+        <p class="story-tag">Handel & Kommunikation</p>
+        <h3>Profital</h3>
+        <p>Plattform für digitale Prospekte, entstanden aus einer Zusammenarbeit mit der Post und als eigenständiges Swiss-Post-Start-up weiterentwickelt.</p>
+        <a href="#">Zur Website →</a>
+      </div>
+      <div class="story">
+        <p class="story-tag">Logistik</p>
+        <h3>Scandit</h3>
+        <p>Barcode-Scanning-Software für Smart Devices zur effizienten Datenerfassung, heute im Einsatz in der Post-Logistik.</p>
+        <a href="#">Zur Website →</a>
+      </div>
+      <div class="story">
+        <p class="story-tag">Cybersicherheit</p>
+        <h3>Hacknowledge</h3>
+        <p>Unterstützung bei der Identifikation und Behandlung gezielter Cyberbedrohungen. Eine Zusammenarbeit, die auf Dauer angelegt ist.</p>
+        <a href="#">Zur Website →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <h2>Partnernetzwerk</h2>
+    <p>Wir arbeiten mit einem breiten Kreis an Partnern zusammen: von Innovationsnetzwerken und Hochschulen bis zu internationalen Organisationen. Mit dem MobilityLab Sion-Valais etwa co-entwickeln wir Entscheidungsinstrumente für die nachhaltige Mobilität in ländlichen Regionen, Werkzeuge, die Gemeinden helfen, konkrete Mobilitätsangebote zu planen und zu bewerten.</p>
+    <div class="chips">
+      <span class="chip">Swissnex Network</span>
+      <span class="chip">ActionJam</span>
+      <span class="chip">MobilityLab Sion-Valais</span>
+      <span class="chip">EPFL — C4DT</span>
+      <span class="chip">HUMAN-IST @ Uni Fribourg</span>
+      <span class="chip">ZISC @ ETH Zürich</span>
+      <span class="chip">Connect2posts</span>
+      <span class="chip">CIFS Copenhagen</span>
+      <span class="chip">swissfuture</span>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <h2>Kontakt aufnehmen</h2>
+    <p>Schicken Sie uns eine kurze Beschreibung Ihres Vorhabens, falls vorhanden mit Link zum Prototyp oder Konzept. Wir melden uns persönlich.</p>
+    <a class="link" href="mailto:innovation@post.ch">innovation@post.ch →</a>
+  </section>
+
+  <section class="section reveal">
+    <h2>Kontakt</h2>
+    <p>Senden Sie uns eine kurze Beschreibung des Vorhabens, falls vorhanden mit Link zum Prototyp oder Konzept. Wir melden uns mit dem passenden nächsten Schritt.</p>
+    <div class="contact">
+      <div class="ci"><strong>Schreiben Sie uns</strong><a href="mailto:innovation@post.ch">innovation@post.ch</a></div>
+      <div class="ci"><strong>Projektideen einreichen</strong><a href="#">Zum Formular →</a></div>
+      <div class="ci"><strong>Medienanfragen</strong><a href="#">Zur Medienstelle →</a></div>
+      <div class="ci"><strong>Adresse</strong><p>Wankdorfallee 4, 3030 Bern</p></div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<!-- ═══════════════════════════════════════════
+     PAGE 3 — Swiss Post Ventures
+════════════════════════════════════════════ -->
+<main id="p3" class="page">
+<div class="wrap">
+
+  <section class="hero reveal">
+    <p class="eyebrow">Swiss Post Ventures</p>
+    <h1>Mehr als<br><em>Kapital</em>.</h1>
+    <p>Swiss Post Ventures ist der Venture-Capital-Arm der Schweizerischen Post. Wir investieren in Unternehmen in der Frühphase, die zu den Wachstumsfeldern des Konzerns passen und bei denen die Post als Partner einen echten Unterschied machen kann: durch Marktzugang, operatives Knowhow und ein Netzwerk, das über die Schweiz hinausreicht.</p>
+    <p>Wir streben Minderheitsbeteiligungen an. Die Start-ups bleiben eigenständig. Was wir einbringen, ist mehr als Geld. Es ist die Erfahrung aus über zwei Jahrzehnten Zusammenarbeit mit Jungunternehmen und das Fundament einer Institution, der Millionen Menschen täglich vertrauen.</p>
+  </section>
+
+
+
+  <section class="section reveal">
+    <h2>Investmentfokus</h2>
+    <p>Entscheidend sind ein klarer Nutzen für Kundinnen und Kunden, ein skalierbares Geschäftsmodell und ein Team, das liefert. Thematisch investieren wir in Logistik, Mobilität, digitale Kommunikation und angrenzende Bereiche, mit besonderem Interesse an Lösungen, die auch gesellschaftlich einen Beitrag leisten.</p>
+    <div class="facts">
+      <div class="fact"><strong>Pre-A bis B</strong><span>Investmentphase</span></div>
+      <div class="fact"><strong>USD 500k – 2 Mio.</strong><span>Erstinvestition (typisch)</span></div>
+      <div class="fact"><strong>Zügig</strong><span>Entscheidungsprozess</span></div>
+      <div class="fact"><strong>International</strong><span>Fokus</span></div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <h2>Portfolio</h2>
+    <p>Beteiligungen von Swiss Post Ventures im Überblick.</p>
+    <div class="portfolio">
+      <div class="pc"><h4>Starship Technologies</h4><p>Selbstfahrende Lieferroboter, letzte Meile.</p><a href="https://starship.xyz" target="_blank">starship.xyz</a></div>
+      <div class="pc"><h4>Matternet</h4><p>Drohnenlogistik, automatisierte Luftzustellung.</p><a href="https://mttr.net" target="_blank">mttr.net</a></div>
+      <div class="pc"><h4>MotionTag</h4><p>Mobilitätsanalytik per Smartphone.</p><a href="https://motion-tag.com" target="_blank">motion-tag.com</a></div>
+      <div class="pc"><h4>Guuru</h4><p>Crowd-basierter Kundenservice in Echtzeit.</p><a href="https://guuru.com" target="_blank">guuru.com</a></div>
+      <div class="pc"><h4>optilyz</h4><p>Direktmail-Marketing, datenbasiert automatisiert.</p><a href="https://optilyz.com" target="_blank">optilyz.com</a></div>
+      <div class="pc"><h4>Jobbatical</h4><p>Software für Immigration und Relocation.</p><a href="https://jobbatical.com" target="_blank">jobbatical.com</a></div>
+      <div class="pc"><h4>CareerFairy</h4><p>Arbeitgeber trifft Studierende, digital.</p><a href="https://careerfairy.io" target="_blank">careerfairy.io</a></div>
+      <div class="pc"><h4>Evercam</h4><p>Remote-Monitoring für Baustellen.</p><a href="https://evercam.io" target="_blank">evercam.io</a></div>
+      <div class="pc"><h4>awork</h4><p>Work-Management für Agenturen und Tech-Teams.</p><a href="https://awork.io" target="_blank">awork.io</a></div>
+      <div class="pc"><h4>Seenons</h4><p>Abfall- und Wertstoffmanagement, Kreislaufwirtschaft.</p><a href="https://seenons.com" target="_blank">seenons.com</a></div>
+      <div class="pc"><h4>klarx</h4><p>Digitale Mietplattform für Baugeräte.</p><a href="https://klarx.de" target="_blank">klarx.de</a></div>
+      <div class="pc"><h4>ContractHero</h4><p>Digitales Vertragsmanagement.</p><a href="https://contracthero.com" target="_blank">contracthero.com</a></div>
+      <div class="pc"><h4>Classtime</h4><p>Digitale Lernplattform für interaktiven Unterricht.</p><a href="https://classtime.com" target="_blank">classtime.com</a></div>
+      <div class="pc"><h4>Otoqi</h4><p>B2B-Plattform für Fahrzeugüberführungen.</p><a href="https://otoqi.com" target="_blank">otoqi.com</a></div>
+      <div class="pc"><h4>Nimmsta</h4><p>Industrie-Smartwatch für Picking-Prozesse.</p><a href="https://nimmsta.com" target="_blank">nimmsta.com</a></div>
+      <div class="pc"><h4>Roseman Labs</h4><p>Erkenntnisse aus sensiblen Daten ohne Datenweitergabe.</p><a href="https://rosemanlabs.com" target="_blank">rosemanlabs.com</a></div>
+      <div class="pc"><h4>getinside</h4><p>Retail-Media-Plattform, Reichweitenmonetarisierung.</p><a href="https://getinside.fr" target="_blank">getinside.fr</a></div>
+      <div class="pc"><h4>HeyCare</h4><p>Care-Services für Mitarbeitende.</p><a href="https://heycare.com" target="_blank">heycare.com</a></div>
+      <div class="pc"><h4>Checksum</h4><p>SoftPOS-Lösung für Händler und E-Commerce.</p><a href="https://checksum.ch" target="_blank">checksum.ch</a></div>
+      <div class="pc"><h4>eMabler</h4><p>API-First-Plattform für E-Fahrzeug-Laden.</p><a href="https://emabler.com" target="_blank">emabler.com</a></div>
+      <div class="pc exit"><h4>Hacknowledge <span class="eb">Exit</span></h4><p>Cybersecurity-Monitoring und Threat-Detection.</p><a href="https://hacknowledge.ch" target="_blank">hacknowledge.ch</a></div>
+      <div class="pc exit"><h4>TestingTime <span class="eb">Exit</span></h4><p>Rekrutierung von Testpersonen für UX-Forschung.</p><a href="https://testingtime.com" target="_blank">testingtime.com</a></div>
+      <div class="pc exit"><h4>Metaco <span class="eb">Exit</span></h4><p>Sichere Verwaltung digitaler Vermögenswerte.</p><a href="https://silo.metaco.com" target="_blank">silo.metaco.com</a></div>
+      <div class="pc exit"><h4>Beekeeper <span class="eb">Exit</span></h4><p>Kommunikationsplattform für Frontline-Mitarbeitende.</p><a href="https://beekeeper.io" target="_blank">beekeeper.io</a></div>
+      <div class="pc exit"><h4>Trusk <span class="eb">Exit</span></h4><p>Lieferplattform für sperrige Güter.</p><a href="https://trusk.com" target="_blank">trusk.com</a></div>
+      <div class="pc exit"><h4>Bring! <span class="eb">Exit</span></h4><p>Gemeinsame Einkaufslisten-App.</p><a href="https://getbring.com" target="_blank">getbring.com</a></div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <h2>Kontakt</h2>
+    <p>Sie möchten Ihr Start-up vorstellen oder haben Fragen zu einer möglichen Zusammenarbeit? Wir melden uns mit dem passenden nächsten Schritt.</p>
+    <div class="contact">
+      <div class="ci"><strong>Schreiben Sie uns</strong><a href="mailto:cvc@post.ch">cvc@post.ch</a></div>
+      <div class="ci"><strong>Projekt einreichen</strong><a href="#">Zum Formular →</a></div>
+      <div class="ci"><strong>Medienanfragen</strong><a href="#">Zur Medienstelle →</a></div>
+      <div class="ci"><strong>Adresse</strong><p>Wankdorfallee 4, 3030 Bern</p></div>
+    </div>
+    <p style="margin-top:20px;font-size:.83rem;color:var(--muted);">Ohne Investment, aber mit Zusammenarbeit? → <a href="#" onclick="show('p2',document.querySelectorAll('.page-nav button')[1]);return false;" style="color:var(--black);font-weight:600;border-bottom:1.5px solid var(--y);text-decoration:none;">Open Innovation</a></p>
+  </section>
+
+</div>
+</main>
+
+<footer class="site-footer">
+  <p>© Die Schweizerische Post AG — Textvorschlag 2025</p>
+  <a href="https://venture.post.ch" target="_blank">venture.post.ch</a>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.page-nav button').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(initReveal, 40);
+}
+function initReveal() {
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold:.06});
+  document.querySelectorAll('.page.active .reveal').forEach(function(el){
+    if(!el.classList.contains('visible')) io.observe(el);
+  });
+}
+document.addEventListener('DOMContentLoaded', initReveal);
+</script>
+</body>
+</html>
